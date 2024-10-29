@@ -21,3 +21,8 @@ export const signUpSchema = z.object({
         "Include at least one special character (@, $, !, %, *, ?, or &).",
     }),
 });
+
+export const signInSchema = z.object({
+  username: z.string().min(1, 'Username is required').email('Invalid email').max(30),
+  password: z.string().min(1, 'Password is required'),
+});

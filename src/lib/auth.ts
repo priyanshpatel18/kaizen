@@ -1,3 +1,5 @@
+import prisma from "@/db";
+import { compare } from "bcrypt";
 import { AuthOptions, Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -26,8 +28,47 @@ interface user {
 export const authOptions: AuthOptions = {
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT || "",
-      clientSecret: process.env.GOOGLE_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      async profile(profile) {
+        const { email, name, picture } = profile;
+
+        const user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+            accounts: true,
+          },
+        });
+
+        if (user) {
+          const newAccount = await prisma.account.create({
+            data: {
+              provider: "GOOGLE",
+              userId: user.id,
+            },
+          });
+
+          return newAccount;
+        }
+
+        const newAccount = await prisma.account.create({
+          data: {
+            provider: "GOOGLE",
+            providerAccountId: profile.sub,
+            refreshToken: profile.refresh_token,
+            accessToken: profile.access_token,
+            user: {
+              create: {
+                email,
+                name,
+                image: picture,
+              },
+            },
+          },
+        });
+
+        return newAccount;
+      },
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -35,7 +76,28 @@ export const authOptions: AuthOptions = {
         email: { label: "email", type: "text" },
         name: { label: "name", type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials: any) {
+        const { email, password } = credentials;
+
+        const user = await prisma.user.findUnique({
+          where: { email },
+          include: {
+            accounts: true,
+          },
+        });
+
+        if (user) {
+          const hasEmailAccount = user.accounts.some(
+            (account) => account.provider === "EMAIL"
+          );
+          if (hasEmailAccount && user.password) {
+            const isMatch = await compare(password, user.password);
+            if (isMatch) {
+              return user;
+            }
+          }
+        }
+
         return null;
       },
     }),

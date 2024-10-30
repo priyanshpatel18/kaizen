@@ -1,7 +1,10 @@
+import OnboardingTemplate from "@/components/emailTemplates/OnboardingTemplate";
 import prisma from "@/db";
-import { signUpSchema } from "@/zod/user";
+import { sendMail } from "@/lib/resend";
+import { verifySchema } from "@/zod/user";
 import { User } from "@prisma/client";
-import { genSalt, hash } from "bcrypt";
+import { compare, genSalt, hash } from "bcrypt";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -39,12 +42,27 @@ async function createAccount(
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Validate Request
-    const body = await request.json();
-    const { email, password } = await signUpSchema.parseAsync(body);
+  const body = await request.json();
+  const { email, password, otp } = await verifySchema.parseAsync(body);
 
-    // Check if user exists and if it has EMAIL account
+  if (!email || !password || !otp) {
+    return NextResponse.json({ message: "Invalid request" }, { status: 400 });
+  }
+
+  const token = cookies().get("verificiation_token")?.value;
+  if (!token) {
+    return NextResponse.json(
+      { message: "Resent OTP and try again" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const isVerified = compare(otp, token);
+    if (!isVerified) {
+      return NextResponse.json({ message: "Incorrect OTP" }, { status: 400 });
+    }
+
     const result = await prisma.$transaction(async (prisma) => {
       const user = await prisma.user.findUnique({
         where: { email },
@@ -75,6 +93,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send Onboarding email
+    await sendMail(email, "Welcome to Kaizen", OnboardingTemplate());
+
     return NextResponse.json(
       { message: "User created successfully" },
       { status: 201 }
@@ -83,18 +104,17 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       const fieldErrors = error.flatten().fieldErrors;
       const formattedMessage = (() => {
-        const firstErrorKey = Object.keys(fieldErrors)[0];
-        if (!firstErrorKey) return "Invalid input";
-
-        const firstError = fieldErrors[firstErrorKey]?.[0];
-        if (firstError === "Required") {
-          return `${firstErrorKey.charAt(0).toUpperCase()}${firstErrorKey.slice(
-            1
-          )} is required`;
+        if (fieldErrors.email) {
+          return fieldErrors.email[0];
         }
-        return firstError || "Invalid input";
+        if (fieldErrors.password) {
+          return fieldErrors.password[0];
+        }
+        if (fieldErrors.otp) {
+          return fieldErrors.otp[0];
+        }
+        return "Something went wrong";
       })();
-
       return NextResponse.json({ message: formattedMessage }, { status: 400 });
     }
 

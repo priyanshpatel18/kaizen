@@ -1,9 +1,11 @@
+import OnboardingTemplate from "@/components/emailTemplates/OnboardingTemplate";
 import prisma from "@/db";
 import { compare } from "bcrypt";
 import { AuthOptions, Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import { sendMail } from "./resend";
 
 export interface session extends Session {
   user: {
@@ -41,14 +43,12 @@ export const authOptions: AuthOptions = {
         });
 
         if (user) {
-          const newAccount = await prisma.account.create({
-            data: {
-              provider: "GOOGLE",
-              userId: user.id,
-            },
-          });
-
-          return newAccount;
+          const hasEmailAccount = user.accounts.some(
+            (account) => account.provider === "EMAIL"
+          );
+          if (hasEmailAccount) {
+            return user;
+          }
         }
 
         const newAccount = await prisma.account.create({
@@ -66,6 +66,8 @@ export const authOptions: AuthOptions = {
             },
           },
         });
+
+        await sendMail(email, "Welcome to Kaizen", OnboardingTemplate());
 
         return newAccount;
       },
@@ -120,6 +122,12 @@ export const authOptions: AuthOptions = {
         newSession.user.email = session.user?.email ?? "";
       }
       return newSession!;
+    },
+    redirect: async ({ url, baseUrl }) => {
+      if (url.includes("/sign-in") || url.includes("/sign-up")) {
+        return `${baseUrl}/`;
+      }
+      return baseUrl;
     },
   },
   pages: {

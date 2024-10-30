@@ -1,5 +1,4 @@
 import { generateAndSendOtp } from "@/actions/sendOtp";
-import prisma from "@/db";
 import { genSalt, hash } from "bcrypt";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -13,23 +12,6 @@ export async function POST(request: NextRequest) {
     .parseAsync(body);
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: { accounts: true },
-    });
-
-    if (user) {
-      const hasEmailAccount = user.accounts.some(
-        (account) => account.provider === "EMAIL"
-      );
-      if (hasEmailAccount) {
-        return NextResponse.json(
-          { message: "Email already registered" },
-          { status: 400 }
-        );
-      }
-    }
-
     const otp = await generateAndSendOtp(email);
     if (!otp) {
       return NextResponse.json(

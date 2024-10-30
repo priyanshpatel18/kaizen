@@ -19,7 +19,7 @@ async function createAccount(
       data: {
         email,
         password: hashedPassword,
-        isVerified: false,
+        isVerified: true,
       },
     });
   } else {
@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
 
     // Send Onboarding email
     await sendMail(email, "Welcome to Kaizen", OnboardingTemplate());
+    cookies().delete("verificiation_token");
 
     return NextResponse.json(
       { message: "User created successfully" },

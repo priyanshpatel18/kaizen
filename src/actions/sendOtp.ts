@@ -12,7 +12,7 @@ export async function generateAndSendOtp(email: string) {
   try {
     const { data, error } = await sendMail(
       email,
-      "OTP Verification",
+      "Email Verification",
       MailTemplate({ otp: otp })
     );
 

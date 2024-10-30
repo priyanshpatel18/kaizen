@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel-build": "npm run prisma:generate && npm run prisma:migrate && next build",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

@@ -19,7 +19,6 @@ import {
 import { signUpSchema, verifySchema } from "@/zod/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, UseFormReturn } from "react-hook-form";
@@ -158,7 +157,7 @@ function SignUpForm({ form, isLoading, sendOTP }: FormProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-2xl font-bold text-gray-800">
           Create an Account
         </h1>
         <p className="text-sm text-gray-600">

@@ -62,6 +62,7 @@ export const authOptions: AuthOptions = {
                 email,
                 name,
                 image: picture,
+                isVerified: true,
               },
             },
           },

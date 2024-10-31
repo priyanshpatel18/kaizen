@@ -18,7 +18,8 @@ model User {
   password   String?
   isVerified Boolean  @default(false)
   name       String?
-  image      String?
+  profile    String?
+  publicId   String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -26,13 +27,13 @@ model User {
 }
 
 model Account {
-  id                String    @id @default(uuid())
+  id                String   @id @default(uuid())
   provider          Provider
   providerAccountId String?
   userId            String?
-  user              User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken       String?
   refreshToken      String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }

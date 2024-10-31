@@ -61,7 +61,7 @@ export const authOptions: AuthOptions = {
               create: {
                 email,
                 name,
-                image: picture,
+                profile: picture,
                 isVerified: true,
               },
             },

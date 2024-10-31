@@ -157,7 +157,7 @@ function SignUpForm({ form, isLoading, sendOTP }: FormProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-bold text-gray-800">
+        <h1 className="text-3xl tracking-tighter font-bold text-gray-800">
           Create an Account
         </h1>
         <p className="text-sm text-gray-600">

@@ -5,6 +5,7 @@ import { AuthOptions, Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import { generateJwtToken } from "./jwt";
 import { sendMail } from "./resend";
 
 export interface session extends Session {
@@ -12,6 +13,7 @@ export interface session extends Session {
     id: string;
     email: string;
     name: string;
+    token: string;
   };
 }
 
@@ -20,7 +22,7 @@ interface token extends JWT {
   jwtToken: string;
 }
 
-interface user {
+interface User {
   id: string;
   name: string;
   email: string;
@@ -111,16 +113,32 @@ export const authOptions: AuthOptions = {
       const newToken: token = token as token;
 
       if (user) {
+        const token = generateJwtToken(
+          user?.id as string,
+          user?.email as string,
+          user?.name as string
+        );
+        console.log(token);
+        
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { token },
+        });
+
         newToken.uid = user.id;
-        newToken.jwtToken = (user as user).token;
+        newToken.token = token;
       }
       return newToken;
     },
     session: async ({ session, token }) => {
       const newSession: session = session as session;
+
       if (newSession.user && token.uid) {
         newSession.user.id = token.uid as string;
         newSession.user.email = session.user?.email ?? "";
+        newSession.user.name = session.user?.name ?? "";
+        newSession.user.token = token.token as string;
       }
       return newSession!;
     },

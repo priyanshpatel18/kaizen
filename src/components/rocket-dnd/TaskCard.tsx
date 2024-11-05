@@ -56,6 +56,7 @@ export default function TaskCard({ id, content }: CardProps) {
         getIsSticky: () => true, // To make a drop target "sticky"
         onDragEnter: (args) => {
           if (args.source.data.cardId !== id) {
+            // Update the closest edge when the draggable item enters the drop zone
             setClosestEdge(
               extractClosestEdge(args.self.data) as SetStateAction<null>
             );

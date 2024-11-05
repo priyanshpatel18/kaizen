@@ -4,18 +4,20 @@ import { User } from "@/types/common";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_APP_URL;
+
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const sessionUser = session?.user as User;
-
-  if (!sessionUser) {
-    return NextResponse.json(
-      { message: "Please sign in first" },
-      { status: 404 }
-    );
-  }
-
   try {
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as User;
+
+    if (!sessionUser) {
+      return NextResponse.json(
+        { message: "Please sign in first" },
+        { status: 404 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
       where: { email: sessionUser.email, id: sessionUser.id },
       include: { accounts: true },
@@ -28,17 +30,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userData = {
-      email: user.email,
-      id: user.id,
-      token: user.token,
-      name: user.name,
-      profile: user.profile,
-    };
-    return NextResponse.json({ user: userData }, { status: 200 });
+    const labels = await prisma.label.findMany({
+      where: { userId: user.id },
+    });
+
+    return NextResponse.json({ labels });
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
-      { message: "Something went wrong. Please try again" },
+      { message: "Something went wrong" },
       { status: 500 }
     );
   }

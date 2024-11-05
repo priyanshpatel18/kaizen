@@ -114,6 +114,7 @@ export default function SignUpPage() {
       if (res.ok) {
         toast.success(data.message);
         setShowOTPPage(false);
+        router.push("/sign-in");
       } else {
         toast.error(data.message);
       }

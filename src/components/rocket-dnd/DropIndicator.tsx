@@ -12,7 +12,7 @@ export default function DropIndicator({ edge, gap }: DropIndicatorProps) {
   return (
     <div
       style={{ "--gap": gap } as React.CSSProperties}
-      className={`absolute z-10 bg-blue-600 pointer-events-none h-[2px] left-[2px] top-[-6px] right-0 ${edgeClassMap[edge]}`}
+      className={`absolute z-10 bg-blue-600 pointer-events-none h-[2px] left-[4px] right-[4px] -top-1 ${edgeClassMap[edge]}`}
     ></div>
   );
 }

@@ -3,15 +3,8 @@ import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { name } = await z.object({ name: z.string().min(1) }).parseAsync(body);
-  if (!name) {
-    return NextResponse.json({ message: "Name is required" }, { status: 400 });
-  }
-
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const user = await getUserData(session);
@@ -20,14 +13,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const label = await prisma.label.create({
-      data: {
-        name,
-        userId: user.id,
+    const projects = await prisma.project.findMany({
+      where: { userId: user.id },
+      include: {
+        categories: {
+          include: {
+            tasks: {
+              orderBy: {
+                position: "asc",
+              },
+            },
+          },
+        },
       },
     });
 
-    return NextResponse.json({ label });
+    return NextResponse.json({ projects });
   } catch (error) {
     return NextResponse.json(
       { message: "Something went wrong" },

@@ -1,27 +1,13 @@
+import { getUserData } from "@/actions/getUserData";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
-import { User } from "@/types/common";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_APP_URL;
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const sessionUser = session?.user as User;
-
-    if (!sessionUser) {
-      return NextResponse.json(
-        { message: "Please sign in first" },
-        { status: 404 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: sessionUser.email, id: sessionUser.id },
-      include: { accounts: true },
-    });
+    const user = await getUserData(session);
 
     if (!user) {
       return NextResponse.json(

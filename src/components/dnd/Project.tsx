@@ -19,35 +19,6 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import CategoryColumn from "./CategoryColumn";
 
-const DATA: ColumnProps[] = [
-  {
-    id: "ae534b11-d8e6-413e-8112-542275e1a1cd",
-    title: "TODO",
-    cards: [
-      { id: "1", content: "Understand the concepts" },
-      { id: "2", content: "Ask for help" },
-      { id: "3", content: "Apply what I've learned" },
-    ],
-  },
-  {
-    id: "b1e56c11-c555-490f-a1d0-64e7b2b8c524",
-    title: "IN PROGRESS",
-    cards: [
-      { id: "4", content: "Watch the video" },
-      { id: "5", content: "Clear your doubts" },
-      { id: "6", content: "Master the concepts" },
-    ],
-  },
-  {
-    id: "c2c4a3e2-9b99-4110-9154-62ee6d193b76",
-    title: "COMPLETED",
-    cards: [
-      { id: "7", content: "Review the notes" },
-      { id: "8", content: "Prepare for the exam" },
-    ],
-  },
-];
-
 interface HandleDropProps {
   source: {
     data: {
@@ -60,20 +31,11 @@ interface HandleDropProps {
   location: any;
 }
 
-interface CardProps {
-  id: string;
-  content: string;
-}
-
-interface ColumnProps {
-  title: string;
-  cards: CardProps[];
-  id: string;
-}
-
 interface ReorderColumnProps {
-  sourceIndex: number;
-  destinationIndex: number;
+  sourceIndex: number | undefined;
+  destinationIndex: number | undefined;
+  sourceColumnId: string;
+  destinationColumnId: string;
 }
 
 interface ReorderCardProps {
@@ -114,23 +76,60 @@ interface Tasks {
 }
 
 export default function Project() {
-  const [data, setData] = useState(DATA);
   const { projects } = useProjectDetails();
   const [projectsData, setProjectsData] = useState<ProjectState[] | null>(null);
-  const [selectedProject, setSelectedProject] = useState<ProjectState | null>(
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
 
   const reorderColumn = useCallback(
-    ({ sourceIndex, destinationIndex }: ReorderColumnProps) => {
-      setData((prevData) => {
-        const newData = [...prevData];
-        const [movedColumn] = newData.splice(sourceIndex, 1);
-        newData.splice(destinationIndex, 0, movedColumn);
-        return newData;
+    ({
+      sourceIndex,
+      destinationIndex,
+      sourceColumnId,
+      destinationColumnId,
+    }: ReorderColumnProps) => {
+      if (sourceIndex === undefined || destinationIndex === undefined) return;
+
+      const selectedProject = projectsData?.find(
+        (project) => project.id === selectedProjectId
+      );
+
+      if (!selectedProject) {
+        console.error("Invalid project ID");
+        return;
+      }
+
+      const updatedCategories = reorder({
+        list: selectedProject.categories,
+        startIndex: sourceIndex,
+        finishIndex: destinationIndex,
+      });
+
+      const updatedProject = {
+        ...selectedProject,
+        categories: updatedCategories,
+      };
+
+      changePosition(
+        sourceColumnId,
+        destinationColumnId,
+        destinationIndex,
+        true
+      );
+      // Update the project in the projectsData state
+      setProjectsData((prev) => {
+        return (
+          prev?.map((project) => {
+            if (project.id === selectedProjectId) {
+              return updatedProject;
+            }
+            return project;
+          }) || []
+        );
       });
     },
-    []
+    [projectsData]
   );
 
   const moveCard = useCallback(
@@ -141,10 +140,14 @@ export default function Project() {
       movedCardIndexInDestinationColumn = 0,
     }: MoveCardProps) => {
       // Ensure source and destination columns exist
-      const sourceColumnData = data.find(
+      const selectedProject = projectsData?.find(
+        (project) => project.id === selectedProjectId
+      );
+
+      const sourceColumnData = selectedProject?.categories.find(
         (column) => column.id === sourceColumnId
       );
-      const destinationColumnData = data.find(
+      const destinationColumnData = selectedProject?.categories.find(
         (column) => column.id === destinationColumnId
       );
 
@@ -156,21 +159,21 @@ export default function Project() {
       // Ensure the card index in source column is valid
       if (
         movedCardIndexInSourceColumn < 0 ||
-        movedCardIndexInSourceColumn >= sourceColumnData.cards.length
+        movedCardIndexInSourceColumn >= sourceColumnData.tasks.length
       ) {
         console.error("Invalid card index in source column");
         return;
       }
 
       // Extract the card to move
-      const cardToMove = sourceColumnData.cards[movedCardIndexInSourceColumn];
+      const cardToMove = sourceColumnData.tasks[movedCardIndexInSourceColumn];
 
       // Remove the card from the source column
-      const updatedSourceCards = [...sourceColumnData.cards];
+      const updatedSourceCards = [...sourceColumnData.tasks];
       updatedSourceCards.splice(movedCardIndexInSourceColumn, 1);
 
       // Insert the card into the destination column at the specified index
-      const updatedDestinationCards = [...destinationColumnData.cards];
+      const updatedDestinationCards = [...destinationColumnData.tasks];
       const destinationIndex = Math.min(
         movedCardIndexInDestinationColumn,
         updatedDestinationCards.length
@@ -178,25 +181,55 @@ export default function Project() {
       updatedDestinationCards.splice(destinationIndex, 0, cardToMove);
 
       // Update the state with the modified source and destination columns
-      const newData = data.map((column) => {
+      const newData = selectedProject?.categories.map((column) => {
         if (column.id === sourceColumnId) {
-          return { ...column, cards: updatedSourceCards };
+          return {
+            ...column,
+            tasks: updatedSourceCards,
+          };
         }
         if (column.id === destinationColumnId) {
-          return { ...column, cards: updatedDestinationCards };
+          return {
+            ...column,
+            tasks: updatedDestinationCards,
+          };
         }
         return column;
       });
 
-      setData(newData);
+      if (newData) {
+        changePosition(
+          sourceColumnId,
+          destinationColumnId,
+          destinationIndex - 1,
+          false,
+          cardToMove.id
+        );
+      }
+
+      const newProjectData = projectsData?.map((project) => {
+        if (project.id === selectedProjectId) {
+          return {
+            ...project,
+            categories: newData || [],
+          };
+        }
+        return project;
+      });
+
+      setProjectsData(newProjectData || null);
     },
-    [data]
+    [projectsData, selectedProjectId]
   );
 
   const reorderCard = useCallback(
     ({ columnId, startIndex, finishIndex, cardId }: ReorderCardProps) => {
       // Ensure the startIndex and finishIndex are different; no need to reorder if they’re the same
       if (startIndex === finishIndex) return;
+
+      const selectedProject = projectsData?.find(
+        (project) => project.id === selectedProjectId
+      );
 
       // Find the source column by ID
       const sourceColumnData = selectedProject?.categories.find(
@@ -225,16 +258,8 @@ export default function Project() {
 
         // Send request to database
         if (selectedProject?.categories.find((col) => col.id === columnId)) {
-          changeCardPosition(columnId, columnId, cardId, finishIndex);
+          changePosition(columnId, columnId, finishIndex, false, cardId);
         }
-
-        setSelectedProject((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            categories: newData || [],
-          };
-        });
 
         setProjectsData((prev) => {
           return (
@@ -259,6 +284,10 @@ export default function Project() {
       // Early return if there are no drop targets in the current location
       const destination = location.current.dropTargets.length;
       if (!destination) return;
+
+      const selectedProject = projectsData?.find(
+        (project) => project.id === selectedProjectId
+      );
 
       if (source.data.type === "card" && source.data.cardId) {
         // Retrieve the ID of the card being dragged
@@ -316,6 +345,7 @@ export default function Project() {
             closestEdgeOfTarget: null,
             axis: "vertical",
           });
+          console.log("destinationIndex =", destinationIndex);
 
           moveCard({
             movedCardIndexInSourceColumn: indexOfSource!,
@@ -379,43 +409,52 @@ export default function Project() {
       }
 
       if (source.data.type === "column" && source.data.columnId) {
-        const sourceIndex = data.findIndex(
+        const sourceIndex = selectedProject?.categories.findIndex(
           (col) => col.id === source.data.columnId
         );
-        const destinationIndex = data.findIndex(
+
+        const destinationIndex = selectedProject?.categories.findIndex(
           (col) => col.id === location.current.dropTargets[0].data.columnId
         );
 
         if (sourceIndex !== -1 && destinationIndex !== -1) {
-          reorderColumn({ sourceIndex, destinationIndex });
+          reorderColumn({
+            sourceIndex,
+            destinationIndex,
+            sourceColumnId: source.data.columnId,
+            destinationColumnId: location.current.dropTargets[0].data.columnId,
+          });
         }
       }
     },
     [projectsData, reorderCard]
   );
 
-  async function changeCardPosition(
+  async function changePosition(
     sourceColumnId: string,
     destinationColumnId: string,
-    taskId: string,
-    newPosition: number
+    newPosition: number,
+    isCategoryUpdated?: boolean,
+    taskId?: string
   ) {
-    const projectId = selectedProject?.id;
-    if (!projectId) {
+    if (!selectedProjectId) {
       return toast.error("Something went wrong");
     }
 
     try {
-      const res = await fetch("/api/task/update-position", {
-        method: "POST",
-        body: JSON.stringify({
-          projectId,
-          sourceColumnId,
-          destinationColumnId,
-          taskId,
-          newPosition,
-        }),
-      });
+      const res = await fetch(
+        `/api/${isCategoryUpdated ? "category" : "task"}/update-position`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            projectId: selectedProjectId,
+            sourceColumnId,
+            destinationColumnId,
+            taskId,
+            newPosition,
+          }),
+        }
+      );
 
       const data = await res.json();
       if (!res.ok) {
@@ -434,11 +473,15 @@ export default function Project() {
   }, [handleDrop]);
 
   useEffect(() => {
-    if (projects) {
+    if (projects && projects?.length > 0) {
       setProjectsData(projects);
-      setSelectedProject(projects[0]);
+      setSelectedProjectId(projects[0].id);
     }
   }, [projects]);
+
+  const selectedProject = projectsData?.find(
+    (project) => project.id === selectedProjectId
+  );
 
   return (
     <div className="w-full p-6 select-none bg-gray-950 flex flex-col min-h-screen gap-4 text-white">
@@ -446,6 +489,7 @@ export default function Project() {
         <FormComponent
           projectsData={projectsData}
           setProjectsData={setProjectsData}
+          projectId={selectedProjectId}
         />
         <div className="flex gap-4">
           {projectsData?.map((project) => {
@@ -453,7 +497,7 @@ export default function Project() {
               <h1
                 className="border-muted-foreground hover:border-border border-[1px] px-3 py-1 rounded cursor-pointer"
                 key={project.id}
-                onClick={() => setSelectedProject(project)}
+                onClick={() => setSelectedProjectId(project.id)}
               >
                 {project.name}
               </h1>
@@ -468,7 +512,6 @@ export default function Project() {
             <CategoryColumn
               key={category.id}
               title={category.title}
-              tasks={category.tasks}
               id={category.id}
               projectsData={projectsData}
               setProjectsData={setProjectsData}
@@ -484,12 +527,16 @@ export default function Project() {
 interface FormProps {
   projectsData: ProjectState[] | null;
   setProjectsData: Dispatch<SetStateAction<ProjectState[] | null>>;
+  projectId?: string | null;
 }
 
-function FormComponent({ projectsData, setProjectsData }: FormProps) {
+function FormComponent({
+  projectsData,
+  setProjectsData,
+  projectId,
+}: FormProps) {
   const [columnTitle, setColumnTitle] = useState<string>("");
   const [projectTitle, setProjectTitle] = useState<string>("");
-  const [projectExists, setProjectExists] = useState<boolean>(false);
 
   async function createProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -502,7 +549,7 @@ function FormComponent({ projectsData, setProjectsData }: FormProps) {
     formData.append("name", projectTitle);
 
     try {
-      const res = await fetch("/api/project/create-project", {
+      const res = await fetch("/api/project/create", {
         method: "POST",
         body: formData,
       });
@@ -524,48 +571,94 @@ function FormComponent({ projectsData, setProjectsData }: FormProps) {
     }
   }
 
+  async function createCategory(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!projectId) {
+      return toast.error("No Project Selected");
+    }
+    if (!columnTitle) {
+      return toast.error("Category title is required");
+    }
+
+    const formData = new FormData();
+    formData.append("title", columnTitle);
+    formData.append("projectId", projectId);
+
+    try {
+      const res = await fetch("/api/category/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message);
+      } else {
+        toast.success(data.message);
+        setColumnTitle("");
+        // Find the project that matches projectId
+        setProjectsData((prev) => {
+          return (
+            prev?.map((project) => {
+              if (project.id === projectId) {
+                return {
+                  ...project,
+                  categories: [...project.categories, data.category],
+                };
+              }
+              return project;
+            }) || []
+          );
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return (
     <div className="flex items-center gap-6">
-      {projectExists ? (
-        <form className="flex flex-col gap-4 p-4 rounded-lg shadow-md border-muted-foreground border-[1px]">
-          <h1>Create Category</h1>
-          <Input
-            type="text"
-            placeholder="Enter Category"
-            value={columnTitle}
-            onChange={(e) => setColumnTitle(e.target.value)}
-            className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
-          />
-          <Button
-            type="submit"
-            variant="secondary"
-            className="px-4 py-2 text-gray-200 bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
-          >
-            Create Category
-          </Button>
-        </form>
-      ) : (
-        <form
-          className="flex flex-col gap-4 p-4 rounded-lg shadow-md border-muted-foreground border-[1px]"
-          onSubmit={createProject}
+      <form
+        className="flex flex-col gap-4 p-4 rounded-lg shadow-md border-muted-foreground border-[1px]"
+        onSubmit={createCategory}
+      >
+        <h1>Create Category</h1>
+        <Input
+          type="text"
+          placeholder="Enter Category"
+          value={columnTitle}
+          onChange={(e) => setColumnTitle(e.target.value)}
+          className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
+        />
+        <Button
+          type="submit"
+          variant="secondary"
+          className="px-4 py-2 text-gray-200 bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
         >
-          <h1>Create Project</h1>
-          <Input
-            type="text"
-            placeholder="Enter Category"
-            value={projectTitle}
-            onChange={(e) => setProjectTitle(e.target.value)}
-            className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
-          />
-          <Button
-            type="submit"
-            variant="secondary"
-            className="px-4 py-2 text-gray-200 bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
-          >
-            Create Project
-          </Button>
-        </form>
-      )}
+          Create Category
+        </Button>
+      </form>
+      <form
+        className="flex flex-col gap-4 p-4 rounded-lg shadow-md border-muted-foreground border-[1px]"
+        onSubmit={createProject}
+      >
+        <h1>Create Project</h1>
+        <Input
+          type="text"
+          placeholder="Enter Project Name"
+          value={projectTitle}
+          onChange={(e) => setProjectTitle(e.target.value)}
+          className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
+        />
+        <Button
+          type="submit"
+          variant="secondary"
+          className="px-4 py-2 text-gray-200 bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
+        >
+          Create Project
+        </Button>
+      </form>
     </div>
   );
 }

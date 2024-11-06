@@ -5,40 +5,48 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const formData = await request.formData();
+  const body = await request.formData();
 
-  const name = formData.get("title") as string;
-  // const description = formData.get("description") as string;
-  const categoryId = formData.get("categoryId") as string;
+  const title = body.get("title") as string;
+  const projectId = body.get("projectId") as string;
 
-  if (!name || !categoryId) {
+  if (!title || !projectId) {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
   }
 
   const session = await getServerSession(authOptions);
+
   try {
     const user = await getUserData(session);
-
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const tasks = await prisma.task.findMany({
+    const projectCategories = await prisma.category.count({
       where: {
-        categoryId,
+        projectId,
       },
     });
 
-    const task = await prisma.task.create({
+    const category = await prisma.category.create({
       data: {
-        title: name,
-        // description,
-        categoryId,
-        position: tasks ? (tasks.length + 1) * 10 : 10,
+        title,
+        projectId,
+        position: projectCategories ? (projectCategories + 1) * 10 : 10,
       },
     });
 
-    return NextResponse.json({ message: "Task created successfully", task });
+    if (!category) {
+      return NextResponse.json(
+        { message: "Something went wrong" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      message: "Category created successfully",
+      category,
+    });
   } catch (error) {
     return NextResponse.json(
       { message: "Something went wrong" },

@@ -26,18 +26,8 @@ import { Button } from "@/components/ui/button";
 import { ProjectState } from "./Project";
 import { toast } from "sonner";
 
-interface TaskProps {
-  id: string;
-  title: string;
-  description?: string;
-  priority: number;
-  isCompleted: boolean;
-  categoryId: string;
-}
-
 interface ColumnProps {
   title: string;
-  tasks: TaskProps[];
   id: string;
   projectId?: string;
   projectsData: ProjectState[] | null;
@@ -45,7 +35,6 @@ interface ColumnProps {
 }
 
 export default function CategoryColumn({
-  tasks,
   title,
   id,
   projectId,
@@ -125,7 +114,7 @@ export default function CategoryColumn({
       formData.append("title", taskTitle);
       formData.append("categoryId", id);
 
-      const res = await fetch("/api/task/create-task", {
+      const res = await fetch("/api/task/create", {
         method: "POST",
         body: formData,
       });
@@ -137,29 +126,22 @@ export default function CategoryColumn({
         setTaskTitle("");
 
         // Find the project that matches projectId
-        setProjectsData((prev) => {
-          return (
-            prev?.map((project) => {
-              if (project.id === projectId) {
-                // Find the category within the project
-                const updatedCategories = project.categories.map((category) => {
-                  if (category.id === id) {
-                    // Update the tasks in the category
-                    return {
-                      ...category,
-                      tasks: [...category.tasks, data.task],
-                    };
-                  }
-                  return category;
-                });
-
-                // Return a new project object with the updated categories
-                return { ...project, categories: updatedCategories };
-              }
-              return project; // If project doesn't match, return it unchanged
-            }) || []
-          ); // In case prev is undefined, return an empty array
+        const selectedProject = projectsData?.find(
+          (project) => project.id === projectId
+        );
+        selectedProject?.categories.forEach((category) => {
+          if (category.id === id) {
+            category.tasks?.push(data.task);
+          }
         });
+        if (selectedProject) {
+          setProjectsData(
+            (prev) =>
+              prev?.map((project) => {
+                return project.id === projectId ? selectedProject : project;
+              }) || null
+          );
+        }
       }
     } catch (error) {
       toast.error("Something went wrong");
@@ -192,7 +174,7 @@ export default function CategoryColumn({
       <div className="space-y-2 flex-1">
         {projectsData?.map((project) => {
           return project.categories.map((category) => {
-            if (category.id === id) {
+            if (category.id === id && category.tasks) {
               return category.tasks.map((task) => (
                 <TaskCard
                   key={task.id}

@@ -1,7 +1,6 @@
 import { getUserData } from "@/actions/getUserData";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
-import { AArrowDown } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 

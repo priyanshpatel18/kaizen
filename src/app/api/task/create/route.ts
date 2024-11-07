@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         title: name,
         // description,
         categoryId,
-        position: tasks ? (tasks + 1) * 10 : 10,
+        position: tasks ? (tasks + 1) * 1000 : 1000,
       },
     });
 

@@ -6,11 +6,13 @@ import { NextResponse } from "next/server";
 
 export async function PUT(request: Request) {
   const body = await request.json();
-  const projectId = body.projectId;
-  const sourceColumnId = body.sourceColumnId;
-  const destinationColumnId = body.destinationColumnId;
-  const taskId = body.taskId;
-  const newPosition = body.newPosition;
+  const {
+    projectId,
+    sourceColumnId,
+    destinationColumnId,
+    taskId,
+    newPosition,
+  } = body;
 
   if (
     !projectId ||
@@ -23,7 +25,7 @@ export async function PUT(request: Request) {
 
   const session = await getServerSession(authOptions);
   try {
-    const user = getUserData(session);
+    const user = await getUserData(session);
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
@@ -63,87 +65,119 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: "Task not found" }, { status: 404 });
     }
 
-    // Sort tasks in the destination column by position
     const sortedDestinationTasks = [...destinationColumn.tasks].sort(
       (a, b) => a.position - b.position
     );
-    if (newPosition === -1) {
-      await prisma.task.update({
-        where: {
-          id: taskId,
-        },
-        data: {
-          position: (sortedDestinationTasks.length + 1) * 10,
-          categoryId: destinationColumnId,
-        },
-      });
-      return NextResponse.json(
-        { message: "Position updated successfully" },
-        { status: 200 }
-      );
-    }
-
-    // Ensure the new position is within bounds
-    if (newPosition < 0 || newPosition > sortedDestinationTasks.length) {
+    if (newPosition > sortedDestinationTasks.length) {
       return NextResponse.json(
         { message: "Invalid position" },
         { status: 400 }
       );
     }
 
-    let updatedPosition;
-
-    if (
+    let updatedPosition: number;
+    if (newPosition === -1) {
+      updatedPosition = (sortedDestinationTasks.length + 1) * 1000;
+    } else if (
       !sortedDestinationTasks[newPosition + 1] ||
       !sortedDestinationTasks[newPosition + 1].position
     ) {
-      // Missing Below
       updatedPosition =
-        (sortedDestinationTasks[newPosition].position * 2 + 10) / 2;
+        (sortedDestinationTasks[newPosition].position * 2 + 1000) / 2;
     } else if (
       !sortedDestinationTasks[newPosition - 1] ||
       !sortedDestinationTasks[newPosition - 1].position
     ) {
-      // Missing Above
       updatedPosition = sortedDestinationTasks[newPosition].position / 2;
     } else {
-      // Both Above and Below
-      if (task.position > sortedDestinationTasks[newPosition].position) {
-        updatedPosition =
-          (sortedDestinationTasks[newPosition].position +
-            sortedDestinationTasks[newPosition - 1].position) /
-          2;
-      } else {
-        updatedPosition =
-          (sortedDestinationTasks[newPosition + 1].position +
-            sortedDestinationTasks[newPosition].position) /
-          2;
-      }
+      updatedPosition =
+        task.position > sortedDestinationTasks[newPosition].position
+          ? (sortedDestinationTasks[newPosition].position +
+              sortedDestinationTasks[newPosition - 1].position) /
+            2
+          : (sortedDestinationTasks[newPosition + 1].position +
+              sortedDestinationTasks[newPosition].position) /
+            2;
     }
 
-    // Ensure updated position is within valid bounds
-    updatedPosition = Math.max(
-      updatedPosition,
-      sortedDestinationTasks[0].position + 0.1
-    );
-    updatedPosition = Math.min(
-      updatedPosition,
-      sortedDestinationTasks[sortedDestinationTasks.length - 1].position - 0.1
-    );
+    const transaction = await prisma.$transaction(async (prisma) => {
+      const conflicts = sortedDestinationTasks.filter(
+        (t) => t.position === updatedPosition
+      );
 
-    await prisma.task.update({
-      where: { id: task.id },
-      data: {
-        position: updatedPosition,
-        categoryId: destinationColumnId,
-      },
+      if (conflicts.length > 0 || destinationColumn.reorderCount + 1 > 10) {
+        const reorderCount = await prisma.category.update({
+          where: { id: destinationColumnId },
+          data: { reorderCount: 0 },
+        });
+
+        let newSortedDestinationTasks = sortedDestinationTasks.map((task) => {
+          if (task.id === taskId) task.position = updatedPosition;
+          return task;
+        });
+
+        if (conflicts.length === 0) {
+          newSortedDestinationTasks = newSortedDestinationTasks.sort(
+            (a, b) => a.position - b.position
+          );
+        }
+
+        const taskUpdates = newSortedDestinationTasks.map((task, index) =>
+          prisma.task.update({
+            where: { id: task.id },
+            data: {
+              position: (index + 1) * 1000,
+              categoryId: destinationColumnId,
+            },
+          })
+        );
+
+        await Promise.all(taskUpdates);
+
+        if (!reorderCount || !taskUpdates) {
+          return null;
+        }
+
+        if (conflicts.length > 0) {
+          throw new Error("Task position conflict");
+        }
+
+        return reorderCount;
+      }
+
+      const taskUpdate = await prisma.task.update({
+        where: { id: task.id },
+        data: {
+          position: updatedPosition,
+          categoryId: destinationColumnId,
+        },
+      });
+
+      const reorderCount = await prisma.category.update({
+        where: { id: destinationColumnId },
+        data: {
+          reorderCount: { increment: 1 },
+        },
+      });
+
+      if (!taskUpdate || !reorderCount) return null;
+
+      return reorderCount;
     });
+
+    if (!transaction) {
+      return NextResponse.json(
+        { message: "Something went wrong, please try again" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { message: "Position updated successfully" },
       { status: 200 }
     );
   } catch (error) {
+    console.error("Error in PUT request:", error);
     return NextResponse.json(
       { message: "Error updating task position" },
       { status: 500 }

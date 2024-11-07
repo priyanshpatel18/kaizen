@@ -89,14 +89,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    updatedPosition = Math.max(
-      updatedPosition,
-      project.categories[0].position + 0.1
-    );
-    updatedPosition = Math.min(
-      updatedPosition,
-      project.categories[project.categories.length - 1].position - 0.1
-    );
+    
 
     await prisma.category.update({
       where: {

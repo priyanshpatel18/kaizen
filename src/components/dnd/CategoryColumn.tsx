@@ -134,6 +134,7 @@ export default function CategoryColumn({
             category.tasks?.push(data.task);
           }
         });
+
         if (selectedProject) {
           setProjectsData(
             (prev) =>

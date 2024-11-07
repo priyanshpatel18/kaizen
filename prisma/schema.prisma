@@ -55,12 +55,13 @@ model Project {
 }
 
 model Category {
-  id        String  @id @default(uuid())
-  title     String
-  tasks     Task[]
-  position  Float   @default(10)
-  projectId String
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id           String  @id @default(uuid())
+  title        String
+  tasks        Task[]
+  position     Float   @default(1000)
+  projectId    String
+  reorderCount Int     @default(0)
+  project      Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Task {
@@ -70,7 +71,7 @@ model Task {
   priority    Int           @default(0)
   isCompleted Boolean       @default(false)
   categoryId  String
-  position    Float         @default(10)
+  position    Float         @default(1000)
   category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   labelId     String?
   label       Label?        @relation(fields: [labelId], references: [id], onDelete: Cascade)

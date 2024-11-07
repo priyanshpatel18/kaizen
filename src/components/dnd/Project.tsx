@@ -310,6 +310,7 @@ export default function Project() {
         );
 
         if (location.current.dropTargets.length === 1) {
+          // Tasks are dropped in the different column
           const [destinationColumnRecord] = location.current.dropTargets;
 
           // Retrieve the ID of the destination column

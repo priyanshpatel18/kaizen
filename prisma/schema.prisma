@@ -24,11 +24,12 @@ model User {
   updatedAt  DateTime @updatedAt
   token      String?
 
-  accounts    Account[]
-  projects    Project[]
-  comments    Comment[]
-  activityLog ActivityLog[]
-  labels      Label[]
+  accounts         Account[]
+  projects         Project[]
+  comments         Comment[]
+  activityLog      ActivityLog[]
+  labels           Label[]
+  pushSubscription PushSubscription[]
 }
 
 model Account {
@@ -138,4 +139,16 @@ enum ACTIONS {
   CREATE_COMMENT
   UPDATE_COMMENT
   DELETE_COMMENT
+}
+
+model PushSubscription {
+  id             String   @id @default(uuid())
+  endpoint       String
+  expirationTime Int?
+  p256dh         String
+  auth           String
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

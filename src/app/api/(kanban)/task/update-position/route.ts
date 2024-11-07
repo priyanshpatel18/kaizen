@@ -105,7 +105,7 @@ export async function PUT(request: Request) {
         (t) => t.position === updatedPosition
       );
 
-      if (conflicts.length > 0 || destinationColumn.reorderCount + 1 > 10) {
+      if (conflicts.length > 0 || destinationColumn.reorderCount + 1 > 20) {
         const reorderCount = await prisma.category.update({
           where: { id: destinationColumnId },
           data: { reorderCount: 0 },

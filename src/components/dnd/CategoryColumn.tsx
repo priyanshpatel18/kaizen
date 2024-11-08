@@ -18,20 +18,20 @@ import {
   useState,
 } from "react";
 // @ts-ignore
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Project } from "@/store";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
+import { toast } from "sonner";
 import invariant from "tiny-invariant";
 import TaskCard from "./TaskCard";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ProjectState } from "./Project";
-import { toast } from "sonner";
 
 interface ColumnProps {
   title: string;
   id: string;
   projectId?: string;
-  projectsData: ProjectState[] | null;
-  setProjectsData: Dispatch<SetStateAction<ProjectState[] | null>>;
+  projectsData: Project[] | null;
+  setProjectsData: Dispatch<SetStateAction<Project[] | null>>;
 }
 
 export default function CategoryColumn({

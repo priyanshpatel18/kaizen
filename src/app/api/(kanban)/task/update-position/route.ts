@@ -79,6 +79,7 @@ export async function PUT(request: Request) {
     if (newPosition === -1) {
       updatedPosition = (sortedDestinationTasks.length + 1) * 1000;
     } else if (
+      // Missin Below
       !sortedDestinationTasks[newPosition + 1] ||
       !sortedDestinationTasks[newPosition + 1].position
     ) {

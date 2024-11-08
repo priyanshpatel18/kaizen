@@ -12,12 +12,12 @@ import {
   useEffect,
   useState,
 } from "react";
-// @ts-ignore
-import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { Project as ProjectState, useStore } from "@/store";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import CategoryColumn from "./CategoryColumn";
+import { useProjectDetails } from "@/hooks/useProjectDetails";
 
 interface HandleDropProps {
   source: {
@@ -50,29 +50,6 @@ interface MoveCardProps {
   sourceColumnId: string;
   destinationColumnId: string;
   movedCardIndexInDestinationColumn?: number;
-}
-
-export interface ProjectState {
-  id: string;
-  name: string;
-  userId: string;
-  categories: ProjectCategory[];
-}
-
-interface ProjectCategory {
-  id: string;
-  title: string;
-  projectId: string;
-  tasks: Tasks[];
-}
-
-interface Tasks {
-  id: string;
-  title: string;
-  description?: string;
-  priority: number;
-  isCompleted: boolean;
-  categoryId: string;
 }
 
 export default function Project() {
@@ -197,11 +174,13 @@ export default function Project() {
         return column;
       });
 
+      const isLast = destinationColumnData.tasks.length === destinationIndex;
+
       if (newData) {
         changePosition(
           sourceColumnId,
           destinationColumnId,
-          destinationIndex - 1,
+          isLast ? destinationIndex - 1 : destinationIndex,
           false,
           cardToMove.id
         );
@@ -337,22 +316,23 @@ export default function Project() {
             return;
           }
 
+          const destinationColumn = selectedProject?.categories.find(
+            (col) => col.id === destinationColumnId
+          );
+
+          // Dropped in the empty space in the column
           const destinationIndex = getReorderDestinationIndex({
             startIndex: indexOfSource!,
-            indexOfTarget:
-              selectedProject?.categories.findIndex(
-                (col) => col.id === destinationColumnId
-              )! - 1,
+            indexOfTarget: Number(destinationColumn?.tasks.length) || -1,
             closestEdgeOfTarget: null,
             axis: "vertical",
           });
-          console.log("destinationIndex =", destinationIndex);
 
           moveCard({
             movedCardIndexInSourceColumn: indexOfSource!,
             sourceColumnId,
             destinationColumnId,
-            movedCardIndexInDestinationColumn: destinationIndex + 1,
+            movedCardIndexInDestinationColumn: destinationIndex,
           });
         }
         if (location.current.dropTargets.length === 2) {

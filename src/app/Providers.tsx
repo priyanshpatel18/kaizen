@@ -16,7 +16,7 @@ import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { ReactNode, useState } from "react";
 
-const authRoutes = ["/onboarding", "/sign-in", "/sign-up", "/forgot-password"];
+const authRoutes = ["/onboarding", "/sign-in", "/sign-up", "/forgot-password", "/test"];
 
 export default function Providers({
   children,

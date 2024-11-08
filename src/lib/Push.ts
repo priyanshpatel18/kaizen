@@ -1,5 +1,3 @@
-import { Dispatch, SetStateAction } from "react";
-import { toast } from "sonner";
 
 const SERVICE_WORKER_FILE_PATH = "/sw.js";
 

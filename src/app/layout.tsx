@@ -7,7 +7,6 @@ import "./globals.css";
 import Providers from "./Providers";
 
 // Setup Font
-const manrope = Manrope({ subsets: ["latin"] });
 const geistSans = localFont({
   src: "../../public/fonts/GeistVF.woff",
   variable: "--font-geist-sans",

@@ -16,7 +16,10 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json({ message: "Please sign in first to continue" }, { status: 401 });
+      return NextResponse.json(
+        { message: "Please sign in first to continue" },
+        { status: 401 }
+      );
     }
 
     const user = await prisma.user.findFirst({
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
     let public_id;
 
     if (profile) {
-      if (user.profile && user.publicId) {
+      if (user.profilePicture && user.publicId) {
         await deleteFromCloudinary(user.publicId);
       }
 
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: {
         name,
-        profile: secure_url,
+        profilePicture: secure_url,
         publicId: public_id,
       },
     });

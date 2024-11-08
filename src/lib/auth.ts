@@ -1,32 +1,33 @@
 import OnboardingTemplate from "@/components/emailTemplates/OnboardingTemplate";
 import prisma from "@/db";
 import { compare } from "bcrypt";
-import { AuthOptions, Session } from "next-auth";
+import { AuthOptions, DefaultUser, Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { generateJwtToken } from "./jwt";
 import { sendMail } from "./resend";
 
-export interface session extends Session {
-  user: {
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      token: string;
+      profilePicture: string | null;
+    };
+  }
+  interface User extends DefaultUser {
     id: string;
-    email: string;
-    name: string;
-    token: string;
-  };
+    profilePicture: string | null;
+  }
 }
 
 interface token extends JWT {
   uid: string;
   jwtToken: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  token: string;
+  profilePicture: string | null;
 }
 
 export const authOptions: AuthOptions = {
@@ -63,16 +64,17 @@ export const authOptions: AuthOptions = {
               create: {
                 email,
                 name,
-                profile: picture,
+                profilePicture: picture,
                 isVerified: true,
               },
             },
           },
+          include: { user: true },
         });
 
         await sendMail(email, "Welcome to Kaizen", OnboardingTemplate());
 
-        return newAccount;
+        return newAccount.user;
       },
     }),
     CredentialsProvider({
@@ -117,9 +119,8 @@ export const authOptions: AuthOptions = {
           user?.id as string,
           user?.email as string,
           user?.name as string
+          // ima
         );
-        console.log(token);
-        
 
         await prisma.user.update({
           where: { id: user.id },
@@ -128,17 +129,19 @@ export const authOptions: AuthOptions = {
 
         newToken.uid = user.id;
         newToken.token = token;
+        newToken.profilePicture = user.profilePicture;
       }
       return newToken;
     },
     session: async ({ session, token }) => {
-      const newSession: session = session as session;
+      const newSession: Session = session as Session;
 
       if (newSession.user && token.uid) {
         newSession.user.id = token.uid as string;
         newSession.user.email = session.user?.email ?? "";
         newSession.user.name = session.user?.name ?? "";
         newSession.user.token = token.token as string;
+        newSession.user.profilePicture = token.profilePicture as string;
       }
       return newSession!;
     },

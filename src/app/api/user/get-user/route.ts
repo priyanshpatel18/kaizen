@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       id: user.id,
       token: user.token,
       name: user.name,
-      profile: user.profile,
+      profilePicture: user.profilePicture,
     };
     return NextResponse.json({ user: userData }, { status: 200 });
   } catch (error) {

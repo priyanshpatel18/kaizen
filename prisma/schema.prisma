@@ -13,16 +13,16 @@ enum Provider {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  email      String?  @unique
-  password   String?
-  isVerified Boolean  @default(false)
-  name       String?
-  profile    String?
-  publicId   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  token      String?
+  id             String   @id @default(uuid())
+  email          String?  @unique
+  password       String?
+  isVerified     Boolean  @default(false)
+  name           String?
+  profilePicture String?
+  publicId       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  token          String?
 
   accounts         Account[]
   projects         Project[]
@@ -30,29 +30,49 @@ model User {
   activityLog      ActivityLog[]
   labels           Label[]
   pushSubscription PushSubscription[]
+  userWorkspace    UserWorkspace[]
 }
 
 model Account {
   id                String   @id @default(uuid())
   provider          Provider
   providerAccountId String?
-  userId            String?
-  user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken       String?
   refreshToken      String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
 
+model UserWorkspace {
+  id          String    @id @default(uuid())
+  userId      String
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Workspace {
+  id            String          @id @default(uuid())
+  title         String
+  projects      Project[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  userWorkspace UserWorkspace[]
+}
+
 model Project {
   id          String        @id @default(uuid())
   name        String
-  userId      String?
-  User        User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   activityLog ActivityLog[]
   categories  Category[]
+  workspace   Workspace?    @relation(fields: [workspaceId], references: [id])
+  workspaceId String?
 }
 
 model Category {

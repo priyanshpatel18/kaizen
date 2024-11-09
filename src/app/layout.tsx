@@ -1,19 +1,15 @@
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { siteConfig } from "@/config/siteConfig";
-import { Manrope } from "next/font/google";
-import localFont from "next/font/local";
+import { Source_Sans_3 } from "next/font/google";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import "./globals.css";
 import Providers from "./Providers";
 
 // Setup Font
-const geistSans = localFont({
-  src: "../../public/fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
-const geistMono = localFont({
-  src: "../../public/fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
+const sourceSansPro = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-source-sans-pro",
 });
 
 // Metadata
@@ -30,12 +26,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${sourceSansPro.className}`}>
         {/* <GoogleAnalytics /> */}
-        <Providers defaultOpen={defaultOpen}>
-          {children}
-          <Toaster />
-        </Providers>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <Providers>
+            {children}
+            <Toaster />
+          </Providers>
+        </SidebarProvider>
       </body>
     </html>
   );

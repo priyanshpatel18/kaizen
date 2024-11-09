@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   const body = await request.formData();
 
-  const title = body.get("title") as string;
+  const name = body.get("name") as string;
   const projectId = body.get("projectId") as string;
 
-  if (!title || !projectId) {
+  if (!name || !projectId) {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
   }
 
@@ -30,11 +30,19 @@ export async function POST(request: NextRequest) {
 
     const category = await prisma.category.create({
       data: {
-        title,
+        name,
         projectId,
         position: projectCategories ? (projectCategories + 1) * 10 : 10,
       },
+      include: {
+        tasks: true,
+      },
     });
+
+    const categoryResponse = {
+      ...category,
+      tasks: category.tasks || [],
+    };
 
     if (!category) {
       return NextResponse.json(
@@ -45,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: "Category created successfully",
-      category,
+      category: categoryResponse,
     });
   } catch (error) {
     return NextResponse.json(

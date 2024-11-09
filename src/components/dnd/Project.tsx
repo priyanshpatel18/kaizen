@@ -1,5 +1,7 @@
 "use client";
 
+import { useProjects } from "@/hooks/useProjects";
+import { Project as ProjectState } from "@/store";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -12,12 +14,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Project as ProjectState, useStore } from "@/store";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import CategoryColumn from "./CategoryColumn";
-import { useProjectDetails } from "@/hooks/useProjectDetails";
 
 interface HandleDropProps {
   source: {
@@ -53,7 +53,7 @@ interface MoveCardProps {
 }
 
 export default function Project() {
-  const { projects } = useProjectDetails();
+  const { projects } = useProjects();
   const [projectsData, setProjectsData] = useState<ProjectState[] | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
@@ -301,7 +301,7 @@ export default function Project() {
               startIndex: indexOfSource!,
               indexOfTarget:
                 selectedProject?.categories.findIndex(
-                  (col) => col.id === destinationColumnId
+                  (category) => category.id === destinationColumnId
                 )! - 1,
               closestEdgeOfTarget: null,
               axis: "vertical",
@@ -468,6 +468,7 @@ export default function Project() {
     <div className="w-full p-6 select-none bg-gray-950 flex flex-col min-h-screen gap-4 text-white">
       <div className="flex gap-10 items-start">
         <FormComponent
+          setSelectedProjectId={setSelectedProjectId}
           projectsData={projectsData}
           setProjectsData={setProjectsData}
           projectId={selectedProjectId}
@@ -476,7 +477,9 @@ export default function Project() {
           {projectsData?.map((project) => {
             return (
               <h1
-                className="border-muted-foreground hover:border-border border-[1px] px-3 py-1 rounded cursor-pointer"
+                className={`${
+                  selectedProjectId === project.id && "text-black bg-white"
+                } border-muted-foreground hover:border-border border-[1px] px-3 py-1 rounded cursor-pointer`}
                 key={project.id}
                 onClick={() => setSelectedProjectId(project.id)}
               >
@@ -492,7 +495,7 @@ export default function Project() {
           return (
             <CategoryColumn
               key={category.id}
-              title={category.title}
+              name={category.name}
               id={category.id}
               projectsData={projectsData}
               setProjectsData={setProjectsData}
@@ -506,28 +509,30 @@ export default function Project() {
 }
 
 interface FormProps {
+  setSelectedProjectId: Dispatch<SetStateAction<string | null>>;
   projectsData: ProjectState[] | null;
   setProjectsData: Dispatch<SetStateAction<ProjectState[] | null>>;
   projectId?: string | null;
 }
 
 function FormComponent({
+  setSelectedProjectId,
   projectsData,
   setProjectsData,
   projectId,
 }: FormProps) {
-  const [columnTitle, setColumnTitle] = useState<string>("");
-  const [projectTitle, setProjectTitle] = useState<string>("");
+  const [columnName, setColumnName] = useState<string>("");
+  const [projectName, setProjectName] = useState<string>("");
 
   async function createProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!projectTitle) {
+    if (!projectName) {
       return toast.error("Project title is required");
     }
 
     const formData = new FormData();
-    formData.append("name", projectTitle);
+    formData.append("name", projectName);
 
     try {
       const res = await fetch("/api/project/create", {
@@ -540,12 +545,14 @@ function FormComponent({
         toast.error(data.message);
       } else {
         toast.success(data.message);
-        setProjectTitle("");
+        setProjectName("");
         if (projectsData) {
           setProjectsData([...projectsData, data.project]);
+          setSelectedProjectId(data.project.id);
           return;
         }
         setProjectsData([data.project]);
+        setSelectedProjectId(data.project.id);
       }
     } catch (error) {
       console.log(error);
@@ -558,12 +565,12 @@ function FormComponent({
     if (!projectId) {
       return toast.error("No Project Selected");
     }
-    if (!columnTitle) {
+    if (!columnName) {
       return toast.error("Category title is required");
     }
 
     const formData = new FormData();
-    formData.append("title", columnTitle);
+    formData.append("name", columnName);
     formData.append("projectId", projectId);
 
     try {
@@ -577,7 +584,7 @@ function FormComponent({
         toast.error(data.message);
       } else {
         toast.success(data.message);
-        setColumnTitle("");
+        setColumnName("");
         // Find the project that matches projectId
         setProjectsData((prev) => {
           return (
@@ -608,8 +615,8 @@ function FormComponent({
         <Input
           type="text"
           placeholder="Enter Category"
-          value={columnTitle}
-          onChange={(e) => setColumnTitle(e.target.value)}
+          value={columnName}
+          onChange={(e) => setColumnName(e.target.value)}
           className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
         />
         <Button
@@ -628,8 +635,8 @@ function FormComponent({
         <Input
           type="text"
           placeholder="Enter Project Name"
-          value={projectTitle}
-          onChange={(e) => setProjectTitle(e.target.value)}
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
           className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
         />
         <Button

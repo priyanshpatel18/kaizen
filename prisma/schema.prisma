@@ -55,7 +55,7 @@ model UserWorkspace {
 
 model Workspace {
   id            String          @id @default(uuid())
-  title         String
+  name          String
   projects      Project[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -77,7 +77,7 @@ model Project {
 
 model Category {
   id           String  @id @default(uuid())
-  title        String
+  name         String
   tasks        Task[]
   position     Float   @default(1000)
   projectId    String

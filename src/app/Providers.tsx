@@ -1,63 +1,49 @@
 "use client";
 
 import AppSidebar from "@/components/sidebar/appSidebar";
+import SidebarTriggerComponent from "@/components/sidebar/SidebarTrigger";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 
-const authRoutes = ["/onboarding", "/sign-in", "/sign-up", "/forgot-password", "/test"];
+const authRoutes = [
+  "/onboarding",
+  "/sign-in",
+  "/sign-up",
+  "/forgot-password",
+  "/test",
+];
 
-export default function Providers({
-  children,
-  defaultOpen,
-}: {
-  children: ReactNode;
-  defaultOpen: boolean;
-}) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(defaultOpen);
+export default function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
     <SessionProvider>
       <TooltipProvider>
-        {!authRoutes.includes(pathname) && (
-          <SidebarProvider
-            defaultOpen={defaultOpen}
-            open={isSidebarOpen}
-            onOpenChange={() => {
-              setIsSidebarOpen(!isSidebarOpen);
-            }}
-          >
+        {!authRoutes.includes(pathname) ? (
+          <>
             <AppSidebar />
             <SidebarInset>
-              <main className="relative">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarTrigger />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-                  </TooltipContent>
-                </Tooltip>
-                {/* Main content */}
+              <main>
+                {useSidebar().isMobile && (
+                  <SidebarTriggerComponent
+                    className="absolute top-2 left-2"
+                    state={useSidebar().state}
+                  />
+                )}
                 {children}
               </main>
             </SidebarInset>
-          </SidebarProvider>
+          </>
+        ) : (
+          <main className="relative w-full">{children}</main>
         )}
-
-        <main className="relative">{children}</main>
       </TooltipProvider>
     </SessionProvider>
   );

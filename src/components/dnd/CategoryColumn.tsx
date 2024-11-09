@@ -27,7 +27,7 @@ import invariant from "tiny-invariant";
 import TaskCard from "./TaskCard";
 
 interface ColumnProps {
-  title: string;
+  name: string;
   id: string;
   projectId?: string;
   projectsData: Project[] | null;
@@ -35,7 +35,7 @@ interface ColumnProps {
 }
 
 export default function CategoryColumn({
-  title,
+  name,
   id,
   projectId,
   projectsData,
@@ -129,6 +129,7 @@ export default function CategoryColumn({
         const selectedProject = projectsData?.find(
           (project) => project.id === projectId
         );
+
         selectedProject?.categories.forEach((category) => {
           if (category.id === id) {
             category.tasks?.push(data.task);
@@ -155,7 +156,7 @@ export default function CategoryColumn({
         ${isReordering && "opacity-30"} relative`}
       ref={columnRef}
     >
-      <h1 className="text-lg font-bold mb-1">{title}</h1>
+      <h1 className="text-lg font-bold mb-1">{name}</h1>
       <h3 className="text-xs mb-4">{id}</h3>
       <form
         className="flex flex-col gap-2 p-2 border-muted-foreground rounded-lg border-[0.5px] mb-4"

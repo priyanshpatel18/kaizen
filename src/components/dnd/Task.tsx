@@ -11,43 +11,39 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 // @ts-ignore
+import { Task } from "@/store";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import invariant from "tiny-invariant";
 
 interface TaskProps {
-  id: string;
-  title: string;
-  description?: string;
-  priority?: number;
-  isCompleted?: boolean;
-  categoryId: string;
+  task: Task;
 }
 
-export default function TaskCard({ id, title }: TaskProps) {
-  const cardRef = useRef<HTMLDivElement | null>(null);
+export default function TaskCard({ task }: TaskProps) {
+  const taskRef = useRef<HTMLDivElement | null>(null);
   const [closestEdge, setClosestEdge] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    const cardEl = cardRef.current;
-    invariant(cardEl);
+    const taskEl = taskRef.current;
+    invariant(taskEl);
 
     return combine(
       // Add draggable to make the card draggable
       draggable({
-        element: cardEl,
-        getInitialData: () => ({ type: "card", cardId: id }),
+        element: taskEl,
+        getInitialData: () => ({ type: "task", taskId: task.id }),
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
       }),
       // Add dropTargetForElements to make the card a drop target
       dropTargetForElements({
-        element: cardEl,
+        element: taskEl,
         getData: ({ input, element, source }) => {
           // To attach card data to a drop target
-          const data = { type: "card", cardId: id };
+          const data = { type: "task", taskId: task.id };
 
-          if (source.data.type === "card") {
+          if (source.data.type === "task") {
             return attachClosestEdge(data, {
               input,
               element,
@@ -59,7 +55,7 @@ export default function TaskCard({ id, title }: TaskProps) {
         },
         getIsSticky: () => true,
         onDragEnter: (args) => {
-          if (args.source.data.cardId !== id) {
+          if (args.source.data.taskId !== task.id) {
             // Update the closest edge when the draggable item enters the drop zone
             setClosestEdge(
               extractClosestEdge(args.self.data) as SetStateAction<null>
@@ -68,7 +64,7 @@ export default function TaskCard({ id, title }: TaskProps) {
         },
         onDrag: (args) => {
           // Continuously update the closest edge while dragging over the drop zone
-          if (args.source.data.cardId !== id) {
+          if (args.source.data.taskId !== task.id) {
             setClosestEdge(
               extractClosestEdge(args.self.data) as SetStateAction<null>
             );
@@ -84,19 +80,17 @@ export default function TaskCard({ id, title }: TaskProps) {
         },
       })
     );
-  }, [id]);
+  }, [task.id]);
 
   return (
     <div
       className={`
         ${isDragging && "border-black opacity-30"} 
-        rounded-lg p-6 relative cursor-pointer flex gap-4 items-center border-border border-2
+        rounded-lg p-2 relative cursor-pointer flex gap-4 items-center border-border border-2 min-w-[200px]
       `}
-      ref={cardRef}
+      ref={taskRef}
     >
-      {/* <p className="text-xs">{id}</p> */}
-      <p>{title}</p>
-
+      <p>{task.title}</p>
       {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
     </div>
   );

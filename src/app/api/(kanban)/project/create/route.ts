@@ -29,18 +29,44 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         categories: {
           create: {
-            title: "Untitled",
+            name: "Untitled",
           },
         },
       },
       include: {
-        categories: true,
+        categories: {
+          include: {
+            tasks: {
+              orderBy: {
+                position: "asc",
+              },
+            },
+          },
+          orderBy: {
+            position: "asc",
+          },
+        },
       },
     });
 
+    if (!project) {
+      return NextResponse.json(
+        { message: "Something went wrong, please try again" },
+        { status: 500 }
+      );
+    }
+
+    const projectResponse = {
+      ...project,
+      categories: project.categories.map((category) => ({
+        ...category,
+        tasks: category.tasks || [],
+      })),
+    };
+
     return NextResponse.json({
       message: "Project created successfully",
-      project,
+      project: projectResponse,
     });
   } catch (error) {
     return NextResponse.json(

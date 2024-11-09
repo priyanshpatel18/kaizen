@@ -11,7 +11,7 @@ export interface Task {
 
 export interface Category {
   id: string;
-  title: string;
+  name: string;
   projectId: string;
   tasks: Task[];
 }
@@ -23,6 +23,13 @@ export interface Project {
   categories: Category[];
 }
 
+export interface TaskComboBox {
+  projectName: string;
+  projectId: string;
+  categoryName: string;
+  categoryId: string;
+}
+
 interface ProjectState {
   loading: boolean;
   setLoading: (loading: boolean) => void;
@@ -31,6 +38,9 @@ interface ProjectState {
   setProjects: (projects: Project[]) => void;
 
   fetchProjectData: () => Promise<Project[] | null>;
+
+  taskComboBox: TaskComboBox[];
+  setTaskComboBox: (taskComboBox: TaskComboBox[]) => void;
 }
 
 export const useStore = create<ProjectState>((set) => ({
@@ -42,6 +52,7 @@ export const useStore = create<ProjectState>((set) => ({
 
   fetchProjectData: async () => {
     set({ loading: true });
+    console.log("Fetching project data...");
 
     try {
       const res = await fetch("/api/project/get-projects", {
@@ -54,9 +65,30 @@ export const useStore = create<ProjectState>((set) => ({
       }
 
       const data = await res.json();
+
       const projects = data.projects as Project[];
 
       if (projects) {
+        projects.forEach((project) => {
+          console.log("Processing project:", project.name);
+
+          project.categories.forEach((category) => {
+            set((state) => {
+              const newTaskComboBox = [
+                ...state.taskComboBox,
+                {
+                  projectId: project.id,
+                  projectName: project.name,
+                  categoryId: category.id,
+                  categoryName: category.name,
+                },
+              ];
+
+              return { taskComboBox: newTaskComboBox };
+            });
+          });
+        });
+
         set({ projects });
       }
       return projects;
@@ -67,4 +99,7 @@ export const useStore = create<ProjectState>((set) => ({
       set({ loading: false });
     }
   },
+
+  taskComboBox: [],
+  setTaskComboBox: (taskComboBox: TaskComboBox[]) => set({ taskComboBox }),
 }));

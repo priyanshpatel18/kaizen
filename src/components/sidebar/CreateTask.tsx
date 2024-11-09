@@ -2,24 +2,54 @@
 
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
-import { useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
-import ComboBox from "./ComboBox";
+import { FormEvent, useState } from "react";
+import { toast } from "sonner";
+import { SidebarMenu, SidebarMenuButton } from "../ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import CreateTaskForm from "./CreateTaskForm";
+
+export interface Data {
+  label: string;
+  value: string;
+}
 
 export default function CreateTask() {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [showCreateTask, setShowCreateTask] = useState<boolean>(false);
-  const [projectCategory, setProjectCategory] = useState<string>("");
+  const [currentState, setCurrentState] = useState<Data | null>(null);
+
+  async function createTask(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!taskTitle || !currentState) {
+      return toast.error("Task title is required");
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("title", taskTitle);
+      formData.append("categoryId", currentState.value.split("#")[1]);
+
+      const res = await fetch("/api/task/create", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.message);
+      } else {
+        toast.success(data.message);
+        setTaskTitle("");
+        setShowCreateTask(false);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    }
+  }
 
   return (
     <Dialog
@@ -30,43 +60,26 @@ export default function CreateTask() {
       }}
     >
       <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton onClick={() => setShowCreateTask(!showCreateTask)}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Plus />
-              </TooltipTrigger>
-              <TooltipContent>Create Task</TooltipContent>
-            </Tooltip>
-            <DialogTrigger className="flex items-center w-full gap-2" asChild>
-              <div>
-                <span>Create Task</span>
-              </div>
-            </DialogTrigger>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        <SidebarMenuButton onClick={() => setShowCreateTask(!showCreateTask)}>
+          <DialogTrigger className="flex items-center w-full gap-2" asChild>
+            <div>
+              <span>Create Task</span>
+            </div>
+          </DialogTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Plus />
+            </TooltipTrigger>
+            <TooltipContent>Create Task</TooltipContent>
+          </Tooltip>
+        </SidebarMenuButton>
       </SidebarMenu>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create Task</DialogTitle>
-        </DialogHeader>
-        <form className="space-y-4 flex flex-col">
-          <Label>
-            <span className="sr-only">Enter Task Title</span>
-            <Input
-              value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
-              placeholder="Task Title"
-              type="text"
-              className="text-gray-900"
-            />
-          </Label>
-          <ComboBox />
-          <Button>
-            <span>Create Task</span>
-          </Button>
-        </form>
-      </DialogContent>
+
+      <CreateTaskForm
+        currentState={currentState}
+        setCurrentState={setCurrentState}
+        setShowDialog={setShowCreateTask}
+      />
     </Dialog>
   );
 }

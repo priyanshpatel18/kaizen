@@ -270,10 +270,12 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
+      style={{ margin: 0 }}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
       }}
+      className={`${className}`}
       {...props}
     >
       <PanelLeftIcon style={{ width: "24px", height: "24px" }} />

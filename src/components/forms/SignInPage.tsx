@@ -79,7 +79,9 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl tracking-tighter font-bold text-gray-800">Welcome back</h1>
+        <h1 className="text-3xl tracking-tighter font-bold text-gray-800">
+          Welcome back
+        </h1>
         <p className="text-sm text-gray-600">
           Enter your email to sign in to your account
         </p>
@@ -121,7 +123,9 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
           </div>
 
           <div className="text-right text-sm text-gray-500">
-            <Link href="/forgot-password" className="hover:underline">Forgot Password?</Link>
+            <Link href="/forgot-password" className="hover:underline">
+              Forgot Password?
+            </Link>
           </div>
 
           <Button className="w-full" type="submit" disabled={isLoading}>
@@ -162,7 +166,7 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
       </div>
 
       <p className="text-center text-sm text-gray-500">
-        Don't have an account?{" "}
+        Don&lsquo;t have an account?{" "}
         <Link href="/sign-up" className="hover:underline text-blue-500">
           Sign Up
         </Link>

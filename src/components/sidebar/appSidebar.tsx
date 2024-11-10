@@ -5,21 +5,17 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarMenuButton,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Frame, Map, PieChart } from "lucide-react";
+import { useProjects } from "@/hooks/useProjects";
+import { useStore } from "@/store";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import CreateTask from "./CreateTask";
 import NavProjects from "./NavProjects";
 import NavUser from "./NavUser";
-import NavWorkspaces from "./NavWorkspaces";
 import SidebarTriggerComponent from "./SidebarTrigger";
-import { useProjects } from "@/hooks/useProjects";
-import { useStore } from "@/store";
 
 export interface SessionUser {
   id: string;
@@ -31,20 +27,13 @@ export interface SessionUser {
 
 export default function AppSidebar() {
   const session = useSession();
-  const [user, setUser] = useState<SessionUser | undefined>(undefined);
+  const user = session.data?.user as SessionUser;
   const router = useRouter();
   const { state, isMobile } = useSidebar();
 
   const { projects: fetchedProjects } = useProjects();
   const store = useStore();
   const allProjects = store.projects || fetchedProjects || [];
-
-  useEffect(() => {
-    if (session) {
-      const sessionUser = session.data?.user as SessionUser;
-      setUser(sessionUser);
-    }
-  }, [session]);
 
   useEffect(() => {
     if (fetchedProjects && fetchedProjects !== store.projects) {

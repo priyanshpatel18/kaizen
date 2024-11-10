@@ -24,13 +24,12 @@ export default function ProjectPage() {
 
   // });
 
-  const allProjects = store.projects || fetchedProjects || [];
-
   const selectedProject = useMemo(() => {
+    const allProjects = store.projects || fetchedProjects || [];
     const id = projectId[0] || projectId;
     if (!projectId) return undefined;
     return allProjects.find((p) => p.id === id);
-  }, [store.projects, projectId, fetchedProjects]);
+  }, [projectId, store.projects, fetchedProjects]);
 
   useEffect(() => {
     setProject(selectedProject);

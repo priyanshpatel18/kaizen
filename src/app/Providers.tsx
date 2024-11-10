@@ -22,6 +22,7 @@ const authRoutes = [
 
 export default function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const sidebar = useSidebar();
 
   return (
     <SessionProvider>
@@ -31,10 +32,10 @@ export default function Providers({ children }: { children: ReactNode }) {
             <AppSidebar />
             <SidebarInset>
               <main>
-                {useSidebar().isMobile && (
+                {sidebar.isMobile && (
                   <SidebarTriggerComponent
                     className="absolute top-2 left-2"
-                    state={useSidebar().state}
+                    state={sidebar.state}
                   />
                 )}
                 {children}

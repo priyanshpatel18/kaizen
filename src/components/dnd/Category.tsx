@@ -107,7 +107,7 @@ export default function CategoryComponent({
         <h2 className="font-montserrat font-semibold text-md mb-2">
           {category.name}
         </h2>
-        <div className="space-y-2 p-2">
+        <div className="space-y-2 p-2 flex flex-col gap-2">
           {category.tasks.map((task, index) => (
             <TaskCard
               key={index}
@@ -132,7 +132,7 @@ export default function CategoryComponent({
             </DialogTrigger>
           </Button>
         </div>
-        {closestEdge && <DropIndicator edge={closestEdge} gap="25px" />}
+        {closestEdge && <DropIndicator edge={closestEdge} gap="24px" />}
         <CreateTaskForm
           currentState={currentState}
           setCurrentState={setCurrentState}

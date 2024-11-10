@@ -20,7 +20,6 @@ import { toast } from "sonner";
 
 export default function TestPage() {
   const { data } = useSession();
-  console.log(data?.user);
   
   const { socket, connectionType } = useUserSocket();
   const [labels, setLabels] = useState<Label[]>([]);

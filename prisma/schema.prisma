@@ -13,17 +13,16 @@ enum Provider {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  email          String?  @unique
-  password       String?
-  isVerified     Boolean  @default(false)
-  name           String?
-  profilePicture String?
-  publicId       String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  token          String?
-
+  id               String             @id @default(uuid())
+  email            String?            @unique
+  password         String?
+  isVerified       Boolean            @default(false)
+  name             String?
+  profilePicture   String?
+  publicId         String?
+  token            String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   accounts         Account[]
   projects         Project[]
   comments         Comment[]
@@ -56,9 +55,9 @@ model UserWorkspace {
 model Workspace {
   id            String          @id @default(uuid())
   name          String
-  projects      Project[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  projects      Project[]
   userWorkspace UserWorkspace[]
 }
 
@@ -69,10 +68,11 @@ model Project {
   User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  activityLog ActivityLog[]
-  categories  Category[]
   workspace   Workspace?    @relation(fields: [workspaceId], references: [id])
   workspaceId String?
+  activityLog ActivityLog[]
+  categories  Category[]
+  invites     Invite[]
 }
 
 model Category {
@@ -96,10 +96,26 @@ model Task {
   category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   labelId     String?
   label       Label?        @relation(fields: [labelId], references: [id], onDelete: Cascade)
-  comments    Comment[]
-  activityLog ActivityLog[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  comments    Comment[]
+  activityLog ActivityLog[]
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+}
+
+model Invite {
+  id        String       @id @default(uuid())
+  email     String
+  token     String
+  projectId String
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
 
 model Label {

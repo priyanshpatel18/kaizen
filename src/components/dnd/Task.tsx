@@ -93,7 +93,7 @@ export default function TaskCard({ task, taskId, title }: TaskProps) {
       ref={taskRef}
     >
       <p>{title}</p>
-      {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
+      {closestEdge && <DropIndicator edge={closestEdge} gap="19.5px" />}
     </div>
   );
 }

@@ -16,13 +16,11 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useState } from "react";
-import { Project } from "./NavProjects";
 
 interface Workspace {
   id: string;
   title: string;
   icon?: LucideIcon;
-  projects: Project[];
 }
 
 export default function NavWorkspaces({
@@ -46,7 +44,10 @@ export default function NavWorkspaces({
                 {workspace.icon && <workspace.icon />}
                 <span>{workspace.title}</span>
               </Link>
-              <div className="shrink-0 flex-1 flex justify-end" onClick={() => setShowProjects(!showProjects)}>
+              <div
+                className="shrink-0 flex-1 flex justify-end"
+                onClick={() => setShowProjects(!showProjects)}
+              >
                 {showProjects ? (
                   <ChevronUp className="size-4" />
                 ) : (

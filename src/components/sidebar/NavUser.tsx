@@ -101,7 +101,11 @@ export default function NavUser({ user }: { user: User["user"] }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await signOut({ redirect: true, callbackUrl: "/sign-in" });
+              }}
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>

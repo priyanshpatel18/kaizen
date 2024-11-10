@@ -97,7 +97,7 @@ export default function TaskCard({ id, title }: TaskProps) {
       {/* <p className="text-xs">{id}</p> */}
       <p>{title}</p>
 
-      {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
+      {closestEdge && <DropIndicator edge={closestEdge} gap="20px" />}
     </div>
   );
 }

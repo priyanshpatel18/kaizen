@@ -260,7 +260,7 @@ export default function Project({}: IProps) {
     },
     [projectsData]
   );
- 
+
   const handleDrop = useCallback(
     ({ source, location }: HandleDropProps) => {
       // Early return if there are no drop targets in the current location
@@ -360,6 +360,7 @@ export default function Project({}: IProps) {
             const closestEdgeOfTarget = extractClosestEdge(
               destinationCardRecord.data
             );
+
             if (sourceColumnId === destinationColumnId) {
               const destinationIndex = getReorderDestinationIndex({
                 startIndex: indexOfSource!,
@@ -381,6 +382,8 @@ export default function Project({}: IProps) {
               closestEdgeOfTarget === "bottom"
                 ? indexOfTarget + 1
                 : indexOfTarget;
+
+            console.log(destinationIndex);
 
             moveCard({
               movedCardIndexInSourceColumn: indexOfSource!,

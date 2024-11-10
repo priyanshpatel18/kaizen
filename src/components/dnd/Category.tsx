@@ -1,3 +1,5 @@
+"use client";
+
 import { Category, Project } from "@/store";
 import {
   attachClosestEdge,
@@ -18,7 +20,7 @@ import TaskCard from "./Task";
 
 interface CategoryProps {
   category: Category;
-  project: Project;
+  project: Project | undefined;
 }
 
 export interface Data {
@@ -42,7 +44,7 @@ export default function CategoryComponent({
     invariant(categoryEl);
 
     return combine(
-      // Make the card draggable
+      // Make the category draggable
       draggable({
         element: categoryEl,
         getInitialData: () => ({ type: "category", categoryId: category.id }),
@@ -96,25 +98,30 @@ export default function CategoryComponent({
   }, [category.id]);
 
   return (
-    <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <div
-        className={`flex flex-col p-2 rounded-lg hover:border-border       
+    <div
+      className={`flex flex-col p-2 rounded-lg hover:border-border       
           ${isReordering && "opacity-30"} relative`}
-        ref={categoryRef}
-      >
+      ref={categoryRef}
+    >
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <h2 className="font-montserrat font-semibold text-md mb-2">
           {category.name}
         </h2>
         <div className="space-y-2 p-2">
           {category.tasks.map((task, index) => (
-            <TaskCard key={index} task={task} />
+            <TaskCard
+              key={index}
+              task={task}
+              taskId={task.id}
+              title={task.title}
+            />
           ))}
           <Button
             variant="outline"
             onClick={() => {
               setCurrentState({
-                label: `${project.name} # ${category.name}`,
-                value: `${project.id} # ${category.id}`,
+                label: `${project?.name} # ${category.name}`,
+                value: `${project?.id} # ${category.id}`,
               });
             }}
             className="w-full"
@@ -126,12 +133,12 @@ export default function CategoryComponent({
           </Button>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap="25px" />}
-      </div>
-      <CreateTaskForm
-        currentState={currentState}
-        setCurrentState={setCurrentState}
-        setShowDialog={setShowDialog}
-      />
-    </Dialog>
+        <CreateTaskForm
+          currentState={currentState}
+          setCurrentState={setCurrentState}
+          setShowDialog={setShowDialog}
+        />
+      </Dialog>
+    </div>
   );
 }

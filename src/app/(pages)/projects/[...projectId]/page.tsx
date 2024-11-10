@@ -1,12 +1,11 @@
 "use client";
 
-import CategoryComponent from "@/components/dnd/Category";
-import Main from "@/components/dnd/main";
+import Project from "@/components/dnd/Project";
 import { Data } from "@/components/sidebar/CreateTask";
 import CreateTaskForm from "@/components/sidebar/CreateTaskForm";
 import { Dialog } from "@/components/ui/dialog";
 import { useProjects } from "@/hooks/useProjects";
-import { Project, useStore } from "@/store";
+import { Project as ProjectState, useStore } from "@/store";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,9 +13,12 @@ export default function ProjectPage() {
   const { projects: fetchedProjects } = useProjects();
   const { projectId } = useParams();
   const store = useStore();
-  const [project, setProject] = useState<Project | undefined>(undefined);
+
+  const [project, setProject] = useState<ProjectState | undefined>(undefined);
   const [currentState, setCurrentState] = useState<Data | null>(null);
   const [showDialog, setShowDialog] = useState<boolean>(false);
+
+  const [projectsData, setProjectsData] = useState<ProjectState[] | null>(null);
 
   // useStore.subscribe((state) => {
 
@@ -41,8 +43,7 @@ export default function ProjectPage() {
   return project ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <div className="p-6 min-h-screen">
-        <h1 className="font-montserrat font-bold text-3xl">{project.name}</h1>
-        <Main selectedProject={project} />
+        <Project projects={projectsData} selectedProject={project} />
       </div>
       <CreateTaskForm
         currentState={currentState}

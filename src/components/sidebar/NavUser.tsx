@@ -23,6 +23,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SessionUser } from "./appSidebar";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface User {
   user: SessionUser | undefined;
@@ -30,6 +32,7 @@ interface User {
 
 export default function NavUser({ user }: { user: User["user"] }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
 
   return (
     <SidebarMenu>

@@ -46,12 +46,30 @@ export const authOptions: AuthOptions = {
         });
 
         if (user) {
-          const hasEmailAccount = user.accounts.some(
-            (account) => account.provider === "EMAIL"
+          const googleAccount = user.accounts.find(
+            (account) => account.provider === "GOOGLE"
           );
-          if (hasEmailAccount) {
-            return user;
+
+          if (!googleAccount) {
+            await prisma.account.create({
+              data: {
+                provider: "GOOGLE",
+                providerAccountId: profile.sub,
+                refreshToken: profile.refresh_token,
+                accessToken: profile.access_token,
+                user: { connect: { id: user.id } },
+              },
+            });
           }
+
+          if (!user.profilePicture) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { profilePicture: picture },
+            });
+          }
+
+          return user;
         }
 
         const newAccount = await prisma.account.create({
@@ -145,14 +163,9 @@ export const authOptions: AuthOptions = {
       }
       return newSession!;
     },
-    redirect: async ({ url, baseUrl }) => {
-      if (url.includes("/sign-in") || url.includes("/sign-up")) {
-        return `${baseUrl}/`;
-      }
-      return baseUrl;
-    },
   },
   pages: {
     signIn: "/sign-in",
+    error: "/error",
   },
 };

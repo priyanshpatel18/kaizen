@@ -29,45 +29,6 @@ export interface SessionUser {
   profilePicture: string | undefined;
 }
 
-const projects = [
-  {
-    id: "1",
-    title: "Design Engineering",
-    icon: Frame,
-  },
-  {
-    id: "2",
-    title: "Sales and Marketing",
-    icon: PieChart,
-  },
-  {
-    id: "3",
-    title: "Travel",
-    icon: Map,
-  },
-];
-
-const workspaces = [
-  {
-    id: "1",
-    title: "Design Engineering",
-    icon: Frame,
-    projects: projects,
-  },
-  {
-    id: "2",
-    title: "Sales and Marketing",
-    icon: PieChart,
-    projects: projects,
-  },
-  {
-    id: "3",
-    title: "Travel",
-    icon: Map,
-    projects: projects,
-  },
-];
-
 export default function AppSidebar() {
   const session = useSession();
   const [user, setUser] = useState<SessionUser | undefined>(undefined);
@@ -111,7 +72,7 @@ export default function AppSidebar() {
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
           <CreateTask />
           <NavProjects projects={allProjects} />
-          <NavWorkspaces workspaces={workspaces} />
+          {/* <NavWorkspaces /> */}
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>

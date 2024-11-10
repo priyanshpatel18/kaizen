@@ -17,9 +17,11 @@ import invariant from "tiny-invariant";
 
 interface TaskProps {
   task: Task;
+  taskId?: string;
+  title?: string;
 }
 
-export default function TaskCard({ task }: TaskProps) {
+export default function TaskCard({ task, taskId, title }: TaskProps) {
   const taskRef = useRef<HTMLDivElement | null>(null);
   const [closestEdge, setClosestEdge] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -32,7 +34,7 @@ export default function TaskCard({ task }: TaskProps) {
       // Add draggable to make the card draggable
       draggable({
         element: taskEl,
-        getInitialData: () => ({ type: "task", taskId: task.id }),
+        getInitialData: () => ({ type: "task", taskId }),
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
       }),
@@ -41,7 +43,7 @@ export default function TaskCard({ task }: TaskProps) {
         element: taskEl,
         getData: ({ input, element, source }) => {
           // To attach card data to a drop target
-          const data = { type: "task", taskId: task.id };
+          const data = { type: "task", taskId };
 
           if (source.data.type === "task") {
             return attachClosestEdge(data, {
@@ -55,7 +57,7 @@ export default function TaskCard({ task }: TaskProps) {
         },
         getIsSticky: () => true,
         onDragEnter: (args) => {
-          if (args.source.data.taskId !== task.id) {
+          if (args.source.data.taskId !== taskId) {
             // Update the closest edge when the draggable item enters the drop zone
             setClosestEdge(
               extractClosestEdge(args.self.data) as SetStateAction<null>
@@ -64,7 +66,7 @@ export default function TaskCard({ task }: TaskProps) {
         },
         onDrag: (args) => {
           // Continuously update the closest edge while dragging over the drop zone
-          if (args.source.data.taskId !== task.id) {
+          if (args.source.data.taskId !== taskId) {
             setClosestEdge(
               extractClosestEdge(args.self.data) as SetStateAction<null>
             );
@@ -90,7 +92,7 @@ export default function TaskCard({ task }: TaskProps) {
       `}
       ref={taskRef}
     >
-      <p>{task.title}</p>
+      <p>{title}</p>
       {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
     </div>
   );

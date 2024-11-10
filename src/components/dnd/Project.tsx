@@ -1,30 +1,21 @@
 "use client";
 
 import { useProjects } from "@/hooks/useProjects";
-import { Project as ProjectState } from "@/store";
+import { Project as ProjectState, useStore } from "@/store";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
-import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import CategoryColumn from "./CategoryColumn";
+import CategoryComponent from "./Category";
 
 interface HandleDropProps {
   source: {
     data: {
       type: string;
-      cardId?: string;
-      columnId?: string;
+      taskId?: string;
+      categoryId?: string;
     };
     element: ReactNode;
   };
@@ -42,7 +33,7 @@ interface ReorderCardProps {
   columnId: string;
   startIndex: number;
   finishIndex: number;
-  cardId: string;
+  taskId: string;
 }
 
 interface MoveCardProps {
@@ -52,11 +43,21 @@ interface MoveCardProps {
   movedCardIndexInDestinationColumn?: number;
 }
 
-export default function Project() {
+interface IProps {
+  projects?: ProjectState[] | null;
+  selectedProject?: ProjectState | null;
+}
+
+export default function Project({}: IProps) {
   const { projects } = useProjects();
   const [projectsData, setProjectsData] = useState<ProjectState[] | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
+  );
+  const store = useStore();
+
+  const selectedProject = projectsData?.find(
+    (project) => project.id === selectedProjectId
   );
 
   const reorderColumn = useCallback(
@@ -94,23 +95,24 @@ export default function Project() {
         destinationIndex,
         true
       );
+
       // Update the project in the projectsData state
-      setProjectsData((prev) => {
-        return (
-          prev?.map((project) => {
-            if (project.id === selectedProjectId) {
-              return updatedProject;
-            }
-            return project;
-          }) || []
-        );
-      });
+      const updatedProjects =
+        projectsData?.map((project) => {
+          if (project.id === selectedProjectId) {
+            return updatedProject;
+          }
+          return project;
+        }) || [];
+
+      setProjectsData(updatedProjects);
+      store.setProjects(updatedProjects);
     },
     [projectsData]
   );
 
   const moveCard = useCallback(
-    ({
+    async ({
       movedCardIndexInSourceColumn,
       sourceColumnId,
       destinationColumnId,
@@ -197,12 +199,13 @@ export default function Project() {
       });
 
       setProjectsData(newProjectData || null);
+      newProjectData && store.setProjects(newProjectData || null);
     },
     [projectsData, selectedProjectId]
   );
 
   const reorderCard = useCallback(
-    ({ columnId, startIndex, finishIndex, cardId }: ReorderCardProps) => {
+    async ({ columnId, startIndex, finishIndex, taskId }: ReorderCardProps) => {
       // Ensure the startIndex and finishIndex are different; no need to reorder if they’re the same
       if (startIndex === finishIndex) return;
 
@@ -237,27 +240,27 @@ export default function Project() {
 
         // Send request to database
         if (selectedProject?.categories.find((col) => col.id === columnId)) {
-          changePosition(columnId, columnId, finishIndex, false, cardId);
+          changePosition(columnId, columnId, finishIndex, false, taskId);
         }
 
-        setProjectsData((prev) => {
-          return (
-            prev?.map((project) => {
-              if (project.id === selectedProject?.id) {
-                return {
-                  ...project,
-                  categories: newData || [],
-                };
-              }
-              return project;
-            }) || []
-          );
-        });
+        const updatedProjects =
+          projectsData?.map((project) => {
+            if (project.id === selectedProjectId) {
+              return {
+                ...project,
+                categories: newData || [],
+              };
+            }
+            return project;
+          }) || [];
+
+        setProjectsData(updatedProjects);
+        updatedProjects && store.setProjects(updatedProjects);
       }
     },
     [projectsData]
   );
-
+ 
   const handleDrop = useCallback(
     ({ source, location }: HandleDropProps) => {
       // Early return if there are no drop targets in the current location
@@ -268,15 +271,15 @@ export default function Project() {
         (project) => project.id === selectedProjectId
       );
 
-      if (source.data.type === "card" && source.data.cardId) {
+      if (source.data.type === "task" && source.data.taskId) {
         // Retrieve the ID of the card being dragged
-        const draggedCardId = source.data.cardId;
+        const draggedCardId = source.data.taskId;
 
         // Get the source column from the initial drop targets
         const [, sourceColumnRecord] = location.initial.dropTargets;
 
         // Retrieve the ID of the source column
-        const sourceColumnId = sourceColumnRecord.data.columnId;
+        const sourceColumnId = sourceColumnRecord.data.categoryId;
 
         // Get the data of the source column
         const sourceColumnData = selectedProject?.categories.find(
@@ -293,7 +296,7 @@ export default function Project() {
           const [destinationColumnRecord] = location.current.dropTargets;
 
           // Retrieve the ID of the destination column
-          const destinationColumnId = destinationColumnRecord.data.columnId;
+          const destinationColumnId = destinationColumnRecord.data.categoryId;
 
           // Check if the source and destination columns are the same
           if (sourceColumnId === destinationColumnId) {
@@ -311,7 +314,7 @@ export default function Project() {
               columnId: sourceColumnId,
               startIndex: indexOfSource!,
               finishIndex: destinationIndex,
-              cardId: draggedCardId,
+              taskId: draggedCardId,
             });
             return;
           }
@@ -340,7 +343,7 @@ export default function Project() {
             location.current.dropTargets;
 
           // Retrieve the ID of the destination column
-          const destinationColumnId = destinationColumnRecord.data.columnId;
+          const destinationColumnId = destinationColumnRecord.data.categoryId;
 
           // Retrieve the destination column data using the destination column ID
           const destinationColumn = selectedProject?.categories.find(
@@ -350,7 +353,7 @@ export default function Project() {
           if (destinationColumn) {
             // Find the index of the target card within the destination column's cards
             const indexOfTarget = destinationColumn.tasks.findIndex(
-              (card) => card.id === destinationCardRecord.data.cardId
+              (card) => card.id === destinationCardRecord.data.taskId
             );
 
             // Determine the closest edge of the target card: top or bottom
@@ -369,7 +372,7 @@ export default function Project() {
                 columnId: sourceColumnId,
                 startIndex: indexOfSource!,
                 finishIndex: destinationIndex,
-                cardId: draggedCardId,
+                taskId: draggedCardId,
               });
               return;
             }
@@ -389,21 +392,22 @@ export default function Project() {
         }
       }
 
-      if (source.data.type === "column" && source.data.columnId) {
+      if (source.data.type === "category" && source.data.categoryId) {
         const sourceIndex = selectedProject?.categories.findIndex(
-          (col) => col.id === source.data.columnId
+          (col) => col.id === source.data.categoryId
         );
 
         const destinationIndex = selectedProject?.categories.findIndex(
-          (col) => col.id === location.current.dropTargets[0].data.columnId
+          (col) => col.id === location.current.dropTargets[0].data.categoryId
         );
 
         if (sourceIndex !== -1 && destinationIndex !== -1) {
           reorderColumn({
             sourceIndex,
             destinationIndex,
-            sourceColumnId: source.data.columnId,
-            destinationColumnId: location.current.dropTargets[0].data.columnId,
+            sourceColumnId: source.data.categoryId,
+            destinationColumnId:
+              location.current.dropTargets[0].data.categoryId,
           });
         }
       }
@@ -439,10 +443,14 @@ export default function Project() {
 
       const data = await res.json();
       if (!res.ok) {
-        return toast.error(data.message);
+        toast.error(data.message);
+        return null;
+      } else {
+        return data;
       }
     } catch (error) {
-      return toast.error("Something went wrong");
+      toast.error("Something went wrong");
+      return null;
     }
   }
 
@@ -460,193 +468,20 @@ export default function Project() {
     }
   }, [projects]);
 
-  const selectedProject = projectsData?.find(
-    (project) => project.id === selectedProjectId
-  );
-
   return (
-    <div className="w-full p-6 select-none bg-gray-950 flex flex-col min-h-screen gap-4 text-white">
-      <div className="flex gap-10 items-start">
-        <FormComponent
-          setSelectedProjectId={setSelectedProjectId}
-          projectsData={projectsData}
-          setProjectsData={setProjectsData}
-          projectId={selectedProjectId}
-        />
-        <div className="flex gap-4">
-          {projectsData?.map((project) => {
-            return (
-              <h1
-                className={`${
-                  selectedProjectId === project.id && "text-black bg-white"
-                } border-muted-foreground hover:border-border border-[1px] px-3 py-1 rounded cursor-pointer`}
-                key={project.id}
-                onClick={() => setSelectedProjectId(project.id)}
-              >
-                {project.name}
-              </h1>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex gap-10 flex-1">
+    <div className="flex flex-col gap-4">
+      <h1 className="text-3xl font-semibold">{selectedProject?.name}</h1>
+      <div className="flex gap-6">
         {selectedProject?.categories.map((category) => {
           return (
-            <CategoryColumn
+            <CategoryComponent
               key={category.id}
-              name={category.name}
-              id={category.id}
-              projectsData={projectsData}
-              setProjectsData={setProjectsData}
-              projectId={selectedProject?.id}
+              category={category}
+              project={selectedProject}
             />
           );
         })}
       </div>
-    </div>
-  );
-}
-
-interface FormProps {
-  setSelectedProjectId: Dispatch<SetStateAction<string | null>>;
-  projectsData: ProjectState[] | null;
-  setProjectsData: Dispatch<SetStateAction<ProjectState[] | null>>;
-  projectId?: string | null;
-}
-
-function FormComponent({
-  setSelectedProjectId,
-  projectsData,
-  setProjectsData,
-  projectId,
-}: FormProps) {
-  const [columnName, setColumnName] = useState<string>("");
-  const [projectName, setProjectName] = useState<string>("");
-
-  async function createProject(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (!projectName) {
-      return toast.error("Project title is required");
-    }
-
-    const formData = new FormData();
-    formData.append("name", projectName);
-
-    try {
-      const res = await fetch("/api/project/create", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message);
-      } else {
-        toast.success(data.message);
-        setProjectName("");
-        if (projectsData) {
-          setProjectsData([...projectsData, data.project]);
-          setSelectedProjectId(data.project.id);
-          return;
-        }
-        setProjectsData([data.project]);
-        setSelectedProjectId(data.project.id);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async function createCategory(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (!projectId) {
-      return toast.error("No Project Selected");
-    }
-    if (!columnName) {
-      return toast.error("Category title is required");
-    }
-
-    const formData = new FormData();
-    formData.append("name", columnName);
-    formData.append("projectId", projectId);
-
-    try {
-      const res = await fetch("/api/category/create", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message);
-      } else {
-        toast.success(data.message);
-        setColumnName("");
-        // Find the project that matches projectId
-        setProjectsData((prev) => {
-          return (
-            prev?.map((project) => {
-              if (project.id === projectId) {
-                return {
-                  ...project,
-                  categories: [...project.categories, data.category],
-                };
-              }
-              return project;
-            }) || []
-          );
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  return (
-    <div className="flex items-center gap-6">
-      <form
-        className="flex flex-col gap-4 p-4 rounded-lg shadow-md border-muted-foreground border-[1px]"
-        onSubmit={createCategory}
-      >
-        <h1>Create Category</h1>
-        <Input
-          type="text"
-          placeholder="Enter Category"
-          value={columnName}
-          onChange={(e) => setColumnName(e.target.value)}
-          className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
-        />
-        <Button
-          type="submit"
-          variant="secondary"
-          className="px-4 py-2 text-gray-200 bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
-        >
-          Create Category
-        </Button>
-      </form>
-      <form
-        className="flex flex-col gap-4 p-4 rounded-lg shadow-md border-muted-foreground border-[1px]"
-        onSubmit={createProject}
-      >
-        <h1>Create Project</h1>
-        <Input
-          type="text"
-          placeholder="Enter Project Name"
-          value={projectName}
-          onChange={(e) => setProjectName(e.target.value)}
-          className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
-        />
-        <Button
-          type="submit"
-          variant="secondary"
-          className="px-4 py-2 text-gray-200 bg-indigo-600 rounded-md hover:bg-indigo-700 transition"
-        >
-          Create Project
-        </Button>
-      </form>
     </div>
   );
 }

@@ -17,15 +17,15 @@ export interface Category {
 }
 
 export interface Project {
-  id: string;
-  name: string;
-  userId: string;
+  id?: string;
+  name?: string;
+  userId?: string;
   categories: Category[];
 }
 
 export interface TaskComboBox {
-  projectName: string;
-  projectId: string;
+  projectName?: string;
+  projectId?: string;
   categoryName: string;
   categoryId: string;
 }

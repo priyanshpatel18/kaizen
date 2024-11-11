@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "Category" ADD COLUMN     "position" DOUBLE PRECISION NOT NULL DEFAULT 0;
-
--- AlterTable
-ALTER TABLE "Task" ADD COLUMN     "position" DOUBLE PRECISION NOT NULL DEFAULT 0;

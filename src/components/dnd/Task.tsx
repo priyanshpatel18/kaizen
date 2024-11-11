@@ -88,7 +88,7 @@ export default function TaskCard({ task, taskId, title }: TaskProps) {
     <div
       className={`
         ${isDragging && "border-black opacity-30"} 
-        rounded-lg p-2 relative cursor-pointer flex gap-4 items-center border-border border-2 min-w-[200px]
+        rounded-lg p-2 relative cursor-pointer flex gap-4 items-center border-border border-2 w-[200px]
       `}
       ref={taskRef}
     >

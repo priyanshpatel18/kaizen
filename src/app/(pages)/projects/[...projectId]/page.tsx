@@ -13,26 +13,22 @@ export default function ProjectPage() {
   const { projects: fetchedProjects } = useProjects();
   const { projectId } = useParams();
   const store = useStore();
-
   const [project, setProject] = useState<ProjectState | undefined>(undefined);
   const [currentState, setCurrentState] = useState<Data | null>(null);
   const [showDialog, setShowDialog] = useState<boolean>(false);
 
-  const [projectsData, setProjectsData] = useState<ProjectState[] | null>(null);
-
-  // useStore.subscribe((state) => {
-
-  // });
-
   const selectedProject = useMemo(() => {
     const allProjects = store.projects || fetchedProjects || [];
-    const id = projectId[0] || projectId;
+
+    const id = projectId[0];
     if (!projectId) return undefined;
     return allProjects.find((p) => p.id === id);
   }, [projectId, store.projects, fetchedProjects]);
 
   useEffect(() => {
     setProject(selectedProject);
+    console.log(selectedProject);
+
     setCurrentState({
       label: `${selectedProject?.name} # ${selectedProject?.categories[0].name}`,
       value: `${selectedProject?.id} # ${selectedProject?.categories[0].id}`,
@@ -41,8 +37,8 @@ export default function ProjectPage() {
 
   return project ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <div className="p-6 min-h-screen">
-        <Project projects={projectsData} selectedProject={project} />
+      <div className="p-6 h-screen flex">
+        <Project project={project} setProject={setProject} />
       </div>
       <CreateTaskForm
         currentState={currentState}

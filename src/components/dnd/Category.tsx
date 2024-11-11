@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Project } from "@/store";
+import { Category, Project, useStore } from "@/store";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -11,11 +11,20 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import {
+  Dispatch,
+  FormEvent,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { toast } from "sonner";
 import invariant from "tiny-invariant";
 import CreateTaskForm from "../sidebar/CreateTaskForm";
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "../ui/dialog";
+import { Input } from "../ui/input";
 import TaskCard from "./Task";
 
 interface CategoryProps {
@@ -107,30 +116,34 @@ export default function CategoryComponent({
         <h2 className="font-montserrat font-semibold text-md mb-2">
           {category.name}
         </h2>
-        <div className="space-y-2 p-2 flex flex-col gap-2">
-          {category.tasks.map((task, index) => (
-            <TaskCard
-              key={index}
-              task={task}
-              taskId={task.id}
-              title={task.title}
-            />
-          ))}
-          <Button
-            variant="outline"
-            onClick={() => {
-              setCurrentState({
-                label: `${project?.name} # ${category.name}`,
-                value: `${project?.id} # ${category.id}`,
-              });
-            }}
-            className="w-full"
-            asChild
-          >
-            <DialogTrigger className="flex items-center w-full gap-2 justify-center">
-              <span>Add Task</span>
-            </DialogTrigger>
-          </Button>
+        <div className="p-2 flex gap-6 items-start">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col max-h-fit gap-2 overflow-y-auto">
+              {category.tasks.map((task, index) => (
+                <TaskCard
+                  key={index}
+                  task={task}
+                  taskId={task.id}
+                  title={task.title}
+                />
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCurrentState({
+                  label: `${project?.name} # ${category.name}`,
+                  value: `${project?.id} # ${category.id}`,
+                });
+              }}
+              className="w-[200px]"
+              asChild
+            >
+              <DialogTrigger className="flex items-center w-full gap-2 justify-center">
+                <span>Add Task</span>
+              </DialogTrigger>
+            </Button>
+          </div>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap="24px" />}
         <CreateTaskForm

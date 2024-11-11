@@ -1,13 +1,22 @@
 "use client";
 
-import { useProjects } from "@/hooks/useProjects";
-import { Project as ProjectState, useStore } from "@/store";
+import { Category, Project as ProjectState, useStore } from "@/store";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  FormEvent,
+  ReactNode,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { toast } from "sonner";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import CategoryComponent from "./Category";
 
 interface HandleDropProps {
@@ -44,22 +53,18 @@ interface MoveCardProps {
 }
 
 interface IProps {
-  projects?: ProjectState[] | null;
-  selectedProject?: ProjectState | null;
+  project: ProjectState | undefined;
+  setProject: Dispatch<SetStateAction<ProjectState | undefined>>;
 }
 
-export default function Project({}: IProps) {
-  const { projects } = useProjects();
-  const [projectsData, setProjectsData] = useState<ProjectState[] | null>(null);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    null
-  );
+export default function Project({ project, setProject }: IProps) {
+  // const [project, setProject] = useState<ProjectState | undefined>(undefined);
   const store = useStore();
 
-  const selectedProject = projectsData?.find(
-    (project) => project.id === selectedProjectId
-  );
+  const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
+  const [categoryName, setCategoryName] = useState<string>("");
 
+  // CANNOT CHECK
   const reorderColumn = useCallback(
     ({
       sourceIndex,
@@ -69,23 +74,16 @@ export default function Project({}: IProps) {
     }: ReorderColumnProps) => {
       if (sourceIndex === undefined || destinationIndex === undefined) return;
 
-      const selectedProject = projectsData?.find(
-        (project) => project.id === selectedProjectId
-      );
-
-      if (!selectedProject) {
-        console.error("Invalid project ID");
-        return;
-      }
+      if (!project) return;
 
       const updatedCategories = reorder({
-        list: selectedProject.categories,
+        list: project.categories,
         startIndex: sourceIndex,
         finishIndex: destinationIndex,
       });
 
       const updatedProject = {
-        ...selectedProject,
+        ...project,
         categories: updatedCategories,
       };
 
@@ -96,21 +94,13 @@ export default function Project({}: IProps) {
         true
       );
 
-      // Update the project in the projectsData state
-      const updatedProjects =
-        projectsData?.map((project) => {
-          if (project.id === selectedProjectId) {
-            return updatedProject;
-          }
-          return project;
-        }) || [];
-
-      setProjectsData(updatedProjects);
-      store.setProjects(updatedProjects);
+      // Update the project state
+      setProject(updatedProject);
     },
-    [projectsData]
+    [project]
   );
 
+  // CANNOT CHECK
   const moveCard = useCallback(
     async ({
       movedCardIndexInSourceColumn,
@@ -119,14 +109,12 @@ export default function Project({}: IProps) {
       movedCardIndexInDestinationColumn = 0,
     }: MoveCardProps) => {
       // Ensure source and destination columns exist
-      const selectedProject = projectsData?.find(
-        (project) => project.id === selectedProjectId
-      );
+      if (!project) return;
 
-      const sourceColumnData = selectedProject?.categories.find(
+      const sourceColumnData = project?.categories.find(
         (column) => column.id === sourceColumnId
       );
-      const destinationColumnData = selectedProject?.categories.find(
+      const destinationColumnData = project?.categories.find(
         (column) => column.id === destinationColumnId
       );
 
@@ -160,7 +148,7 @@ export default function Project({}: IProps) {
       updatedDestinationCards.splice(destinationIndex, 0, cardToMove);
 
       // Update the state with the modified source and destination columns
-      const newData = selectedProject?.categories.map((column) => {
+      const newData = project?.categories.map((column) => {
         if (column.id === sourceColumnId) {
           return {
             ...column,
@@ -188,33 +176,22 @@ export default function Project({}: IProps) {
         );
       }
 
-      const newProjectData = projectsData?.map((project) => {
-        if (project.id === selectedProjectId) {
-          return {
-            ...project,
-            categories: newData || [],
-          };
-        }
-        return project;
+      setProject({
+        ...project,
+        categories: newData || [],
       });
-
-      setProjectsData(newProjectData || null);
-      newProjectData && store.setProjects(newProjectData || null);
     },
-    [projectsData, selectedProjectId]
+    [project]
   );
 
+  // CHECKED
   const reorderCard = useCallback(
     async ({ columnId, startIndex, finishIndex, taskId }: ReorderCardProps) => {
       // Ensure the startIndex and finishIndex are different; no need to reorder if they’re the same
       if (startIndex === finishIndex) return;
 
-      const selectedProject = projectsData?.find(
-        (project) => project.id === selectedProjectId
-      );
-
       // Find the source column by ID
-      const sourceColumnData = selectedProject?.categories.find(
+      const sourceColumnData = project?.categories.find(
         (column) => column.id === columnId
       );
 
@@ -230,46 +207,38 @@ export default function Project({}: IProps) {
           tasks: updatedItems,
         };
 
-        // Logic to update the state
-        const newData = selectedProject?.categories.map((column) => {
-          if (column.id === columnId) {
-            return updatedSourceColumn;
-          }
-          return column;
-        });
-
         // Send request to database
-        if (selectedProject?.categories.find((col) => col.id === columnId)) {
+        if (project?.categories.find((col) => col.id === columnId)) {
           changePosition(columnId, columnId, finishIndex, false, taskId);
         }
 
-        const updatedProjects =
-          projectsData?.map((project) => {
-            if (project.id === selectedProjectId) {
-              return {
-                ...project,
-                categories: newData || [],
-              };
-            }
-            return project;
-          }) || [];
+        const newProjects = store.projects.map((project) => {
+          if (project.id === project?.id) {
+            const newData = project.categories.map((col) => {
+              if (col.id === columnId) {
+                return updatedSourceColumn;
+              }
+              return col;
+            });
 
-        setProjectsData(updatedProjects);
-        updatedProjects && store.setProjects(updatedProjects);
+            setProject({
+              ...project,
+              categories: newData || [],
+            });
+          }
+          return project;
+        });
+        store.setProjects(newProjects);
       }
     },
-    [projectsData]
+    [project]
   );
 
   const handleDrop = useCallback(
     ({ source, location }: HandleDropProps) => {
       // Early return if there are no drop targets in the current location
       const destination = location.current.dropTargets.length;
-      if (!destination) return;
-
-      const selectedProject = projectsData?.find(
-        (project) => project.id === selectedProjectId
-      );
+      if (!destination || !project) return;
 
       if (source.data.type === "task" && source.data.taskId) {
         // Retrieve the ID of the card being dragged
@@ -282,7 +251,7 @@ export default function Project({}: IProps) {
         const sourceColumnId = sourceColumnRecord.data.categoryId;
 
         // Get the data of the source column
-        const sourceColumnData = selectedProject?.categories.find(
+        const sourceColumnData = project?.categories.find(
           (category) => category.id === sourceColumnId
         );
 
@@ -290,6 +259,7 @@ export default function Project({}: IProps) {
         const indexOfSource = sourceColumnData?.tasks.findIndex(
           (task) => task.id === draggedCardId
         );
+        console.log(indexOfSource);
 
         if (location.current.dropTargets.length === 1) {
           // Tasks are dropped in the different column
@@ -303,7 +273,7 @@ export default function Project({}: IProps) {
             const destinationIndex = getReorderDestinationIndex({
               startIndex: indexOfSource!,
               indexOfTarget:
-                selectedProject?.categories.findIndex(
+                project?.categories.findIndex(
                   (category) => category.id === destinationColumnId
                 )! - 1,
               closestEdgeOfTarget: null,
@@ -319,7 +289,7 @@ export default function Project({}: IProps) {
             return;
           }
 
-          const destinationColumn = selectedProject?.categories.find(
+          const destinationColumn = project?.categories.find(
             (col) => col.id === destinationColumnId
           );
 
@@ -346,7 +316,7 @@ export default function Project({}: IProps) {
           const destinationColumnId = destinationColumnRecord.data.categoryId;
 
           // Retrieve the destination column data using the destination column ID
-          const destinationColumn = selectedProject?.categories.find(
+          const destinationColumn = project?.categories.find(
             (col) => col.id === destinationColumnId
           );
 
@@ -396,11 +366,11 @@ export default function Project({}: IProps) {
       }
 
       if (source.data.type === "category" && source.data.categoryId) {
-        const sourceIndex = selectedProject?.categories.findIndex(
+        const sourceIndex = project?.categories.findIndex(
           (col) => col.id === source.data.categoryId
         );
 
-        const destinationIndex = selectedProject?.categories.findIndex(
+        const destinationIndex = project?.categories.findIndex(
           (col) => col.id === location.current.dropTargets[0].data.categoryId
         );
 
@@ -415,7 +385,7 @@ export default function Project({}: IProps) {
         }
       }
     },
-    [projectsData, reorderCard]
+    [project, reorderCard]
   );
 
   async function changePosition(
@@ -425,7 +395,7 @@ export default function Project({}: IProps) {
     isCategoryUpdated?: boolean,
     taskId?: string
   ) {
-    if (!selectedProjectId) {
+    if (!project?.id) {
       return toast.error("Something went wrong");
     }
 
@@ -435,7 +405,7 @@ export default function Project({}: IProps) {
         {
           method: "PUT",
           body: JSON.stringify({
-            projectId: selectedProjectId,
+            projectId: project.id,
             sourceColumnId,
             destinationColumnId,
             taskId,
@@ -464,26 +434,109 @@ export default function Project({}: IProps) {
     });
   }, [handleDrop]);
 
-  useEffect(() => {
-    if (projects && projects?.length > 0) {
-      setProjectsData(projects);
-      setSelectedProjectId(projects[0].id);
+  async function createCategory(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!project || !project.id) {
+      return toast.error("Project not found");
     }
-  }, [projects]);
+    if (!categoryName) {
+      return toast.error("Category name is required");
+    }
+
+    const formData = new FormData();
+    formData.append("name", categoryName);
+    formData.append("projectId", project.id);
+
+    try {
+      const res = await fetch("/api/category/create", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return toast.error(data.message);
+      } else {
+        toast.success(data.message);
+        setShowCategoryInput(false);
+        setCategoryName("");
+
+        if (data.category as Category) {
+          const newProjects: ProjectState[] = store.projects.map((p) => {
+            if (p.id === project.id) {
+              const category = data.category as Category;
+
+              setProject({
+                ...p,
+                categories: [...p.categories, category],
+              });
+
+              return {
+                ...p,
+                categories: [...p.categories, category],
+              };
+            }
+            return p;
+          });
+
+          store.setProjects(newProjects);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setShowCategoryInput(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-semibold">{selectedProject?.name}</h1>
+      <h1 className="text-3xl font-semibold">{project?.name}</h1>
       <div className="flex gap-6">
-        {selectedProject?.categories.map((category) => {
+        {project?.categories.map((category) => {
           return (
             <CategoryComponent
               key={category.id}
               category={category}
-              project={selectedProject}
+              project={project}
             />
           );
         })}
+        {showCategoryInput ? (
+          <form className="flex flex-col gap-2" onSubmit={createCategory}>
+            <Input
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              className="w-[300px]"
+              placeholder="Category Name"
+              type="text"
+              required
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button type="submit" className="w-[200px]">
+                Add Category
+              </Button>
+              <div
+                className="cursor-pointer flex items-center px-4 border-muted-background rounded-md border-2 hover:bg-accent"
+                onClick={() => setShowCategoryInput(false)}
+              >
+                Cancel
+              </div>
+            </div>
+          </form>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => setShowCategoryInput(!showCategoryInput)}
+            className="w-[200px]"
+          >
+            Add Category
+          </Button>
+        )}
       </div>
     </div>
   );

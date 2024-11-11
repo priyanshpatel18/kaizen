@@ -115,6 +115,7 @@ export const authOptions: AuthOptions = {
           const hasEmailAccount = user.accounts.some(
             (account) => account.provider === "EMAIL"
           );
+          
           if (hasEmailAccount && user.password) {
             const isMatch = await compare(password, user.password);
             if (isMatch) {

@@ -7,13 +7,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
+    const projects = formData.get("projects") as string;
+    const flag = formData.get("usecaseFlag") as string;
 
     const name = formData.get("name") as string;
-    if (!name) {
-      return NextResponse.json(
-        { message: "Name is required" },
-        { status: 400 }
-      );
+    const workspaceId = formData.get("workspaceId") as string;
+
+    if ((!projects && !flag) && (!name && !workspaceId)) {
+      return NextResponse.json({ message: "Invalid request" }, { status: 400 });
     }
 
     const session = await getServerSession(authOptions);
@@ -23,51 +24,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const project = await prisma.project.create({
-      data: {
-        name,
-        userId: user.id,
-        categories: {
-          create: {
-            name: "Untitled",
-          },
-        },
-      },
-      include: {
-        categories: {
-          include: {
-            tasks: {
-              orderBy: {
-                position: "asc",
-              },
+    if (projects && flag === "true") {
+      const parsedProjects = JSON.parse(projects);
+      if (!Array.isArray(parsedProjects)) {
+        return NextResponse.json(
+          { message: "Something went wrong" },
+          { status: 400 }
+        )
+      }
+
+      const workspace = await prisma.workspace.findFirst({
+        where: {
+          userWorkspace: {
+            some: {
+              userId: user.id,
             },
           },
-          orderBy: {
-            position: "asc",
-          },
+          isDefault: true,
         },
-      },
-    });
+      });
+      if (!workspace) {
+        return NextResponse.json(
+          { message: "Something went wrong" },
+          { status: 400 }
+        )
+      }
 
-    if (!project) {
-      return NextResponse.json(
-        { message: "Something went wrong, please try again" },
-        { status: 500 }
-      );
+      for (const project of parsedProjects) {
+        await prisma.project.create({
+          data: {
+            name: project,
+            workspaceId: workspace.id,
+            userId: user.id,
+          },
+        });
+      }
+
+      return NextResponse.json({ message: "Welcome to Kaizen" });
     }
-
-    const projectResponse = {
-      ...project,
-      categories: project.categories.map((category) => ({
-        ...category,
-        tasks: category.tasks || [],
-      })),
-    };
-
-    return NextResponse.json({
-      message: "Project created successfully",
-      project: projectResponse,
-    });
+    if (name && workspaceId) {
+      const project = await prisma.project.create({
+        data: {
+          name,
+          workspaceId,
+          userId: user.id,
+        },
+      });
+      return NextResponse.json({ project, message: "Project created successfully" });
+    }
   } catch (error) {
     return NextResponse.json(
       { message: "Something went wrong" },

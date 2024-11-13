@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { message: "Profile Created successfully" },
+      { message: "Profile Created successfully", name, profilePicture: secure_url },
       { status: 200 }
     );
   } catch (error) {

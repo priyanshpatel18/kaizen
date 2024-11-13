@@ -21,6 +21,21 @@ export interface Project {
   name?: string;
   userId?: string;
   categories: Category[];
+  workspaceId?: string;
+}
+
+export interface UserWorkspace {
+  id: string;
+  userId: string;
+  workspaceId: string;
+}
+
+export interface Workspace {
+  id: string;
+  name: string;
+  projects: Project[];
+  userWorkspaces: UserWorkspace[];
+  isDefault: boolean;
 }
 
 export interface TaskComboBox {
@@ -41,6 +56,11 @@ interface ProjectState {
 
   taskComboBox: TaskComboBox[];
   setTaskComboBox: (taskComboBox: TaskComboBox[]) => void;
+
+  workspaces: Workspace[];
+  setWorkspaces: (workspaces: Workspace[]) => void;
+
+  fetchWorkspaceData: () => Promise<Workspace[] | null>;
 }
 
 export const useStore = create<ProjectState>((set) => ({
@@ -70,8 +90,6 @@ export const useStore = create<ProjectState>((set) => ({
 
       if (projects) {
         projects.forEach((project) => {
-          console.log("Processing project:", project.name);
-
           project.categories.forEach((category) => {
             set((state) => {
               const newTaskComboBox = [
@@ -102,4 +120,37 @@ export const useStore = create<ProjectState>((set) => ({
 
   taskComboBox: [],
   setTaskComboBox: (taskComboBox: TaskComboBox[]) => set({ taskComboBox }),
+
+  workspaces: [],
+  setWorkspaces: (workspaces: Workspace[]) => set({ workspaces }),
+
+  fetchWorkspaceData: async () => {
+    set({ loading: true });
+
+    try {
+      const res = await fetch("/api/workspace/get-workspaces", {
+        method: "GET",
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return null
+      }
+
+      const workspaces = data.workspaces as Workspace[];
+
+      if (workspaces) {
+        set({ workspaces });
+        return workspaces;
+      }
+
+      return null;
+    }
+    catch (error) {
+      console.error("Error fetching workspace data:", error);
+      return null;
+    } finally {
+      set({ loading: false });
+    }
+  }
 }));

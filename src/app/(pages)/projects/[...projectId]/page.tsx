@@ -27,7 +27,6 @@ export default function ProjectPage() {
 
   useEffect(() => {
     setProject(selectedProject);
-    console.log(selectedProject);
 
     setCurrentState({
       label: `${selectedProject?.name} # ${selectedProject?.categories[0].name}`,

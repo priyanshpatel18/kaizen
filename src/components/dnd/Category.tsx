@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Project, useStore } from "@/store";
+import { Category, Project } from "@/store";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -11,21 +11,13 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { toast } from "sonner";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 import CreateTaskForm from "../sidebar/CreateTaskForm";
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "../ui/dialog";
-import { Input } from "../ui/input";
 import TaskCard from "./Task";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface CategoryProps {
   category: Category;
@@ -118,7 +110,7 @@ export default function CategoryComponent({
         </h2>
         <div className="p-2 flex gap-6 items-start">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-col max-h-fit gap-2 overflow-y-auto">
+            <ScrollArea className="flex flex-col max-h-fit gap-2 overflow-y-auto">
               {category.tasks.map((task, index) => (
                 <TaskCard
                   key={index}
@@ -127,7 +119,7 @@ export default function CategoryComponent({
                   title={task.title}
                 />
               ))}
-            </div>
+            </ScrollArea>
             <Button
               variant="outline"
               onClick={() => {

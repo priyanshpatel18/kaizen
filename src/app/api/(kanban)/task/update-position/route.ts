@@ -68,110 +68,152 @@ export async function PUT(request: Request) {
     const sortedDestinationTasks = [...destinationColumn.tasks].sort(
       (a, b) => a.position - b.position
     );
-    if (newPosition > sortedDestinationTasks.length) {
+    if (newPosition > sortedDestinationTasks.length || newPosition < 0) {
       return NextResponse.json(
         { message: "Invalid position" },
         { status: 400 }
       );
     }
 
+    console.log("newPosition:", newPosition);
+
+    // Print element at newPosition, or "false" if it doesn't exist
+    // console.log(
+    //   "Element at newPosition:",
+    //   sortedDestinationTasks[newPosition] !== undefined
+    //     ? sortedDestinationTasks[newPosition]
+    //     : false
+    // );
+
+    // // Print element at newPosition + 1, or "false" if it doesn't exist
+    // console.log(
+    //   "Element at newPosition + 1:",
+    //   sortedDestinationTasks[newPosition + 1] !== undefined
+    //     ? sortedDestinationTasks[newPosition + 1]
+    //     : false
+    // );
+
+    // // Print element at newPosition - 1, or "false" if it doesn't exist
+    // console.log(
+    //   "Element at newPosition - 1:",
+    //   sortedDestinationTasks[newPosition - 1] !== undefined
+    //     ? sortedDestinationTasks[newPosition - 1]
+    //     : false
+    // );
+
     let updatedPosition: number;
-    if (newPosition === -1) {
-      updatedPosition = (sortedDestinationTasks.length + 1) * 1000;
+
+    if (sortedDestinationTasks[newPosition] === undefined) {
+      // MOVED TASK TO EMPTY COLUMN
+      updatedPosition = (destinationColumn.tasks.length + 1) * 1000;
     } else if (
-      // Missin Below
-      !sortedDestinationTasks[newPosition + 1] ||
-      !sortedDestinationTasks[newPosition + 1].position
+      newPosition === 0 &&
+      sortedDestinationTasks[newPosition] !== undefined
     ) {
+      console.log("MOVED TO NON-EMPTY COLUMN AT TOP");
+      updatedPosition = sortedDestinationTasks[newPosition].position / 2;
+    } else if (newPosition === sortedDestinationTasks.length - 1) {
+      console.log("MOVED TO NON-EMPTY COLUMN AR BOTTOM");
       updatedPosition =
         (sortedDestinationTasks[newPosition].position * 2 + 1000) / 2;
-    } else if (
-      !sortedDestinationTasks[newPosition - 1] ||
-      !sortedDestinationTasks[newPosition - 1].position
-    ) {
-      updatedPosition = sortedDestinationTasks[newPosition].position / 2;
-    } else {
-      updatedPosition =
-        task.position > sortedDestinationTasks[newPosition].position
-          ? (sortedDestinationTasks[newPosition].position +
-              sortedDestinationTasks[newPosition - 1].position) /
-            2
-          : (sortedDestinationTasks[newPosition + 1].position +
-              sortedDestinationTasks[newPosition].position) /
-            2;
     }
 
-    const transaction = await prisma.$transaction(async (prisma) => {
-      const conflicts = sortedDestinationTasks.filter(
-        (t) => t.position === updatedPosition
-      );
+    // else if (
+    //   // Missing Below
+    //   !sortedDestinationTasks[newPosition + 1] ||
+    //   !sortedDestinationTasks[newPosition + 1].position
+    // ) {
+    //   updatedPosition =
+    //     (sortedDestinationTasks[newPosition].position * 2 + 1000) / 2;
+    // } else if (
+    //   !sortedDestinationTasks[newPosition - 1] ||
+    //   !sortedDestinationTasks[newPosition - 1].position
+    // ) {
+    //   updatedPosition = sortedDestinationTasks[newPosition].position / 2;
+    // } else {
+    //   updatedPosition =
+    //     task.position > sortedDestinationTasks[newPosition].position
+    //       ? (sortedDestinationTasks[newPosition].position +
+    //           sortedDestinationTasks[newPosition - 1].position) /
+    //         2
+    //       : (sortedDestinationTasks[newPosition + 1].position +
+    //           sortedDestinationTasks[newPosition].position) /
+    //         2;
+    // }
 
-      if (conflicts.length > 0 || destinationColumn.reorderCount + 1 > 20) {
-        const reorderCount = await prisma.category.update({
-          where: { id: destinationColumnId },
-          data: { reorderCount: 0 },
-        });
+    // const transaction = await prisma.$transaction(async (prisma) => {
+    //   const conflicts = sortedDestinationTasks.filter(
+    //     (t) => t.position === updatedPosition
+    //   );
 
-        let newSortedDestinationTasks = sortedDestinationTasks.map((task) => {
-          if (task.id === taskId) task.position = updatedPosition;
-          return task;
-        });
+    //   if (conflicts.length > 0 || destinationColumn.reorderCount + 1 > 20) {
+    //     const reorderCount = await prisma.category.update({
+    //       where: { id: destinationColumnId },
+    //       data: { reorderCount: 0 },
+    //     });
 
-        if (conflicts.length === 0) {
-          newSortedDestinationTasks = newSortedDestinationTasks.sort(
-            (a, b) => a.position - b.position
-          );
-        }
+    //     let newSortedDestinationTasks = sortedDestinationTasks.map((task) => {
+    //       if (task.id === taskId) task.position = updatedPosition;
+    //       return task;
+    //     });
 
-        const taskUpdates = newSortedDestinationTasks.map((task, index) =>
-          prisma.task.update({
-            where: { id: task.id },
-            data: {
-              position: (index + 1) * 1000,
-              categoryId: destinationColumnId,
-            },
-          })
-        );
+    //     if (conflicts.length === 0) {
+    //       newSortedDestinationTasks = newSortedDestinationTasks.sort(
+    //         (a, b) => a.position - b.position
+    //       );
+    //     }
 
-        await Promise.all(taskUpdates);
+    //     const taskUpdates = newSortedDestinationTasks.map((task, index) =>
+    //       prisma.task.update({
+    //         where: { id: task.id },
+    //         data: {
+    //           position: (index + 1) * 1000,
+    //           categoryId: destinationColumnId,
+    //         },
+    //       })
+    //     );
 
-        if (!reorderCount || !taskUpdates) {
-          return null;
-        }
+    //     await Promise.all(taskUpdates);
 
-        if (conflicts.length > 0) {
-          throw new Error("Task position conflict");
-        }
+    //     if (!reorderCount || !taskUpdates) {
+    //       return null;
+    //     }
 
-        return reorderCount;
-      }
+    //     if (conflicts.length > 0) {
+    //       throw new Error("Task position conflict");
+    //     }
 
-      const taskUpdate = await prisma.task.update({
-        where: { id: task.id },
-        data: {
-          position: updatedPosition,
-          categoryId: destinationColumnId,
-        },
-      });
+    //     return reorderCount;
+    //   }
 
-      const reorderCount = await prisma.category.update({
-        where: { id: destinationColumnId },
-        data: {
-          reorderCount: { increment: 1 },
-        },
-      });
+    //   const taskUpdate = await prisma.task.update({
+    //     where: { id: task.id },
+    //     data: {
+    //       position: updatedPosition,
+    //       categoryId: destinationColumnId,
+    //     },
+    //   });
 
-      if (!taskUpdate || !reorderCount) return null;
+    //   const reorderCount = await prisma.category.update({
+    //     where: { id: destinationColumnId },
+    //     data: {
+    //       reorderCount: { increment: 1 },
+    //     },
+    //   });
 
-      return reorderCount;
-    });
+    //   if (!taskUpdate || !reorderCount) return null;
 
-    if (!transaction) {
-      return NextResponse.json(
-        { message: "Something went wrong, please try again" },
-        { status: 500 }
-      );
-    }
+    //   return reorderCount;
+    // });
+
+    // if (!transaction) {
+    //   return NextResponse.json(
+    //     { message: "Something went wrong, please try again" },
+    //     { status: 500 }
+    //   );
+    // }
+
+    console.log(updatedPosition!);
 
     return NextResponse.json(
       { message: "Position updated successfully" },

@@ -100,7 +100,6 @@ export default function Project({ project, setProject }: IProps) {
     [project]
   );
 
-  // CANNOT CHECK
   const moveCard = useCallback(
     async ({
       movedCardIndexInSourceColumn,
@@ -176,10 +175,10 @@ export default function Project({ project, setProject }: IProps) {
         );
       }
 
-      setProject({
-        ...project,
-        categories: newData || [],
-      });
+      // setProject({
+      //   ...project,
+      //   categories: newData || [],
+      // });
     },
     [project]
   );
@@ -212,23 +211,23 @@ export default function Project({ project, setProject }: IProps) {
           changePosition(columnId, columnId, finishIndex, false, taskId);
         }
 
-        const newProjects = store.projects.map((project) => {
-          if (project.id === project?.id) {
-            const newData = project.categories.map((col) => {
-              if (col.id === columnId) {
-                return updatedSourceColumn;
-              }
-              return col;
-            });
+        // const newProjects = store.projects.map((project) => {
+        //   if (project.id === project?.id) {
+        //     const newData = project.categories.map((col) => {
+        //       if (col.id === columnId) {
+        //         return updatedSourceColumn;
+        //       }
+        //       return col;
+        //     });
 
-            setProject({
-              ...project,
-              categories: newData || [],
-            });
-          }
-          return project;
-        });
-        store.setProjects(newProjects);
+        //     setProject({
+        //       ...project,
+        //       categories: newData || [],
+        //     });
+        //   }
+        //   return project;
+        // });
+        // store.setProjects(newProjects);
       }
     },
     [project]
@@ -259,7 +258,6 @@ export default function Project({ project, setProject }: IProps) {
         const indexOfSource = sourceColumnData?.tasks.findIndex(
           (task) => task.id === draggedCardId
         );
-        console.log(indexOfSource);
 
         if (location.current.dropTargets.length === 1) {
           // Tasks are dropped in the different column

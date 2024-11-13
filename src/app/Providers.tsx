@@ -13,7 +13,8 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 
 const authRoutes = [
-  "/onboarding",
+  "/onboard/profile",
+  "/onboard/use-case",
   "/sign-in",
   "/sign-up",
   "/forgot-password",
@@ -23,7 +24,7 @@ const authRoutes = [
 export default function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const sidebar = useSidebar();
-
+  
   return (
     <SessionProvider>
       <TooltipProvider>

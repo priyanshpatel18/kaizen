@@ -53,7 +53,7 @@ export default function NavUser({ user }: { user: User["user"] }) {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="border-0">
-            <SidebarMenuButton size="lg">
+            <SidebarMenuButton size="lg" className="focus-visible:ring-0">
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage
                   src={profilePicture || undefined}

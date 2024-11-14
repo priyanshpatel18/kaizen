@@ -74,7 +74,6 @@ export default function CreateTaskForm({
       });
       setList(options);
       taskOption && setCurrentState(taskOption);
-      console.log(taskOption);
     }
   }, [workspaces, taskOption]);
 

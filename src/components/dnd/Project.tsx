@@ -88,12 +88,12 @@ export default function Project({ project, setProject }: IProps) {
         categories: updatedCategories,
       };
 
-      changePosition(
-        sourceColumnId,
-        destinationColumnId,
-        destinationIndex,
-        true
-      );
+      // changePosition(
+      //   sourceColumnId,
+      //   destinationColumnId,
+      //   destinationIndex,
+      //   true
+      // );
 
       // Update the project state
       setProject(updatedProject);
@@ -164,22 +164,31 @@ export default function Project({ project, setProject }: IProps) {
         return column;
       });
 
-      const isLast = destinationColumnData.tasks.length === destinationIndex;
-
       if (newData) {
         changePosition(
           sourceColumnId,
           destinationColumnId,
-          isLast ? destinationIndex - 1 : destinationIndex,
+          destinationIndex,
           false,
           cardToMove.id
         );
       }
 
-      // setProject({
-      //   ...project,
-      //   categories: newData || [],
-      // });
+      setProject({
+        ...project,
+        categories: newData || [],
+      });
+      store.setProjects(
+        store.projects.map((p) => {
+          if (p.id === project?.id) {
+            return {
+              ...p,
+              categories: newData || [],
+            };
+          }
+          return p;
+        })
+      );
     },
     [project]
   );
@@ -212,23 +221,28 @@ export default function Project({ project, setProject }: IProps) {
           changePosition(columnId, columnId, finishIndex, false, taskId);
         }
 
-        // const newProjects = store.projects.map((project) => {
-        //   if (project.id === project?.id) {
-        //     const newData = project.categories.map((col) => {
-        //       if (col.id === columnId) {
-        //         return updatedSourceColumn;
-        //       }
-        //       return col;
-        //     });
+        const newData = project?.categories.map((col) => {
+          if (col.id === columnId) {
+            return updatedSourceColumn;
+          }
+          return col;
+        });
 
-        //     setProject({
-        //       ...project,
-        //       categories: newData || [],
-        //     });
-        //   }
-        //   return project;
-        // });
-        // store.setProjects(newProjects);
+        setProject({
+          ...project,
+          categories: newData || [],
+        });
+        store.setProjects(
+          store.projects.map((p) => {
+            if (p.id === project?.id) {
+              return {
+                ...p,
+                categories: newData || [],
+              };
+            }
+            return p;
+          })
+        );
       }
     },
     [project]
@@ -352,8 +366,6 @@ export default function Project({ project, setProject }: IProps) {
                 ? indexOfTarget + 1
                 : indexOfTarget;
 
-            console.log(destinationIndex);
-
             moveCard({
               movedCardIndexInSourceColumn: indexOfSource!,
               sourceColumnId,
@@ -405,8 +417,8 @@ export default function Project({ project, setProject }: IProps) {
           method: "PUT",
           body: JSON.stringify({
             projectId: project.id,
-            sourceColumnId,
-            destinationColumnId,
+            sourceCategoryId: sourceColumnId,
+            destinationCategoryId: destinationColumnId,
             taskId,
             newPosition,
           }),

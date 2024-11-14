@@ -9,7 +9,7 @@ export default async function taskConfilctResolver(categoryId: string) {
       include: {
         tasks: {
           orderBy: {
-            updatedAt: "desc"
+            updatedAt: "asc"
           }
         }
       }

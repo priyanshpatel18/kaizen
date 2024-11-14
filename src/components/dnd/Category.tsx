@@ -125,7 +125,7 @@ export default function CategoryComponent({
                   value: `${project?.id} # ${category.id}`,
                 });
               }}
-              className="w-[200px]"
+              className="w-[200px] focus:border-none focus:ring-0"
               asChild
             >
               <DialogTrigger className="flex items-center gap-2 justify-center">

@@ -15,7 +15,6 @@ import CreateTask from "./CreateTask";
 import NavUser from "./NavUser";
 import NavWorkspaces from "./NavWorkspaces";
 import SidebarTriggerComponent from "./SidebarTrigger";
-import { log } from "console";
 
 export interface SessionUser {
   id: string;
@@ -35,7 +34,6 @@ export default function AppSidebar() {
 
   useEffect(() => {
     if (store.workspaces.length > 0) {
-      console.log(store.workspaces);
       setWorkspaces(store.workspaces);
       return;
     }
@@ -66,7 +64,7 @@ export default function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-          <CreateTask />
+          <CreateTask workspaces={workspaces} />
           {/* <NavProjects projects={allProjects} /> */}
           <NavWorkspaces workspaces={workspaces} />
         </SidebarGroup>

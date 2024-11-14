@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Project, useStore, Workspace } from "@/store";
+import { Option, Project, useStore, Workspace } from "@/store";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -25,11 +25,6 @@ import { DialogContent, DialogHeader } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-
-interface Option {
-  value: string;
-  label: string;
-}
 
 interface IProps {
   workspaces: Workspace[] | null;

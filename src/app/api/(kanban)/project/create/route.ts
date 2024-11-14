@@ -69,6 +69,20 @@ export async function POST(request: NextRequest) {
           workspaceId,
           userId: user.id,
         },
+        include: {
+          categories: {
+            include: {
+              tasks: {
+                orderBy: {
+                  position: "asc",
+                },
+              },
+            },
+            orderBy: {
+              position: "asc",
+            },
+          }
+        }
       });
       return NextResponse.json({ project, message: "Project created successfully" });
     }

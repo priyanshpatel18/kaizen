@@ -45,6 +45,11 @@ export interface TaskComboBox {
   categoryId: string;
 }
 
+export interface Option {
+  value: string;
+  label: string;
+}
+
 interface ProjectState {
   loading: boolean;
   setLoading: (loading: boolean) => void;
@@ -53,9 +58,6 @@ interface ProjectState {
   setProjects: (projects: Project[]) => void;
 
   fetchProjectData: () => Promise<Project[] | null>;
-
-  taskComboBox: TaskComboBox[];
-  setTaskComboBox: (taskComboBox: TaskComboBox[]) => void;
 
   workspaces: Workspace[];
   setWorkspaces: (workspaces: Workspace[]) => void;
@@ -89,24 +91,6 @@ export const useStore = create<ProjectState>((set) => ({
       const projects = data.projects as Project[];
 
       if (projects) {
-        projects.forEach((project) => {
-          project.categories.forEach((category) => {
-            set((state) => {
-              const newTaskComboBox = [
-                ...state.taskComboBox,
-                {
-                  projectId: project.id,
-                  projectName: project.name,
-                  categoryId: category.id,
-                  categoryName: category.name,
-                },
-              ];
-
-              return { taskComboBox: newTaskComboBox };
-            });
-          });
-        });
-
         set({ projects });
       }
       return projects;
@@ -117,9 +101,6 @@ export const useStore = create<ProjectState>((set) => ({
       set({ loading: false });
     }
   },
-
-  taskComboBox: [],
-  setTaskComboBox: (taskComboBox: TaskComboBox[]) => set({ taskComboBox }),
 
   workspaces: [],
   setWorkspaces: (workspaces: Workspace[]) => set({ workspaces }),

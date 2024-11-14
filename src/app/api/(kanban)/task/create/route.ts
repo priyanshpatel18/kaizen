@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const category = await prisma.category.findUnique({
-      where: { id: categoryId.trim() },
+      where: { id: categoryId },
     });
 
     if (!category) {

@@ -1,62 +1,25 @@
 "use client";
 
-import {
-  Dialog,
-  DialogTrigger
-} from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Workspace } from "@/store";
 import { Plus } from "lucide-react";
-import { FormEvent, useState } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
+import CreateTaskForm from "../forms/CreateTaskForm";
 import { SidebarMenu, SidebarMenuButton } from "../ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import CreateTaskForm from "./CreateTaskForm";
 
-export interface Data {
-  label: string;
-  value: string;
+interface IProps {
+  workspaces: Workspace[] | null;
 }
 
-export default function CreateTask() {
-  const [taskTitle, setTaskTitle] = useState<string>("");
+export default function CreateTask({ workspaces }: IProps) {
   const [showCreateTask, setShowCreateTask] = useState<boolean>(false);
-  const [currentState, setCurrentState] = useState<Data | null>(null);
-
-  async function createTask(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    if (!taskTitle || !currentState) {
-      return toast.error("Task title is required");
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append("title", taskTitle);
-      formData.append("categoryId", currentState.value.split("#")[1]);
-
-      const res = await fetch("/api/task/create", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message);
-      } else {
-        toast.success(data.message);
-        setTaskTitle("");
-        setShowCreateTask(false);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
-    }
-  }
 
   return (
     <Dialog
       open={showCreateTask}
       onOpenChange={() => {
         setShowCreateTask(!showCreateTask);
-        setTaskTitle("");
       }}
     >
       <SidebarMenu>
@@ -76,8 +39,7 @@ export default function CreateTask() {
       </SidebarMenu>
 
       <CreateTaskForm
-        currentState={currentState}
-        setCurrentState={setCurrentState}
+        workspaces={workspaces}
         setShowDialog={setShowCreateTask}
       />
     </Dialog>

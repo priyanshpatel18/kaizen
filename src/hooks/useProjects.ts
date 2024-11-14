@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 export function useProjects() {
   const [projectsData, setProjectsData] = useState<Project[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const { setProjects, setTaskComboBox } = useStore();
+  const { setProjects } = useStore();
 
   async function getProjects() {
     try {
@@ -33,8 +33,6 @@ export function useProjects() {
           });
         });
       });
-
-      setTaskComboBox(taskComboBoxItems);
     } catch (error) {
       console.log(error);
     } finally {

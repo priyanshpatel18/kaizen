@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Project as ProjectState, useStore } from "@/store";
+import { Category, Option, Project as ProjectState, useStore } from "@/store";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -53,12 +53,13 @@ interface MoveCardProps {
 }
 
 interface IProps {
-  project: ProjectState | undefined;
-  setProject: Dispatch<SetStateAction<ProjectState | undefined>>;
+  project: ProjectState | null;
+  setProject: Dispatch<SetStateAction<ProjectState | null>>;
+  currentState: Option | null;
+  setCurrentState: Dispatch<SetStateAction<Option | null>>;
 }
 
 export default function Project({ project, setProject }: IProps) {
-  // const [project, setProject] = useState<ProjectState | undefined>(undefined);
   const store = useStore();
 
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);

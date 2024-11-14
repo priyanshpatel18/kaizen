@@ -1,4 +1,4 @@
-import { generateAndSendOtp } from "@/actions/sendOtp";
+import { generateAndSendOtp } from "@/actions/emailService";
 import prisma from "@/db";
 import { genSalt, hash } from "bcrypt";
 import { cookies } from "next/headers";

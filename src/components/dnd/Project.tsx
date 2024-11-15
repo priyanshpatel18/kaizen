@@ -57,13 +57,13 @@ interface IProps {
   setProject: Dispatch<SetStateAction<ProjectState | null>>;
   currentState: Option | null;
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
+  workspaceId: string | null;
 }
 
-export default function Project({ project, setProject }: IProps) {
-  const store = useStore();
-
+export default function Project({ project, setProject, workspaceId }: IProps) {
   const [showCategoryInput, setShowCategoryInput] = useState<boolean>(false);
   const [categoryName, setCategoryName] = useState<string>("");
+  const store = useStore();
 
   // CANNOT CHECK
   const reorderColumn = useCallback(
@@ -164,6 +164,31 @@ export default function Project({ project, setProject }: IProps) {
         return column;
       });
 
+      setProject({
+        ...project,
+        categories: newData || [],
+      });
+      const updatedWorkspaces = store.workspaces?.map((ws) => {
+        if (ws.id === workspaceId) {
+          const newProjects = ws.projects.map((p) => {
+            if (p.id === project?.id) {
+              return {
+                ...project,
+                categories: newData || [],
+              };
+            }
+            return p;
+          });
+
+          return {
+            ...ws,
+            projects: newProjects,
+          };
+        }
+        return ws;
+      });
+      store.setWorkspaces(updatedWorkspaces || []);
+
       if (newData) {
         changePosition(
           sourceColumnId,
@@ -173,22 +198,6 @@ export default function Project({ project, setProject }: IProps) {
           cardToMove.id
         );
       }
-
-      setProject({
-        ...project,
-        categories: newData || [],
-      });
-      store.setProjects(
-        store.projects.map((p) => {
-          if (p.id === project?.id) {
-            return {
-              ...p,
-              categories: newData || [],
-            };
-          }
-          return p;
-        })
-      );
     },
     [project]
   );
@@ -216,11 +225,6 @@ export default function Project({ project, setProject }: IProps) {
           tasks: updatedItems,
         };
 
-        // Send request to database
-        if (project?.categories.find((col) => col.id === columnId)) {
-          changePosition(columnId, columnId, finishIndex, false, taskId);
-        }
-
         const newData = project?.categories.map((col) => {
           if (col.id === columnId) {
             return updatedSourceColumn;
@@ -232,17 +236,31 @@ export default function Project({ project, setProject }: IProps) {
           ...project,
           categories: newData || [],
         });
-        store.setProjects(
-          store.projects.map((p) => {
-            if (p.id === project?.id) {
-              return {
-                ...p,
-                categories: newData || [],
-              };
-            }
-            return p;
-          })
-        );
+        const updatedWorkspaces = store.workspaces?.map((ws) => {
+          if (ws.id === workspaceId) {
+            const newProjects = ws.projects.map((p) => {
+              if (p.id === project?.id) {
+                return {
+                  ...project,
+                  categories: newData || [],
+                };
+              }
+              return p;
+            });
+
+            return {
+              ...ws,
+              projects: newProjects,
+            };
+          }
+          return ws;
+        });
+        store.setWorkspaces(updatedWorkspaces || []);
+
+        // Send request to database
+        if (project?.categories.find((col) => col.id === columnId)) {
+          changePosition(columnId, columnId, finishIndex, false, taskId);
+        }
       }
     },
     [project]
@@ -475,24 +493,10 @@ export default function Project({ project, setProject }: IProps) {
         setCategoryName("");
 
         if (data.category as Category) {
-          const newProjects: ProjectState[] = store.projects.map((p) => {
-            if (p.id === project.id) {
-              const category = data.category as Category;
-
-              setProject({
-                ...p,
-                categories: [...p.categories, category],
-              });
-
-              return {
-                ...p,
-                categories: [...p.categories, category],
-              };
-            }
-            return p;
+          setProject({
+            ...project,
+            categories: [...project.categories, data.category as Category],
           });
-
-          store.setProjects(newProjects);
         }
       }
     } catch (error) {

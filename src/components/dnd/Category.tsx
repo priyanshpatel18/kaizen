@@ -11,7 +11,7 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 import CreateTaskForm from "../forms/CreateTaskForm";
 import { Button } from "../ui/button";

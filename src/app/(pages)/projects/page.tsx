@@ -2,23 +2,16 @@
 
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { useProjects } from "@/hooks/useProjects";
 import { Project, useStore } from "@/store";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Projects() {
-  const { projects: fetchedProjects } = useProjects();
   const store = useStore();
 
   const [projects, setProjects] = useState<Project[] | undefined>(undefined);
-  const allProjects = store.projects || fetchedProjects || [];
 
   const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(() => {
-    setProjects(store.projects || fetchedProjects || []);
-  }, [store.projects, fetchedProjects]);
 
   const filteredProjects = projects?.filter((project) =>
     project.name?.toLowerCase().includes(searchQuery.toLowerCase())

@@ -8,7 +8,7 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { useStore, Workspace } from "@/store";
-import { Ellipsis, Folder, Forward, Plus, Trash2 } from "lucide-react";
+import { Ellipsis, FilePlus, Folder, FolderPlus, Forward, Hash, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CreateProjectForm from "../forms/CreateProjectForm";
@@ -57,6 +57,7 @@ export default function NavWorkspaces({
         {defaultWorkspace && (
           <SidebarMenuItem>
             <SidebarMenuButton>
+              <Folder />
               <span className="flex-1" onClick={() => router.push("/projects")}>
                 {defaultWorkspace.name}
               </span>
@@ -70,7 +71,7 @@ export default function NavWorkspaces({
                         setShowDialog(true);
                       }}
                     >
-                      <Plus size={18} />
+                      <FilePlus size={18} />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>Create Project</TooltipContent>
@@ -81,7 +82,13 @@ export default function NavWorkspaces({
               {defaultWorkspace.projects.map((project) => {
                 return (
                   <SidebarMenuItem key={project.id}>
-                    <SidebarMenuButton>{project.name}</SidebarMenuButton>
+                    <SidebarMenuButton
+                      onClick={() => router.push(`/projects/${project.id}`)}
+                      className="flex items-center"
+                    >
+                      <Hash className="text-primary/50" />
+                      {project.name}
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
               })}
@@ -104,7 +111,7 @@ export default function NavWorkspaces({
                       setShowDialog(true);
                     }}
                   >
-                    <Plus size={18} />
+                    <FolderPlus size={18} />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>Create Workspace</TooltipContent>
@@ -125,6 +132,7 @@ export default function NavWorkspaces({
                 className="flex justify-between items-center"
               >
                 <SidebarMenuButton>
+                  <Folder />
                   <div>{workspace.name}</div>
                 </SidebarMenuButton>
                 <DropdownMenu>
@@ -137,16 +145,16 @@ export default function NavWorkspaces({
                   <DropdownMenuContent className="dropTrigger">
                     <DropdownMenuItem className="cursor-pointer">
                       <Folder className="text-muted-foreground" />
-                      <span>View Project</span>
+                      <span>View Workspace</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem className="cursor-pointer">
                       <Forward className="text-muted-foreground" />
-                      <span>Share Project</span>
+                      <span>Share Workspace</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="cursor-pointer">
                       <Trash2 className="text-muted-foreground" />
-                      <span>Delete Project</span>
+                      <span>Delete Workspace</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

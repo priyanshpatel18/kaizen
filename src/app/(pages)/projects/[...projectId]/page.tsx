@@ -3,46 +3,56 @@
 import Project from "@/components/dnd/Project";
 import CreateTaskForm from "@/components/forms/CreateTaskForm";
 import { Dialog } from "@/components/ui/dialog";
-import { useProjects } from "@/hooks/useProjects";
-import { Option, Project as ProjectState, useStore } from "@/store";
+import { Option, Project as ProjectState, useStore, Workspace } from "@/store";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 export default function ProjectPage() {
-  const { projects: fetchedProjects } = useProjects();
   const { projectId } = useParams();
+
+  // const { projects: fetchedProjects } = useProjects();
+  const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
+
   const store = useStore();
   const [project, setProject] = useState<ProjectState | null>(null);
   const [currentState, setCurrentState] = useState<Option | null>(null);
   const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
 
   const selectedProject = useMemo(() => {
-    const allProjects = store.projects || fetchedProjects || [];
+    const allWorkspaces = store.workspaces || workspaces || [];
 
     const id = projectId[0];
     if (!projectId) return null;
 
-    const project = allProjects.find((project) => project.id === id);
+    const ws = allWorkspaces?.flatMap((ws) => ws.projects);
+    ws && setWorkspaceId(ws[0]?.workspaceId || null);
+
+    const project = ws?.find((p) => p.id === id);
 
     return project || null;
-  }, [projectId, store.projects, fetchedProjects]);
+  }, [projectId, store.workspaces, workspaces]);
 
   useEffect(() => {
-    setProject(selectedProject);
-
-    if (selectedProject?.categories.length === 0) {
+    if (store.workspaces.length > 0) {
+      setProject(selectedProject);
+      setWorkspaces(store.workspaces);
       return;
     }
-    setCurrentState({
-      label: `${selectedProject?.name} # ${selectedProject?.categories[0].name}`,
-      value: `${selectedProject?.id} # ${selectedProject?.categories[0].id}`,
-    });
-  }, [selectedProject]);
+
+    const fetchWorkspaces = async () => {
+      const workspaces = await store.fetchWorkspaceData();
+      setWorkspaces(workspaces);
+    };
+
+    fetchWorkspaces();
+  }, [store.workspaces]);
 
   return project ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <div className="p-6 h-screen flex">
         <Project
+          workspaceId={workspaceId}
           project={project}
           setProject={setProject}
           currentState={currentState}

@@ -20,7 +20,7 @@ import { signUpSchema, verifySchema } from "@/zod/user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -217,7 +217,9 @@ function SignUpForm({ form, isLoading, sendOTP }: FormProps) {
         className="w-full"
         disabled={isLoading}
         onClick={async () => {
-          const res = await signIn("google", { callbackUrl: "/onboard/profile" });
+          const res = await signIn("google", {
+            callbackUrl: "/onboard/profile",
+          });
 
           if (!res?.error) {
             toast.success("Signed In");

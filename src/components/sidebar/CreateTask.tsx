@@ -2,7 +2,7 @@
 
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Workspace } from "@/store";
-import { Plus } from "lucide-react";
+import { SquarePlus } from "lucide-react";
 import { useState } from "react";
 import CreateTaskForm from "../forms/CreateTaskForm";
 import { SidebarMenu, SidebarMenuButton } from "../ui/sidebar";
@@ -23,17 +23,20 @@ export default function CreateTask({ workspaces }: IProps) {
       }}
     >
       <SidebarMenu>
-        <SidebarMenuButton onClick={() => setShowCreateTask(!showCreateTask)}>
-          <DialogTrigger className="flex items-center w-full gap-2" asChild>
-            <div>
-              <span>Create Task</span>
-            </div>
-          </DialogTrigger>
+        <SidebarMenuButton
+          onClick={() => setShowCreateTask(!showCreateTask)}
+          className="flex items-center mb-4"
+        >
           <Tooltip>
             <TooltipTrigger asChild>
-              <Plus />
+              <div className="flex items-center gap-2">
+                <SquarePlus width={"24px"} height={"24px"} />
+                <DialogTrigger asChild>
+                  <span className="text-base font-semibold">Create Task</span>
+                </DialogTrigger>
+                <TooltipContent>Create Task</TooltipContent>
+              </div>
             </TooltipTrigger>
-            <TooltipContent>Create Task</TooltipContent>
           </Tooltip>
         </SidebarMenuButton>
       </SidebarMenu>

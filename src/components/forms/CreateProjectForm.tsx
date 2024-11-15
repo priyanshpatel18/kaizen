@@ -41,8 +41,7 @@ export default function CreateProjectForm({
   const store = useStore();
   const router = useRouter();
   const [currentState, setCurrentState] = useState<Option | null>(null);
-  const [list, setList] = useState<Option[]>([]); // Initialize as empty array
-
+  const [list, setList] = useState<Option[]>([]);
   useEffect(() => {
     setProjectName("");
 
@@ -104,7 +103,6 @@ export default function CreateProjectForm({
         });
 
         store.setWorkspaces(updatedWorkspace as Workspace[]);
-        store.setProjects([...store.projects, data.project]);
       }
       // router.push(`/projects/${data.project.id}`);
     }

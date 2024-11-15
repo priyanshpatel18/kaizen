@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Option, Project, useStore, Workspace } from "@/store";
+import { Option, Project, Task, useStore, Workspace } from "@/store";
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
   Dispatch,
@@ -45,6 +45,9 @@ export default function CreateTaskForm({
   const [list, setList] = useState<Option[]>([]);
   const store = useStore();
   const [currentState, setCurrentState] = useState<Option | null>(null);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     setTaskTitle("");
@@ -103,35 +106,46 @@ export default function CreateTaskForm({
         toast.success(data.message);
         setTaskTitle("");
 
-        const project = store.projects.find(
-          (project) => project.id === currentState.value.split("#")[0].trim()
-        );
-        const category = project?.categories.find(
-          (category) => category.id === currentState.value.split("#")[1].trim()
-        );
+        const task = data.task as Task;
 
-        const task = data.task;
+        if (task) {
+          const newData = store.workspaces?.map((ws) => {
+            const newProjects = ws.projects.map((p) => {
+              if (p.id === project?.id) {
+                if (project) {
+                  return {
+                    ...project,
+                    categories:
+                      project?.categories.map((c) => {
+                        if (c.id === task.categoryId) {
+                          c.tasks?.push(task);
+                        }
+                        return c;
+                      }) || [],
+                  };
+                }
+              }
 
-        store.setProjects(
-          store.projects.map((project) => {
-            if (project.id === currentState.value.split("#")[0].trim()) {
+              const newCategories = p.categories.map((c) => {
+                if (c.id === task.categoryId) {
+                  c.tasks?.push(task);
+                }
+                return c;
+              });
               return {
-                ...project,
-                categories: project.categories.map((category) => {
-                  if (category.id === currentState.value.split("#")[1].trim()) {
-                    return {
-                      ...category,
-                      tasks: [...category.tasks, task],
-                    };
-                  }
-                  return category;
-                }),
+                ...p,
+                categories: newCategories,
               };
-            }
-            return project;
-          })
-        );
+            });
 
+            return {
+              ...ws,
+              projects: newProjects,
+            };
+          });
+
+          store.setWorkspaces(newData);
+        }
         setShowDialog && setShowDialog(false);
       }
     } catch (error) {
@@ -160,6 +174,8 @@ export default function CreateTaskForm({
           list={list}
           currentState={currentState}
           setCurrentState={setCurrentState}
+          workspaces={workspaces}
+          setSelectedWorkspaceId={setSelectedWorkspaceId}
         />
         <Button>
           <span>Create Task</span>
@@ -173,9 +189,17 @@ interface ComboBoxProps {
   list: Option[];
   currentState: Option | null;
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
+  workspaces?: Workspace[] | null;
+  setSelectedWorkspaceId: Dispatch<SetStateAction<string | null>>;
 }
 
-function ComboBox({ list, currentState, setCurrentState }: ComboBoxProps) {
+function ComboBox({
+  list,
+  currentState,
+  setCurrentState,
+  workspaces,
+  setSelectedWorkspaceId,
+}: ComboBoxProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleSelect = (newValue: string) => {
@@ -183,6 +207,12 @@ function ComboBox({ list, currentState, setCurrentState }: ComboBoxProps) {
     if (selected) {
       setCurrentState(selected);
       setOpen(false);
+
+      const projectId = selected.value.split("#")[0].trim();
+      const project = workspaces
+        ?.flatMap((ws) => ws.projects)
+        .find((p) => p.id === projectId);
+      project && setSelectedWorkspaceId(project.workspaceId || null);
     }
   };
 

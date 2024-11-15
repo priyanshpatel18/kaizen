@@ -74,6 +74,7 @@ export default function Main({ selectedProject }: IProps) {
       };
 
       // Send request to database
+      
       // Update the project in the projectsData state
       const updatedProjects = projects?.map((project) => {
         if (project.id === selectedProject.id) {
@@ -218,7 +219,7 @@ export default function Main({ selectedProject }: IProps) {
         });
 
         setProjects(updatedProjects || []);
-        store.setProjects(updatedProjects || []);
+        // store.setProjects(updatedProjects || []);
       }
     },
     [store.projects]

@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -22,9 +24,10 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
-import { SessionUser } from "./appSidebar";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { SessionUser } from "./appSidebar";
 
 interface User {
   user: SessionUser | undefined;
@@ -33,27 +36,35 @@ interface User {
 export default function NavUser({ user }: { user: User["user"] }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const [profilePicture, setProfilePicture] = useState<string | undefined>(
+    undefined
+  );
+  const [name, setName] = useState<string | undefined>(undefined);
 
+  useEffect(() => {
+    setProfilePicture(
+      localStorage.getItem("profilePicture")?.replace(/"/g, "") || undefined
+    );
+
+    setName(localStorage.getItem("name")?.replace(/"/g, "") || undefined);
+  }, []);
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="border-0">
-            <SidebarMenuButton size="lg">
+            <SidebarMenuButton size="lg" className="focus-visible:ring-0">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.profilePicture} alt={user?.name} />
+                <AvatarImage
+                  src={profilePicture || undefined}
+                  alt={name || "profile"}
+                />
                 <AvatarFallback className="rounded-lg">
-                  {user?.name
-                    ? user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .substring(0, 2)
-                    : "?"}
+                  {name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user?.name}</span>
+                <span className="truncate font-semibold">{name}</span>
                 <span className="truncate text-xs">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -69,11 +80,16 @@ export default function NavUser({ user }: { user: User["user"] }) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.profilePicture} alt={user?.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage
+                    src={profilePicture || undefined}
+                    alt={name || "profile"}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                    {name?.charAt(0) || "U"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user?.name}</span>
+                  <span className="truncate font-semibold">{name}</span>
                   <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>

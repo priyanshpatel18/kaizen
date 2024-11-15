@@ -7,22 +7,19 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useProjects } from "@/hooks/useProjects";
-import { useStore } from "@/store";
+import { useStore, Workspace } from "@/store";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CreateTask from "./CreateTask";
-import NavProjects from "./NavProjects";
 import NavUser from "./NavUser";
+import NavWorkspaces from "./NavWorkspaces";
 import SidebarTriggerComponent from "./SidebarTrigger";
 
 export interface SessionUser {
   id: string;
-  name: string;
   email: string;
   token: string;
-  profilePicture: string | undefined;
 }
 
 export default function AppSidebar() {
@@ -31,15 +28,23 @@ export default function AppSidebar() {
   const router = useRouter();
   const { state, isMobile } = useSidebar();
 
-  const { projects: fetchedProjects } = useProjects();
   const store = useStore();
-  const allProjects = store.projects || fetchedProjects || [];
+
+  const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
 
   useEffect(() => {
-    if (fetchedProjects && fetchedProjects !== store.projects) {
-      store.setProjects(fetchedProjects);
+    if (store.workspaces.length > 0) {
+      setWorkspaces(store.workspaces);
+      return;
     }
-  }, [fetchedProjects, store]);
+
+    const fetchWorkspaces = async () => {
+      const workspaces = await store.fetchWorkspaceData();
+      setWorkspaces(workspaces);
+    };
+
+    fetchWorkspaces();
+  }, [store.workspaces]);
 
   return (
     <Sidebar collapsible="icon">
@@ -59,9 +64,9 @@ export default function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-          <CreateTask />
-          <NavProjects projects={allProjects} />
-          {/* <NavWorkspaces /> */}
+          <CreateTask workspaces={workspaces} />
+          {/* <NavProjects projects={allProjects} /> */}
+          <NavWorkspaces workspaces={workspaces} />
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>

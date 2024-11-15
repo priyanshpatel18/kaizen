@@ -1,4 +1,5 @@
-import { generateAndSendOtp } from "@/actions/sendOtp";
+import { generateAndSendOtp } from "@/actions/emailService";
+import prisma from "@/db";
 import { genSalt, hash } from "bcrypt";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -11,7 +12,16 @@ export async function POST(request: NextRequest) {
     .object({ email: z.string().email() })
     .parseAsync(body);
 
+
   try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) {
+      return NextResponse.json(
+        { message: "Email already exists" },
+        { status: 400 }
+      );
+    }
+
     const otp = await generateAndSendOtp(email);
     if (!otp) {
       return NextResponse.json(

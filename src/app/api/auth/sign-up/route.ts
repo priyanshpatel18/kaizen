@@ -2,44 +2,10 @@ import OnboardingTemplate from "@/components/emailTemplates/OnboardingTemplate";
 import prisma from "@/db";
 import { sendMail } from "@/lib/resend";
 import { verifySchema } from "@/zod/user";
-import { User } from "@prisma/client";
 import { compare, genSalt, hash } from "bcrypt";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-
-async function createAccount(
-  email: string,
-  hashedPassword: string,
-  user?: User
-) {
-  if (!user) {
-    // Create new user if not found
-    user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        isVerified: true,
-      },
-    });
-  } else {
-    // Update existing user with hashed password
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { password: hashedPassword },
-    });
-  }
-
-  // Create new account associated with user
-  const newAccount = await prisma.account.create({
-    data: {
-      provider: "EMAIL",
-      userId: user.id,
-    },
-  });
-
-  return newAccount;
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -58,12 +24,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const isVerified = compare(otp, token);
+    const isVerified = await compare(otp, token);
     if (!isVerified) {
       return NextResponse.json({ message: "Incorrect OTP" }, { status: 400 });
     }
 
     const result = await prisma.$transaction(async (prisma) => {
+      // Find User
       const user = await prisma.user.findUnique({
         where: { email },
         include: { accounts: true },
@@ -81,25 +48,68 @@ export async function POST(request: NextRequest) {
           throw new Error("Email already registered");
         }
 
-        return await createAccount(email, hashedPassword, user);
+        // Create a new account for the existing user
+        return prisma.account.create({
+          data: {
+            provider: "EMAIL",
+            userId: user.id,
+          },
+        });
       }
-      return await createAccount(email, hashedPassword);
+
+      // Create a new user if not found
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          isVerified: true,
+        },
+      });
+
+      // Create a workspace for the new user
+      const workspace = await prisma.workspace.create({
+        data: {
+          name: "My Projects",
+          userWorkspace: {
+            create: {
+              userId: newUser.id,
+            },
+          },
+          isDefault: true,
+        },
+      });
+
+      if (!workspace) {
+        throw new Error("Something went wrong, please try again");
+      }
+
+      // Return the created user account
+      return prisma.account.create({
+        data: {
+          provider: "EMAIL",
+          userId: newUser.id,
+        },
+      });
     });
 
-    if (!result) {
+    if (result && result.userId) {
+      await sendMail(email, "Welcome to Kaizen", OnboardingTemplate());
+
+      cookies().delete("verificiation_token");
+      cookies().set({
+        name: "sidebar:state",
+        value: "true",
+      });
+
       return NextResponse.json(
-        { message: "Failed to create account" },
-        { status: 500 }
+        { message: "User created successfully" },
+        { status: 201 }
       );
     }
 
-    // Send Onboarding email
-    await sendMail(email, "Welcome to Kaizen", OnboardingTemplate());
-    cookies().delete("verificiation_token");
-
     return NextResponse.json(
-      { message: "User created successfully" },
-      { status: 201 }
+      { message: "Failed to create account" },
+      { status: 500 }
     );
   } catch (error) {
     if (error instanceof z.ZodError) {

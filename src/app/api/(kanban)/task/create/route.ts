@@ -1,4 +1,5 @@
 import { getUserData } from "@/actions/getUserData";
+import taskConfilctResolver from "@/actions/taskConfilctResolver";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const category = await prisma.category.findUnique({
-      where: { id: categoryId.trim() },
+      where: { id: categoryId },
     });
 
     if (!category) {
@@ -55,6 +56,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    taskConfilctResolver(category.id);
 
     return NextResponse.json({ message: "Task created successfully", task });
   } catch (error) {

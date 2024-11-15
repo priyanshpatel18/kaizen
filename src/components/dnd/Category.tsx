@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, Project } from "@/store";
+import { Category, Option, Project } from "@/store";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -13,19 +13,15 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
-import CreateTaskForm from "../sidebar/CreateTaskForm";
+import CreateTaskForm from "../forms/CreateTaskForm";
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "../ui/dialog";
+import { ScrollArea } from "../ui/scroll-area";
 import TaskCard from "./Task";
 
 interface CategoryProps {
   category: Category;
-  project: Project | undefined;
-}
-
-export interface Data {
-  label: string;
-  value: string;
+  project: Project | null;
 }
 
 export default function CategoryComponent({
@@ -35,9 +31,9 @@ export default function CategoryComponent({
   const categoryRef = useRef<HTMLDivElement>(null);
   const [isReordering, setIsReordering] = useState<boolean>(false);
   const [closestEdge, setClosestEdge] = useState(null);
-
-  const [currentState, setCurrentState] = useState<Data | null>(null);
   const [showDialog, setShowDialog] = useState<boolean>(false);
+
+  const [taskOption, setTaskOption] = useState<Option | null>(null);
 
   useEffect(() => {
     const categoryEl = categoryRef.current;
@@ -99,7 +95,7 @@ export default function CategoryComponent({
 
   return (
     <div
-      className={`flex flex-col p-2 rounded-lg hover:border-border       
+      className={`flex flex-col rounded-lg hover:border-border       
           ${isReordering && "opacity-30"} relative`}
       ref={categoryRef}
     >
@@ -107,35 +103,41 @@ export default function CategoryComponent({
         <h2 className="font-montserrat font-semibold text-md mb-2">
           {category.name}
         </h2>
-        <div className="space-y-2 p-2 flex flex-col gap-2">
-          {category.tasks.map((task, index) => (
-            <TaskCard
-              key={index}
-              task={task}
-              taskId={task.id}
-              title={task.title}
-            />
-          ))}
-          <Button
-            variant="outline"
-            onClick={() => {
-              setCurrentState({
-                label: `${project?.name} # ${category.name}`,
-                value: `${project?.id} # ${category.id}`,
-              });
-            }}
-            className="w-full"
-            asChild
-          >
-            <DialogTrigger className="flex items-center w-full gap-2 justify-center">
-              <span>Add Task</span>
-            </DialogTrigger>
-          </Button>
+        <div className="flex gap-6 items-start">
+          <div className="flex flex-col gap-2">
+            <ScrollArea className="max-h-fit overflow-y-auto">
+              <div className="flex flex-col gap-2">
+                {category.tasks.map((task, index) => (
+                  <TaskCard
+                    key={index}
+                    task={task}
+                    taskId={task.id}
+                    title={task.title}
+                  />
+                ))}
+              </div>
+            </ScrollArea>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setTaskOption({
+                  label: `${project?.name} # ${category.name}`,
+                  value: `${project?.id} # ${category.id}`,
+                });
+              }}
+              className="w-[200px] focus:border-none focus:ring-0"
+              asChild
+            >
+              <DialogTrigger className="flex items-center gap-2 justify-center">
+                <span>Add Task</span>
+              </DialogTrigger>
+            </Button>
+          </div>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap="24px" />}
         <CreateTaskForm
-          currentState={currentState}
-          setCurrentState={setCurrentState}
+          taskOption={taskOption}
+          project={project}
           setShowDialog={setShowDialog}
         />
       </Dialog>

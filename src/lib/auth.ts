@@ -1,7 +1,7 @@
 import OnboardingTemplate from "@/components/emailTemplates/OnboardingTemplate";
 import prisma from "@/db";
 import { compare } from "bcrypt";
-import { AuthOptions, DefaultUser, Session } from "next-auth";
+import { AuthOptions, Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -15,19 +15,13 @@ declare module "next-auth" {
       email: string;
       name: string;
       token: string;
-      profilePicture: string | null;
     };
-  }
-  interface User extends DefaultUser {
-    id: string;
-    profilePicture: string | null;
   }
 }
 
 interface token extends JWT {
   uid: string;
   jwtToken: string;
-  profilePicture: string | null;
 }
 
 export const authOptions: AuthOptions = {
@@ -115,6 +109,7 @@ export const authOptions: AuthOptions = {
           const hasEmailAccount = user.accounts.some(
             (account) => account.provider === "EMAIL"
           );
+
           if (hasEmailAccount && user.password) {
             const isMatch = await compare(password, user.password);
             if (isMatch) {
@@ -135,9 +130,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         const token = generateJwtToken(
           user?.id as string,
-          user?.email as string,
-          user?.name as string
-          // ima
+          user?.email as string
         );
 
         await prisma.user.update({
@@ -147,7 +140,6 @@ export const authOptions: AuthOptions = {
 
         newToken.uid = user.id;
         newToken.token = token;
-        newToken.profilePicture = user.profilePicture;
       }
       return newToken;
     },
@@ -157,9 +149,7 @@ export const authOptions: AuthOptions = {
       if (newSession.user && token.uid) {
         newSession.user.id = token.uid as string;
         newSession.user.email = session.user?.email ?? "";
-        newSession.user.name = session.user?.name ?? "";
         newSession.user.token = token.token as string;
-        newSession.user.profilePicture = token.profilePicture as string;
       }
       return newSession!;
     },

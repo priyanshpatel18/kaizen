@@ -1,69 +1,175 @@
 "use client";
 
 import {
-  ChevronDown,
-  ChevronUp,
-  LucideIcon,
-  MoreHorizontal,
-} from "lucide-react";
-
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
-import { useState } from "react";
-
-interface Workspace {
-  id: string;
-  title: string;
-  icon?: LucideIcon;
-}
+import { useStore, Workspace } from "@/store";
+import { Ellipsis, Folder, Forward, Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import CreateProjectForm from "../forms/CreateProjectForm";
+import CreateWorkspaceForm from "../forms/CreateWorkspaceForm";
+import { Dialog } from "../ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function NavWorkspaces({
   workspaces,
 }: {
-  workspaces: Workspace[];
+  workspaces: Workspace[] | null;
 }) {
-  const [showProjects, setShowProjects] = useState<boolean>(false);
+  // const [showProjects, setShowProjects] = useState<boolean>(false);
+  const router = useRouter();
+
+  const [showProjectForm, setShowProjectForm] = useState<boolean>(false);
+  const [showWorkspaceForm, setShowWorkspaceForm] = useState<boolean>(false);
+  const [showDialog, setShowDialog] = useState<boolean>(false);
+
+  const [defaultWorkspace, setDefaultWorkspace] = useState<Workspace | null>(
+    null
+  );
+  const store = useStore();
+
+  useEffect(() => {
+    if (store.workspaces) {
+      const defaultWorkspace = store.workspaces.find(
+        (workspace) => workspace.isDefault
+      );
+      if (defaultWorkspace) {
+        setDefaultWorkspace(defaultWorkspace);
+      }
+    }
+  }, [store.workspaces]);
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>Workspaces</SidebarGroupLabel>
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
       <SidebarMenu>
-        {workspaces.map((workspace) => (
-          <SidebarMenuItem key={workspace.id}>
-            <SidebarMenuButton size="lg" className="justify-between border-0">
-              <Link
-                href={`/workspaces/${workspace.id}`}
-                className="flex items-center gap-2"
-              >
-                {workspace.icon && <workspace.icon />}
-                <span>{workspace.title}</span>
-              </Link>
-              <div
-                className="shrink-0 flex-1 flex justify-end"
-                onClick={() => setShowProjects(!showProjects)}
-              >
-                {showProjects ? (
-                  <ChevronUp className="size-4" />
-                ) : (
-                  <ChevronDown className="size-4" />
-                )}
+        {defaultWorkspace && (
+          <SidebarMenuItem>
+            <SidebarMenuButton>
+              <span className="flex-1" onClick={() => router.push("/projects")}>
+                {defaultWorkspace.name}
+              </span>
+              <div className="ml-auto flex gap-2 items-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      onClick={() => {
+                        setShowWorkspaceForm(false);
+                        setShowProjectForm(true);
+                        setShowDialog(true);
+                      }}
+                    >
+                      <Plus size={18} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Create Project</TooltipContent>
+                </Tooltip>
               </div>
             </SidebarMenuButton>
+            <SidebarMenuSub>
+              {defaultWorkspace.projects.map((project) => {
+                return (
+                  <SidebarMenuItem key={project.id}>
+                    <SidebarMenuButton>{project.name}</SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenuSub>
           </SidebarMenuItem>
-        ))}
+        )}
+
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
-            <span>More</span>
+          <SidebarMenuButton>
+            <span className="flex-1" onClick={() => router.push("/projects")}>
+              Workspaces
+            </span>
+            <div className="ml-auto flex gap-2 items-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    onClick={() => {
+                      setShowProjectForm(false);
+                      setShowWorkspaceForm(true);
+                      setShowDialog(true);
+                    }}
+                  >
+                    <Plus size={18} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>Create Workspace</TooltipContent>
+              </Tooltip>
+            </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
+
+        <SidebarMenuSub>
+          {workspaces?.map((workspace) => {
+            if (workspace.isDefault || workspace.id === defaultWorkspace?.id) {
+              return null;
+            }
+
+            return (
+              <SidebarMenuItem
+                key={workspace.id}
+                className="flex justify-between items-center"
+              >
+                <SidebarMenuButton>
+                  <div>{workspace.name}</div>
+                </SidebarMenuButton>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild className="focus-visible:ring-0">
+                    <SidebarMenuAction showOnHover>
+                      <Ellipsis />
+                      <span className="sr-only">More</span>
+                    </SidebarMenuAction>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="dropTrigger">
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Folder className="text-muted-foreground" />
+                      <span>View Project</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Forward className="text-muted-foreground" />
+                      <span>Share Project</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Trash2 className="text-muted-foreground" />
+                      <span>Delete Project</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenuSub>
       </SidebarMenu>
-    </SidebarGroup>
+
+      {showWorkspaceForm && (
+        <CreateWorkspaceForm
+          workspaces={workspaces}
+          setShowWorkspaceForm={setShowWorkspaceForm}
+        />
+      )}
+
+      {showProjectForm && (
+        <CreateProjectForm
+          workspaces={workspaces}
+          selectedWorkspaceId={defaultWorkspace?.id}
+          setShowProjectForm={setShowProjectForm}
+        />
+      )}
+    </Dialog>
   );
 }

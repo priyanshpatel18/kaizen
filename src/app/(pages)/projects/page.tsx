@@ -11,7 +11,7 @@ export default function Projects() {
   const { projects: fetchedProjects } = useProjects();
   const store = useStore();
 
-  const [projects, setProjects] = useState<Project[] | null>(null);
+  const [projects, setProjects] = useState<Project[] | undefined>(undefined);
   const allProjects = store.projects || fetchedProjects || [];
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,7 +21,7 @@ export default function Projects() {
   }, [store.projects, fetchedProjects]);
 
   const filteredProjects = projects?.filter((project) =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase())
+    project.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

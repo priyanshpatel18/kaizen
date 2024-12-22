@@ -29,7 +29,6 @@ export default function AppSidebar() {
   const { state, isMobile } = useSidebar();
 
   const store = useStore();
-
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
 
   useEffect(() => {
@@ -42,7 +41,7 @@ export default function AppSidebar() {
       const workspaces = await store.fetchWorkspaceData();
       setWorkspaces(workspaces);
     };
-
+    
     fetchWorkspaces();
   }, [store.workspaces]);
 

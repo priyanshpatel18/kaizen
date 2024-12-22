@@ -1,5 +1,6 @@
 import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { toast } from "sonner";
 
@@ -21,6 +22,9 @@ export default withAuth(
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
+    if (req.nextUrl.pathname !== "/onboard/profile" && !cookies().get("onboarded") || cookies().get("onboarded")?.value === "false") {
+      return NextResponse.redirect(new URL("/onboard/profile", req.url));
+    }
     return NextResponse.next();
   },
   {

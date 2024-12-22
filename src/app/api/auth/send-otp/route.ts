@@ -1,9 +1,17 @@
 import { generateAndSendOtp } from "@/actions/emailService";
 import prisma from "@/db";
-import { genSalt, hash } from "bcrypt";
+import { generateToken } from "@/lib/encrypt";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+// Workflow:
+// 1. Verify Schema
+// 2. If signUpFlag is true
+//      Check if user already exists
+// 3. Generate and send otp
+// 4. Encrypt otp in cookies
+// 5. Return Response Message
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -12,14 +20,18 @@ export async function POST(request: NextRequest) {
     .object({ email: z.string().email() })
     .parseAsync(body);
 
-
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      return NextResponse.json(
-        { message: "Email already exists" },
-        { status: 400 }
-      );
+    if (body.signUpFlag === true) {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: { accounts: true },
+      });
+      if (user && user.accounts.some((account) => account.provider === "EMAIL")) {
+        return NextResponse.json(
+          { message: "Email already exists" },
+          { status: 400 }
+        );
+      }
     }
 
     const otp = await generateAndSendOtp(email);
@@ -30,14 +42,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hashedOtp = await hash(otp, await genSalt(10));
-
-    cookies().set({
-      name: "verificiation_token",
-      value: hashedOtp,
-      path: "/",
-      maxAge: 60 * 5,
-    });
+    // Delete Invalid OTP
+    await prisma.otp.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    })
 
     return NextResponse.json({ message: `Email sent to ${email}` });
   } catch (error) {

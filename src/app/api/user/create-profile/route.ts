@@ -2,6 +2,7 @@ import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { deleteFromCloudinary, uploadToCloudinary } from "@/lib/helper";
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -66,6 +67,8 @@ export async function POST(request: NextRequest) {
         publicId: public_id,
       },
     });
+
+    cookies().set("onboarded", "true");
 
     return NextResponse.json(
       { message: "Profile Created successfully", name, profilePicture: secure_url },

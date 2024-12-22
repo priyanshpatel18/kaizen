@@ -18,13 +18,15 @@ const authRoutes = [
   "/sign-in",
   "/sign-up",
   "/forgot-password",
+  "/reset-password",
+  "/verify-otp",
   "/test",
 ];
 
 export default function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const sidebar = useSidebar();
-  
+
   return (
     <SessionProvider>
       <TooltipProvider>

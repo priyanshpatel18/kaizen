@@ -1,11 +1,11 @@
 import OnboardingTemplate from "@/components/emailTemplates/OnboardingTemplate";
 import prisma from "@/db";
-import { compare } from "bcrypt";
+import { verify } from "argon2";
 import { AuthOptions, Session } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import { generateJwtToken } from "./jwt";
+import { generateToken } from "./encrypt";
 import { sendMail } from "./resend";
 
 declare module "next-auth" {
@@ -23,6 +23,32 @@ interface token extends JWT {
   uid: string;
   jwtToken: string;
 }
+
+// Workflow (Google):
+// 1. Get Google Profile
+// 2. Check if user already exists
+// 3. If user doesn't exist
+//      Create user
+// 4. If user exists
+//      Check if user has Google account
+// 5. If user has Google account
+//      Update user's Google account
+// 6. If user doesn't have Google account
+//      Create Google account
+// 7. Return user
+
+
+// Workflow (Credentials):
+// 1. Get Credentials
+// 2. Check if user already exists
+// 3. If user doesn't exist
+//      Create user
+// 4. If user exists
+//      Check if user has Email account
+//        If user has Email account
+//          Check if password is correct
+// 6. If password is correct
+//      Return user
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -111,8 +137,9 @@ export const authOptions: AuthOptions = {
           );
 
           if (hasEmailAccount && user.password) {
-            const isMatch = await compare(password, user.password);
-            if (isMatch) {
+            const isMatch = await verify(user.password, password);
+
+            if (isMatch && user.isVerified) {
               return user;
             }
           }
@@ -122,16 +149,16 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
-  secret: process.env.SECRET_KEY || "",
+  secret: process.env.NEXTAUTH_SECRET || "",
   callbacks: {
     jwt: async ({ token, user }): Promise<JWT> => {
       const newToken: token = token as token;
 
       if (user) {
-        const token = generateJwtToken(
-          user?.id as string,
-          user?.email as string
-        );
+        const token = await generateToken({
+          userId: user?.id as string,
+          email: user?.email as string
+        });
 
         await prisma.user.update({
           where: { id: user.id },

@@ -74,7 +74,6 @@ export const useStore = create<ProjectState>((set) => ({
 
   fetchProjectData: async () => {
     set({ loading: true });
-    console.log("Fetching project data...");
 
     try {
       const res = await fetch("/api/project/get-projects", {

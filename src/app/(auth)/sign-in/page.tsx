@@ -1,6 +1,6 @@
 "use client";
 
-import SignInPage from "@/components/forms/SignInPage";
+import SignInPage from "@/components/forms/auth/SignInPage";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 

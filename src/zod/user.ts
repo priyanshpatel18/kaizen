@@ -16,8 +16,7 @@ export const signUpSchema = z.object({
       message: "Include at least one number.",
     })
     .refine((value) => /[@$!%*?&]/.test(value), {
-      message:
-        "Include at least one special character (@, $, !, %, *, ?, or &).",
+      message: "Include at least one special character (@, $, !, %, *, ?, or &).",
     }),
 });
 
@@ -38,7 +37,6 @@ export const forgotPasswordSchema = z.object({
       message: "Include at least one number.",
     })
     .refine((value) => /[@$!%*?&]/.test(value), {
-      message:
-        "Include at least one special character (@, $, !, %, *, ?, or &).",
+      message: "Include at least one special character (@, $, !, %, *, ?, or &).",
     }),
 });

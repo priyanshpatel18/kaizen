@@ -2,13 +2,7 @@
 
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signUpSchema } from "@/zod/user";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -77,14 +71,10 @@ interface SignInFormProps {
 
 function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
   return (
-    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
+    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl tracking-tighter font-bold text-gray-800">
-          Welcome back
-        </h1>
-        <p className="text-sm text-gray-600">
-          Enter your email to sign in to your account
-        </p>
+        <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Welcome back</h1>
+        <p className="text-sm text-gray-600">Enter your email to sign in to your account</p>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-4">
@@ -96,12 +86,7 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="Email"
-                      className="w-full"
-                      {...field}
-                    />
+                    <Input type="email" placeholder="Email" className="w-full" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -129,9 +114,7 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
           </div>
 
           <Button className="w-full" type="submit" disabled={isLoading}>
-            {isLoading && (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
         </form>
@@ -167,7 +150,7 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
 
       <p className="text-center text-sm text-gray-500">
         Don&lsquo;t have an account?{" "}
-        <Link href="/sign-up" className="hover:underline text-blue-500">
+        <Link href="/sign-up" className="text-blue-500 hover:underline">
           Sign Up
         </Link>
       </p>

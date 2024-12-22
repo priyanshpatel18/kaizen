@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const name = formData.get("name") as string;
     const workspaceId = formData.get("workspaceId") as string;
 
-    if ((!projects && !flag) && (!name && !workspaceId)) {
+    if (!projects && !flag && !name && !workspaceId) {
       return NextResponse.json({ message: "Invalid request" }, { status: 400 });
     }
 
@@ -27,10 +27,7 @@ export async function POST(request: NextRequest) {
     if (projects && flag === "true") {
       const parsedProjects = JSON.parse(projects);
       if (!Array.isArray(parsedProjects)) {
-        return NextResponse.json(
-          { message: "Something went wrong" },
-          { status: 400 }
-        )
+        return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
       }
 
       const workspace = await prisma.workspace.findFirst({
@@ -44,10 +41,7 @@ export async function POST(request: NextRequest) {
         },
       });
       if (!workspace) {
-        return NextResponse.json(
-          { message: "Something went wrong" },
-          { status: 400 }
-        )
+        return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
       }
 
       for (const project of parsedProjects) {
@@ -81,15 +75,13 @@ export async function POST(request: NextRequest) {
             orderBy: {
               position: "asc",
             },
-          }
-        }
+          },
+        },
       });
       return NextResponse.json({ project, message: "Project created successfully" });
     }
   } catch (error) {
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

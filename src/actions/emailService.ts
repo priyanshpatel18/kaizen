@@ -17,11 +17,7 @@ export async function generateAndSendOtp(email: string) {
   });
 
   try {
-    const { data, error } = await sendMail(
-      email,
-      "Email Verification",
-      MailTemplate({ otp: otp })
-    );
+    const { error } = await sendMail(email, "Email Verification", MailTemplate({ otp: otp }));
 
     if (error) {
       return null;
@@ -33,7 +29,7 @@ export async function generateAndSendOtp(email: string) {
         email: email,
         expiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
-    })
+    });
 
     return newOtp.code;
   } catch (error) {

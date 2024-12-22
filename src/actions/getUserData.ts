@@ -6,7 +6,8 @@ export async function getUserData(session: Session | null) {
     return null;
   }
   const user = await prisma.user.findFirst({
-    where: { email: session.user.email }, include: { userWorkspace: true },
+    where: { email: session.user.email },
+    include: { userWorkspace: true },
   });
 
   if (!user) {

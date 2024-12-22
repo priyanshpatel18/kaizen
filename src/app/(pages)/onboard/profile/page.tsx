@@ -43,10 +43,7 @@ export default function ProfilePage() {
       } else {
         toast.success(data.message);
 
-        localStorage.setItem(
-          "profilePicture",
-          JSON.stringify(data.profilePicture)
-        );
+        localStorage.setItem("profilePicture", JSON.stringify(data.profilePicture));
         localStorage.setItem("name", JSON.stringify(data.name));
 
         router.push("/onboard/use-case");
@@ -71,11 +68,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
+    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl tracking-tight font-bold text-gray-800">
-          Welcome to Kaizen!
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-800">Welcome to Kaizen!</h1>
         <p className="text-sm text-gray-600">Enter your name to get started</p>
       </div>
 

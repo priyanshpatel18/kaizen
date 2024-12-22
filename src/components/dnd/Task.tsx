@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { Task } from "@/store";
@@ -59,17 +53,13 @@ export default function TaskCard({ task, taskId, title }: TaskProps) {
         onDragEnter: (args) => {
           if (args.source.data.taskId !== taskId) {
             // Update the closest edge when the draggable item enters the drop zone
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDrag: (args) => {
           // Continuously update the closest edge while dragging over the drop zone
           if (args.source.data.taskId !== taskId) {
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDragLeave: () => {
@@ -86,10 +76,7 @@ export default function TaskCard({ task, taskId, title }: TaskProps) {
 
   return (
     <div
-      className={`
-        ${isDragging && "border-black opacity-30"} 
-        rounded-lg p-2 relative cursor-pointer flex gap-4 items-center border-border border-2 w-[200px] hover:bg-gray-100 hover:border-gray-500
-      `}
+      className={` ${isDragging && "border-black opacity-30"} relative flex w-[200px] cursor-pointer items-center gap-4 rounded-lg border-2 border-border p-2 hover:border-gray-500 hover:bg-gray-100`}
       ref={taskRef}
     >
       <p>{title}</p>

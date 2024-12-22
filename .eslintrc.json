@@ -1,0 +1,21 @@
+{
+  "extends": ["next/core-web-vitals", "eslint:recommended", "plugin:prettier/recommended"],
+  "rules": {
+    "prettier/prettier": "error",
+    "no-console": "warn",
+    "no-unused-vars": "warn",
+    "react-hooks/exhaustive-deps": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-empty-object-type": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.tsx", "**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/ban-ts-comment": "off"
+      }
+    }
+  ]
+}

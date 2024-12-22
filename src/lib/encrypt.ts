@@ -8,10 +8,7 @@ const SECRET_KEY = new TextEncoder().encode(KEY);
 
 // Generate a JWT token
 export const generateToken = async (payload: Record<string, any>, expiresIn: string = "1h") => {
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime(expiresIn)
-    .sign(SECRET_KEY);
+  return await new SignJWT(payload).setProtectedHeader({ alg: "HS256" }).setExpirationTime(expiresIn).sign(SECRET_KEY);
 };
 
 // Verify a JWT token
@@ -22,23 +19,23 @@ export const verifyToken = async (token: string) => {
 
 // Encrypt data using the public key
 export const encryptData = async (data: Record<string, any>) => {
-  const ENCODING_KEY = Uint8Array.from(atob(KEY), c => c.charCodeAt(0));
+  const ENCODING_KEY = Uint8Array.from(atob(KEY), (c) => c.charCodeAt(0));
 
   return await new EncryptJWT(data)
-    .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
+    .setProtectedHeader({ alg: "dir", enc: "A256GCM" })
     .setIssuedAt()
     .setAudience(BASE_URL)
     .setIssuer(BASE_URL)
-    .setExpirationTime('2h')
+    .setExpirationTime("2h")
     .encrypt(ENCODING_KEY);
 };
 
 // Decrypt data using the private key
 export const decryptData = async (encryptedData: string) => {
-  const ENCODING_KEY = Uint8Array.from(atob(KEY), c => c.charCodeAt(0));
+  const ENCODING_KEY = Uint8Array.from(atob(KEY), (c) => c.charCodeAt(0));
 
   return await jwtDecrypt(encryptedData, ENCODING_KEY, {
     audience: BASE_URL,
-    issuer: BASE_URL
+    issuer: BASE_URL,
   });
-}
+};

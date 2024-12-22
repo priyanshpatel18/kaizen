@@ -1,29 +1,13 @@
 "use client";
 
-import {
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { Option, Project, Task, useStore, Workspace } from "@/store";
 import { Check, ChevronsUpDown } from "lucide-react";
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "../ui/command";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -35,19 +19,11 @@ interface IProps {
   taskOption?: Option | null;
 }
 
-export default function CreateTaskForm({
-  workspaces,
-  setShowDialog,
-  project,
-  taskOption,
-}: IProps) {
+export default function CreateTaskForm({ workspaces, setShowDialog, project, taskOption }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [list, setList] = useState<Option[]>([]);
   const store = useStore();
   const [currentState, setCurrentState] = useState<Option | null>(null);
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
-    null
-  );
 
   useEffect(() => {
     setTaskTitle("");
@@ -76,7 +52,6 @@ export default function CreateTaskForm({
         };
       });
       setList(options);
-      taskOption && setCurrentState(taskOption);
     }
   }, [workspaces, taskOption]);
 
@@ -146,7 +121,7 @@ export default function CreateTaskForm({
 
           store.setWorkspaces(newData);
         }
-        setShowDialog && setShowDialog(false);
+        setShowDialog(false);
       }
     } catch (error) {
       console.error(error);
@@ -159,7 +134,7 @@ export default function CreateTaskForm({
       <DialogHeader>
         <DialogTitle>Create Task</DialogTitle>
       </DialogHeader>
-      <form onSubmit={createTask} className="space-y-4 flex flex-col">
+      <form onSubmit={createTask} className="flex flex-col space-y-4">
         <Label>
           <span className="sr-only">Enter Task Title</span>
           <Input
@@ -170,13 +145,7 @@ export default function CreateTaskForm({
             className="text-gray-900"
           />
         </Label>
-        <ComboBox
-          list={list}
-          currentState={currentState}
-          setCurrentState={setCurrentState}
-          workspaces={workspaces}
-          setSelectedWorkspaceId={setSelectedWorkspaceId}
-        />
+        <ComboBox list={list} currentState={currentState} setCurrentState={setCurrentState} workspaces={workspaces} />
         <Button>
           <span>Create Task</span>
         </Button>
@@ -190,16 +159,9 @@ interface ComboBoxProps {
   currentState: Option | null;
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
   workspaces?: Workspace[] | null;
-  setSelectedWorkspaceId: Dispatch<SetStateAction<string | null>>;
 }
 
-function ComboBox({
-  list,
-  currentState,
-  setCurrentState,
-  workspaces,
-  setSelectedWorkspaceId,
-}: ComboBoxProps) {
+function ComboBox({ list, currentState, setCurrentState }: ComboBoxProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleSelect = (newValue: string) => {
@@ -207,24 +169,13 @@ function ComboBox({
     if (selected) {
       setCurrentState(selected);
       setOpen(false);
-
-      const projectId = selected.value.split("#")[0].trim();
-      const project = workspaces
-        ?.flatMap((ws) => ws.projects)
-        .find((p) => p.id === projectId);
-      project && setSelectedWorkspaceId(project.workspaceId || null);
     }
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-1/2 justify-between"
-        >
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-1/2 justify-between">
           {currentState?.label || "Select an option"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -235,18 +186,9 @@ function ComboBox({
           <CommandList>
             <CommandGroup>
               {list.map((v, index) => (
-                <CommandItem
-                  key={index}
-                  onSelect={() => handleSelect(v.value)}
-                  className="cursor-pointer"
-                >
+                <CommandItem key={index} onSelect={() => handleSelect(v.value)} className="cursor-pointer">
                   <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      currentState?.value === v?.value
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
+                    className={cn("mr-2 h-4 w-4", currentState?.value === v?.value ? "opacity-100" : "opacity-0")}
                   />
                   {v.label}
                 </CommandItem>

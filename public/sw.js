@@ -1,18 +1,18 @@
 // sw = service worker
 
-self.addEventListener('install', event => {
+self.addEventListener("install", (event) => {
   // Place to perform any setup tasks
   event.waitUntil(self.skipWaiting()); // Activate immediately
 });
 
 function sendDeliveryReportAction() {
   // Place to send delivery report
-  console.log('Web push delivered.');
+  console.log("Web push delivered.");
 }
 
-self.addEventListener('push', function (event) {
+self.addEventListener("push", function (event) {
   if (!event.data) {
-    console.warn('Push event but no data');
+    console.warn("Push event but no data");
     return;
   }
 
@@ -21,7 +21,7 @@ self.addEventListener('push', function (event) {
   const { body, icon, image, badge, url, title } = payload;
 
   // Create a notification options using the payload
-  const notificationTitle = title || 'Notification';
+  const notificationTitle = title || "Notification";
   const notificationOptions = {
     body,
     icon,
@@ -31,8 +31,8 @@ self.addEventListener('push', function (event) {
     // Add more options as needed
     actions: [
       {
-        action: 'open_url',
-        title: 'View in browser',
+        action: "open_url",
+        title: "View in browser",
       },
     ],
   };
@@ -41,12 +41,12 @@ self.addEventListener('push', function (event) {
   event.waitUntil(
     self.registration.showNotification(notificationTitle, notificationOptions).then(() => {
       sendDeliveryReportAction();
-    }),
+    })
   );
 });
 
 // Event listener for notification click to open the URL
-self.addEventListener('notificationclick', event => {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close(); // Close the notification on click
 
   const { url } = event.notification.data;
@@ -54,20 +54,20 @@ self.addEventListener('notificationclick', event => {
   // Perform different actions based on notification data
   event.waitUntil(
     (async () => {
-      if (event.action === 'open_url' && url) {
+      if (event.action === "open_url" && url) {
         // Open the URL in a new tab
         await clients.openWindow(url);
       } else if (url) {
         // Default action if clicked outside the button
         await clients.openWindow(url);
       } else {
-        console.warn('No URL to open on notification click');
+        console.warn("No URL to open on notification click");
       }
-    })(),
+    })()
   );
 });
 
 // Event listener for notification close
-self.addEventListener('notificationclose', event => {
-  console.info('Notification closed');
+self.addEventListener("notificationclose", (event) => {
+  console.info("Notification closed");
 });

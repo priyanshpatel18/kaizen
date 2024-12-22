@@ -11,6 +11,7 @@ export async function uploadToCloudinary(fileUri: string, fileName: string) {
     });
     return response;
   } catch (error) {
+    console.log(error);
     return null;
   }
 }
@@ -21,6 +22,7 @@ export async function deleteFromCloudinary(publicId: string) {
 
     return response;
   } catch (error) {
+    console.log(error);
     return null;
   }
 }

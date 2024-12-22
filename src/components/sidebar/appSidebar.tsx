@@ -41,7 +41,7 @@ export default function AppSidebar() {
       const workspaces = await store.fetchWorkspaceData();
       setWorkspaces(workspaces);
     };
-    
+
     fetchWorkspaces();
   }, [store.workspaces]);
 
@@ -49,11 +49,7 @@ export default function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenuButton asChild>
-          <div
-            className={`flex ${
-              !isMobile && "flex-row-reverse"
-            } items-center justify-between`}
-          >
+          <div className={`flex ${!isMobile && "flex-row-reverse"} items-center justify-between`}>
             {!isMobile && <SidebarTriggerComponent state={state} />}
             <span className="cursor-pointer" onClick={() => router.push("/")}>
               kaizen

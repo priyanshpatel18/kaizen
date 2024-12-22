@@ -1,17 +1,11 @@
 "use client";
 
 import { Category, Option, Project } from "@/store";
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 import CreateTaskForm from "../forms/CreateTaskForm";
 import { Button } from "../ui/button";
@@ -24,10 +18,7 @@ interface CategoryProps {
   project: Project | null;
 }
 
-export default function CategoryComponent({
-  category,
-  project,
-}: CategoryProps) {
+export default function CategoryComponent({ category, project }: CategoryProps) {
   const categoryRef = useRef<HTMLDivElement>(null);
   const [isReordering, setIsReordering] = useState<boolean>(false);
   const [closestEdge, setClosestEdge] = useState(null);
@@ -68,17 +59,13 @@ export default function CategoryComponent({
         onDragEnter: (args) => {
           if (args.source.data.categoryId !== category.id) {
             // Update the closest edge when the draggable item enters the drop zone
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDrag: (args) => {
           // Continuously update the closest edge while dragging over the drop zone
           if (args.source.data.categoryId !== category.id) {
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDragLeave: () => {
@@ -95,25 +82,17 @@ export default function CategoryComponent({
 
   return (
     <div
-      className={`flex flex-col rounded-lg hover:border-border       
-          ${isReordering && "opacity-30"} relative`}
+      className={`flex flex-col rounded-lg hover:border-border ${isReordering && "opacity-30"} relative`}
       ref={categoryRef}
     >
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <h2 className="font-montserrat font-semibold text-md mb-2">
-          {category.name}
-        </h2>
-        <div className="flex gap-6 items-start">
+        <h2 className="text-md mb-2 font-montserrat font-semibold">{category.name}</h2>
+        <div className="flex items-start gap-6">
           <div className="flex flex-col gap-2">
             <ScrollArea className="max-h-fit overflow-y-auto">
               <div className="flex flex-col gap-2">
                 {category.tasks.map((task, index) => (
-                  <TaskCard
-                    key={index}
-                    task={task}
-                    taskId={task.id}
-                    title={task.title}
-                  />
+                  <TaskCard key={index} task={task} taskId={task.id} title={task.title} />
                 ))}
               </div>
             </ScrollArea>
@@ -128,18 +107,14 @@ export default function CategoryComponent({
               className="w-[200px] focus:border-none focus:ring-0"
               asChild
             >
-              <DialogTrigger className="flex items-center gap-2 justify-center">
+              <DialogTrigger className="flex items-center justify-center gap-2">
                 <span>Add Task</span>
               </DialogTrigger>
             </Button>
           </div>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap="24px" />}
-        <CreateTaskForm
-          taskOption={taskOption}
-          project={project}
-          setShowDialog={setShowDialog}
-        />
+        <CreateTaskForm taskOption={taskOption} project={project} setShowDialog={setShowDialog} />
       </Dialog>
     </div>
   );

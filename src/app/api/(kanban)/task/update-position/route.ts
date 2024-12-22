@@ -11,28 +11,22 @@ function getUpdatedPosition(tasks: Task[], newPosition: number, src: string, des
   const aboveTargetTask = tasks[newPosition - 1];
   const belowTargetTask = tasks[newPosition + 1];
 
-  let updatedPosition;
-
   if (targetTask === undefined) {
     // MOVED TASK TO EMPTY COLUMN
     // MOVED TASK TO BOTTOM FROM DIFFERENT COLUMN
     return (tasks.length + 1) * 1000;
-  }
-  else if (newPosition === 0 && targetTask !== undefined) {
+  } else if (newPosition === 0 && targetTask !== undefined) {
     // MOVED TASK TO TOP FROM SAME COLUMN
     // MOVED TASK TO TOP FROM DIFFERENT COLUMN
     return targetTask.position / 2;
-  }
-  else if (src !== dest) {
+  } else if (src !== dest) {
     // MOVED TASK TO DIFFERENT COLUMN
     // PERFORMING THIS TO RESTRICT GOING BELOW FOR 1 EDGE CASE - WHEN MOVING TASK TO SECOND LAST POSITION
-    return (targetTask.position + aboveTargetTask.position) / 2
-  }
-  else if (newPosition === tasks.length - 1) {
+    return (targetTask.position + aboveTargetTask.position) / 2;
+  } else if (newPosition === tasks.length - 1) {
     // MOVED TASK TO BOTTOM FROM SAME COLUMN
-    return ((targetTask.position * 2) + 1000) / 2;
-  }
-  else if (src === dest) {
+    return (targetTask.position * 2 + 1000) / 2;
+  } else if (src === dest) {
     if (task.position < targetTask.position) {
       return (targetTask.position + belowTargetTask.position) / 2;
     } else {
@@ -44,20 +38,9 @@ function getUpdatedPosition(tasks: Task[], newPosition: number, src: string, des
 
 export async function PUT(request: Request) {
   const body = await request.json();
-  const {
-    projectId,
-    sourceCategoryId,
-    destinationCategoryId,
-    taskId,
-    newPosition,
-  } = body;
+  const { projectId, sourceCategoryId, destinationCategoryId, taskId, newPosition } = body;
 
-  if (
-    !projectId ||
-    !sourceCategoryId ||
-    !destinationCategoryId ||
-    typeof newPosition !== "number"
-  ) {
+  if (!projectId || !sourceCategoryId || !destinationCategoryId || typeof newPosition !== "number") {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
   }
 
@@ -79,23 +62,13 @@ export async function PUT(request: Request) {
       },
     });
     if (!project) {
-      return NextResponse.json(
-        { message: "Project not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Project not found" }, { status: 404 });
     }
 
-    const sourceColumn = project.categories.find(
-      (category) => category.id === sourceCategoryId
-    );
-    const destinationColumn = project.categories.find(
-      (category) => category.id === destinationCategoryId
-    );
+    const sourceColumn = project.categories.find((category) => category.id === sourceCategoryId);
+    const destinationColumn = project.categories.find((category) => category.id === destinationCategoryId);
     if (!sourceColumn || !destinationColumn) {
-      return NextResponse.json(
-        { message: "Source or destination column not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Source or destination column not found" }, { status: 404 });
     }
 
     const task = sourceColumn.tasks.find((task) => task.id === taskId);
@@ -103,9 +76,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: "Task not found" }, { status: 404 });
     }
 
-    const sortedDestinationTasks = [...destinationColumn.tasks].sort(
-      (a, b) => a.position - b.position
-    );
+    const sortedDestinationTasks = [...destinationColumn.tasks].sort((a, b) => a.position - b.position);
 
     const updatedPosition = getUpdatedPosition(
       sortedDestinationTasks,
@@ -113,7 +84,7 @@ export async function PUT(request: Request) {
       sourceCategoryId,
       destinationCategoryId,
       task
-    )
+    );
     if (!updatedPosition) {
       return NextResponse.json({ message: "Something went wrong, please try again" }, { status: 400 });
     }
@@ -126,23 +97,14 @@ export async function PUT(request: Request) {
       },
     });
     if (!updatedTask) {
-      return NextResponse.json(
-        { message: "Something went wrong, please try again" },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: "Something went wrong, please try again" }, { status: 500 });
     }
     taskConfilctResolver(destinationCategoryId);
 
-    return NextResponse.json(
-      { message: "Position updated successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Position updated successfully" }, { status: 200 });
   } catch (error) {
     console.error("Error in PUT request:", error);
-    return NextResponse.json(
-      { message: "Error updating task position" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Error updating task position" }, { status: 500 });
   }
 }
 

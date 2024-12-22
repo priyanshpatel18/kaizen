@@ -1,7 +1,3 @@
 export default function Inbox() {
-  return (
-    <div>
-      InboxPage
-    </div>
-  );
+  return <div>InboxPage</div>;
 }

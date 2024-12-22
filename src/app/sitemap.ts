@@ -31,11 +31,8 @@ function getRoutes(): MetadataRoute.Sitemap {
 
     entries.forEach((entry) => {
       if (entry.isDirectory()) {
-        const isParenthetical =
-          entry.name.startsWith("(") && entry.name.endsWith(")");
-        const newRoutePrefix = isParenthetical
-          ? routePrefix
-          : `${routePrefix}/${entry.name}`;
+        const isParenthetical = entry.name.startsWith("(") && entry.name.endsWith(")");
+        const newRoutePrefix = isParenthetical ? routePrefix : `${routePrefix}/${entry.name}`;
 
         // Skip directories that are in the exclude list
         if (excludeDirs.includes(entry.name)) {
@@ -59,10 +56,7 @@ function getRoutes(): MetadataRoute.Sitemap {
 
           subEntries.forEach((subEntry) => {
             if (subEntry.isDirectory()) {
-              processDirectory(
-                path.join(subDir, subEntry.name),
-                `${newRoutePrefix}/${subEntry.name}`
-              );
+              processDirectory(path.join(subDir, subEntry.name), `${newRoutePrefix}/${subEntry.name}`);
             }
           });
         } else {
@@ -85,9 +79,9 @@ function getRoutes(): MetadataRoute.Sitemap {
     });
   }
 
-  const uniqueRoutes = Array.from(
-    new Set(routes.map((route) => route.url))
-  ).map((url) => routes.find((route) => route.url === url));
+  const uniqueRoutes = Array.from(new Set(routes.map((route) => route.url))).map((url) =>
+    routes.find((route) => route.url === url)
+  );
 
   return uniqueRoutes as MetadataRoute.Sitemap;
 }

@@ -3,27 +3,15 @@
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useRouter } from "next/navigation";
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function ForgotPassPage() {
   const [showResetPage, setShowResetPage] = useState<boolean>(false);
   const [otp, setOtp] = useState<string>("");
-  const [userData, setUserData] = useState<{ email: string; password: string }>(
-    { email: "", password: "" }
-  );
+  const [userData, setUserData] = useState<{ email: string; password: string }>({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
@@ -49,7 +37,7 @@ export default function ForgotPassPage() {
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
         setShowResetPage(true);
         toast.success(data.message);
@@ -101,12 +89,7 @@ export default function ForgotPassPage() {
   return (
     <main className="flex h-screen w-full items-center justify-center bg-gray-100 p-4 sm:p-0">
       {!showResetPage ? (
-        <ForgotPassForm
-          setUserData={setUserData}
-          userData={userData}
-          isLoading={isLoading}
-          sendOTP={sendOTP}
-        />
+        <ForgotPassForm setUserData={setUserData} userData={userData} isLoading={isLoading} sendOTP={sendOTP} />
       ) : (
         <ResetPasswordForm
           otp={otp}
@@ -129,19 +112,12 @@ interface ForgotPassFormProps {
   sendOTP: (e?: FormEvent<HTMLFormElement>, email?: string) => void;
 }
 
-function ForgotPassForm({
-  userData,
-  setUserData,
-  isLoading,
-  sendOTP,
-}: ForgotPassFormProps) {
+function ForgotPassForm({ userData, setUserData, isLoading, sendOTP }: ForgotPassFormProps) {
   return (
-    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
+    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl tracking-tighter font-bold text-gray-800">Forgot Password</h1>
-        <p className="text-sm text-gray-600">
-          Enter your email to verify your account
-        </p>
+        <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Forgot Password</h1>
+        <p className="text-sm text-gray-600">Enter your email to verify your account</p>
       </div>
       <form onSubmit={sendOTP} className="space-y-4">
         <Input
@@ -194,19 +170,12 @@ function ResetPasswordForm({
   }
 
   return (
-    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
+    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl tracking-tighter font-bold text-gray-800">
-          Verify and Reset Password
-        </h1>
-        <p className="text-sm text-gray-600">
-          Enter the OTP sent to your email and new password
-        </p>
+        <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Verify and Reset Password</h1>
+        <p className="text-sm text-gray-600">Enter the OTP sent to your email and new password</p>
       </div>
-      <form
-        onSubmit={resetPassword}
-        className="flex flex-col space-y-4 items-center"
-      >
+      <form onSubmit={resetPassword} className="flex flex-col items-center space-y-4">
         <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
           <InputOTPGroup>
             <InputOTPSlot index={0} />
@@ -234,9 +203,7 @@ function ResetPasswordForm({
           placeholder="New Password"
           className="w-full"
           value={userData.password}
-          onChange={(e) =>
-            setUserData({ ...userData, password: e.target.value })
-          }
+          onChange={(e) => setUserData({ ...userData, password: e.target.value })}
         />
 
         <Button className="w-full" type="submit" disabled={isLoading}>

@@ -35,11 +35,9 @@ export default function ConnectionStatus({ connectionType }: IProps) {
   }
 
   return (
-    <div className="absolute flex gap-2 items-center top-4 right-4 bg-slate-900 p-2 rounded-md">
-      <p className="text-white text-sm">{getConnectionStatusText()}</p>
-      <div
-        className={`w-3 h-3 rounded-full ${getConnectionStatusColor()}`}
-      ></div>
+    <div className="absolute right-4 top-4 flex items-center gap-2 rounded-md bg-slate-900 p-2">
+      <p className="text-sm text-white">{getConnectionStatusText()}</p>
+      <div className={`h-3 w-3 rounded-full ${getConnectionStatusColor()}`}></div>
     </div>
   );
 }

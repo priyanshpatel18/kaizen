@@ -2,11 +2,7 @@
 
 import AppSidebar from "@/components/sidebar/appSidebar";
 import SidebarTriggerComponent from "@/components/sidebar/SidebarTrigger";
-import {
-  SidebarInset,
-  SidebarProvider,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { SidebarInset, useSidebar } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -36,10 +32,7 @@ export default function Providers({ children }: { children: ReactNode }) {
             <SidebarInset>
               <main>
                 {sidebar.isMobile && (
-                  <SidebarTriggerComponent
-                    className="absolute top-2 left-2"
-                    state={sidebar.state}
-                  />
+                  <SidebarTriggerComponent className="absolute left-2 top-2" state={sidebar.state} />
                 )}
                 {children}
               </main>

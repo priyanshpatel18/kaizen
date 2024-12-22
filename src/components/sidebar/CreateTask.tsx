@@ -23,10 +23,7 @@ export default function CreateTask({ workspaces }: IProps) {
       }}
     >
       <SidebarMenu>
-        <SidebarMenuButton
-          onClick={() => setShowCreateTask(!showCreateTask)}
-          className="flex items-center mb-4"
-        >
+        <SidebarMenuButton onClick={() => setShowCreateTask(!showCreateTask)} className="mb-4 flex items-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-2">
@@ -41,10 +38,7 @@ export default function CreateTask({ workspaces }: IProps) {
         </SidebarMenuButton>
       </SidebarMenu>
 
-      <CreateTaskForm
-        workspaces={workspaces}
-        setShowDialog={setShowCreateTask}
-      />
+      <CreateTaskForm workspaces={workspaces} setShowDialog={setShowCreateTask} />
     </Dialog>
   );
 }

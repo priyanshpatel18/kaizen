@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Project, useStore } from "@/store";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Projects() {
   const store = useStore();
@@ -17,12 +17,20 @@ export default function Projects() {
     project.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const projects = await store.fetchProjectData();
+      setProjects(projects || []);
+    };
+    fetchProjects();
+  }, [store]);
+
   return (
-    <div className="p-6 h-screen flex flex-col">
+    <div className="flex h-screen flex-col p-6">
       <h1 className="text-3xl font-bold capitalize">My Projects</h1>
       <Separator className="my-4" />
 
-      <div className="max-w-5xl w-full flex flex-col self-center">
+      <div className="flex w-full max-w-5xl flex-col self-center">
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -33,9 +41,7 @@ export default function Projects() {
         {filteredProjects?.length === 0 ? (
           <p>No projects found.</p>
         ) : (
-          filteredProjects?.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))
+          filteredProjects?.map((project) => <ProjectCard key={project.id} project={project} />)
         )}
       </div>
     </div>
@@ -45,7 +51,7 @@ export default function Projects() {
 // ProjectCard Component
 function ProjectCard({ project }: { project: Project }) {
   return (
-    <div className="border border-gray-300 rounded-lg p-4 mb-4">
+    <div className="mb-4 rounded-lg border border-gray-300 p-4">
       <Link href={`/projects/${project.id}`} className="text-xl">
         {project.name}
       </Link>

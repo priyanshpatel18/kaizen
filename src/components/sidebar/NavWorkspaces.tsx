@@ -8,7 +8,7 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { useStore, Workspace } from "@/store";
-import { Ellipsis, FilePlus, Folder, FolderPlus, Forward, Hash, Plus, Trash2 } from "lucide-react";
+import { Ellipsis, FilePlus, Folder, FolderPlus, Forward, Hash, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CreateProjectForm from "../forms/CreateProjectForm";
@@ -23,11 +23,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-export default function NavWorkspaces({
-  workspaces,
-}: {
-  workspaces: Workspace[] | null;
-}) {
+export default function NavWorkspaces({ workspaces }: { workspaces: Workspace[] | null }) {
   // const [showProjects, setShowProjects] = useState<boolean>(false);
   const router = useRouter();
 
@@ -35,16 +31,12 @@ export default function NavWorkspaces({
   const [showWorkspaceForm, setShowWorkspaceForm] = useState<boolean>(false);
   const [showDialog, setShowDialog] = useState<boolean>(false);
 
-  const [defaultWorkspace, setDefaultWorkspace] = useState<Workspace | null>(
-    null
-  );
+  const [defaultWorkspace, setDefaultWorkspace] = useState<Workspace | null>(null);
   const store = useStore();
 
   useEffect(() => {
     if (store.workspaces) {
-      const defaultWorkspace = store.workspaces.find(
-        (workspace) => workspace.isDefault
-      );
+      const defaultWorkspace = store.workspaces.find((workspace) => workspace.isDefault);
       if (defaultWorkspace) {
         setDefaultWorkspace(defaultWorkspace);
       }
@@ -61,7 +53,7 @@ export default function NavWorkspaces({
               <span className="flex-1" onClick={() => router.push("/projects")}>
                 {defaultWorkspace.name}
               </span>
-              <div className="ml-auto flex gap-2 items-center">
+              <div className="ml-auto flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
@@ -101,7 +93,7 @@ export default function NavWorkspaces({
             <span className="flex-1" onClick={() => router.push("/projects")}>
               Workspaces
             </span>
-            <div className="ml-auto flex gap-2 items-center">
+            <div className="ml-auto flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
@@ -127,10 +119,7 @@ export default function NavWorkspaces({
             }
 
             return (
-              <SidebarMenuItem
-                key={workspace.id}
-                className="flex justify-between items-center"
-              >
+              <SidebarMenuItem key={workspace.id} className="flex items-center justify-between">
                 <SidebarMenuButton>
                   <Folder />
                   <div>{workspace.name}</div>
@@ -164,12 +153,7 @@ export default function NavWorkspaces({
         </SidebarMenuSub>
       </SidebarMenu>
 
-      {showWorkspaceForm && (
-        <CreateWorkspaceForm
-          workspaces={workspaces}
-          setShowWorkspaceForm={setShowWorkspaceForm}
-        />
-      )}
+      {showWorkspaceForm && <CreateWorkspaceForm workspaces={workspaces} setShowWorkspaceForm={setShowWorkspaceForm} />}
 
       {showProjectForm && (
         <CreateProjectForm

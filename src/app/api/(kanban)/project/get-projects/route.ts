@@ -2,9 +2,9 @@ import { getUserData } from "@/actions/getUserData";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     const user = await getUserData(session);
@@ -33,9 +33,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ projects });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

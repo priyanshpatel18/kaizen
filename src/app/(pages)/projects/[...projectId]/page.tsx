@@ -26,7 +26,7 @@ export default function ProjectPage() {
     if (!projectId) return null;
 
     const ws = allWorkspaces?.flatMap((ws) => ws.projects);
-    ws && setWorkspaceId(ws[0]?.workspaceId || null);
+    if (ws) setWorkspaceId(ws[0]?.workspaceId || null);
 
     const project = ws?.find((p) => p.id === id);
 
@@ -50,7 +50,7 @@ export default function ProjectPage() {
 
   return project ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <div className="p-6 h-screen flex">
+      <div className="flex h-screen p-6">
         <Project
           workspaceId={workspaceId}
           project={project}

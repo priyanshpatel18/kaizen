@@ -2,11 +2,7 @@
 
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { decryptData } from "@/lib/encrypt";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -71,24 +67,13 @@ export function VerifyOtpPage() {
 
   return (
     <main className="flex h-screen w-full items-center justify-center bg-gray-100 p-4 sm:p-0">
-      <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
+      <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-3xl tracking-tighter font-bold text-gray-800">
-            Verify Email
-          </h1>
-          <p className="text-sm text-gray-600">
-            Enter your otp sent to your email
-          </p>
+          <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Verify Email</h1>
+          <p className="text-sm text-gray-600">Enter your otp sent to your email</p>
         </div>
-        <form
-          onSubmit={handleVerifyOTP}
-          className="space-y-4 items-center flex flex-col"
-        >
-          <InputOTP
-            maxLength={6}
-            value={otp}
-            onChange={(value) => setOtp(value)}
-          >
+        <form onSubmit={handleVerifyOTP} className="flex flex-col items-center space-y-4">
+          <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
             <InputOTPGroup>
               <InputOTPSlot index={0} autoFocus />
               <InputOTPSlot index={1} />
@@ -99,17 +84,12 @@ export function VerifyOtpPage() {
             </InputOTPGroup>
           </InputOTP>
 
-          <p
-            onClick={handleResendOTP}
-            className="text-sm text-gray-600 self-end hover:underline cursor-pointer"
-          >
+          <p onClick={handleResendOTP} className="cursor-pointer self-end text-sm text-gray-600 hover:underline">
             Resend OTP
           </p>
 
           <Button className="w-full" type="submit" disabled={isLoading}>
-            {isLoading && (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Verify Email
           </Button>
         </form>

@@ -1,5 +1,5 @@
 import prisma from "@/db";
-import { decryptData, verifyToken } from "@/lib/encrypt";
+import { decryptData } from "@/lib/encrypt";
 import { signUpSchema } from "@/zod/user";
 import { hash } from "argon2";
 import { cookies } from "next/headers";
@@ -69,13 +69,12 @@ export async function POST(request: NextRequest) {
         throw new Error("Something went wrong, please try again");
       }
 
-
       await prisma.user.update({
         where: { id: user.id },
         data: {
           password: hashedPassword,
         },
-      })
+      });
       // Return the created user account
       return prisma.account.create({
         data: {
@@ -87,16 +86,10 @@ export async function POST(request: NextRequest) {
     cookies().set("user", encryptedData);
 
     if (result && result.userId) {
-      return NextResponse.json(
-        { message: "User created successfully" },
-        { status: 201 }
-      );
+      return NextResponse.json({ message: "User created successfully" }, { status: 201 });
     }
 
-    return NextResponse.json(
-      { message: "Failed to create account" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to create account" }, { status: 500 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors = error.flatten().fieldErrors;
@@ -112,17 +105,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: formattedMessage }, { status: 400 });
     }
 
-    if (
-      error instanceof Error &&
-      error.message === "Email already registered"
-    ) {
+    if (error instanceof Error && error.message === "Email already registered") {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
     console.error(error);
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

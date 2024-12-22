@@ -29,9 +29,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ label });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

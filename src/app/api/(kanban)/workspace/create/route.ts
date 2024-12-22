@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        projects: true
-      }
+        projects: true,
+      },
     });
 
     if (!workspace) {

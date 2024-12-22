@@ -12,6 +12,9 @@
 
 /inquirer.mjs
 
+# Lock
+/pnpm-lock.yaml
+
 # testing
 /coverage
 

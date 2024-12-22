@@ -23,10 +23,7 @@ export async function POST(request: NextRequest) {
       },
     });
     if (subs.length === 0) {
-      return NextResponse.json(
-        { message: "Users haven't enabled push notifications" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Users haven't enabled push notifications" }, { status: 404 });
     }
 
     for (const sub of subs) {
@@ -46,9 +43,7 @@ export async function POST(request: NextRequest) {
       message: `Notification${users.length > 1 && "s"} sent successfully`,
     });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Notifications could not be sent" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ message: "Notifications could not be sent" }, { status: 500 });
   }
 }

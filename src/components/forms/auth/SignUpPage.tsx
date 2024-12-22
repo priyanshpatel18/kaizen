@@ -3,13 +3,7 @@ import { useState } from "react";
 
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { encryptData } from "@/lib/encrypt";
 import { signUpSchema } from "@/zod/user";
@@ -88,14 +82,10 @@ export default function SignUpPage() {
 
   return (
     <main className="flex h-screen w-full items-center justify-center bg-gray-100 p-4 sm:p-0">
-      <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 sm:p-8 shadow-lg">
+      <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-3xl tracking-tighter font-bold text-gray-800">
-            Create an Account
-          </h1>
-          <p className="text-sm text-gray-600">
-            Enter your details to create a new account
-          </p>
+          <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Create an Account</h1>
+          <p className="text-sm text-gray-600">Enter your details to create a new account</p>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(sendOTP)} className="space-y-4">
@@ -107,12 +97,7 @@ export default function SignUpPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Email"
-                        className="w-full"
-                        {...field}
-                      />
+                      <Input type="email" placeholder="Email" className="w-full" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -125,11 +110,7 @@ export default function SignUpPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        {...field}
-                      />
+                      <Input type="password" placeholder="Password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -137,9 +118,7 @@ export default function SignUpPage() {
               />
             </div>
             <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
               Sign Up
             </Button>
           </form>
@@ -177,7 +156,7 @@ export default function SignUpPage() {
 
         <p className="text-center text-sm text-gray-500">
           Already have an account?{" "}
-          <Link href="/sign-in" className="hover:underline text-blue-500">
+          <Link href="/sign-in" className="text-blue-500 hover:underline">
             Sign In
           </Link>
         </p>

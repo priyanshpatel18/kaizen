@@ -1,12 +1,9 @@
-
 const SERVICE_WORKER_FILE_PATH = "/sw.js";
 
 // Check if notification is supported
 export function checkNotificationSupported(): boolean {
   return (
-    "serviceWorker" in navigator &&
-    "PushManager" in window &&
-    "showNotification" in ServiceWorkerRegistration.prototype
+    "serviceWorker" in navigator && "PushManager" in window && "showNotification" in ServiceWorkerRegistration.prototype
   );
 }
 

@@ -19,16 +19,12 @@ export function useSocket({ token }: useSocketProps) {
   const [reconnectAttempts, setReconnectAttempts] = useState<number>(0);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [connectionType, setConnectionType] = useState<ConnectionType | null>(
-    null
-  );
+  const [connectionType, setConnectionType] = useState<ConnectionType | null>(null);
 
   function getConnectionInfo(): ConnectionType | null {
     if ("connection" in navigator) {
       const connection =
-        navigator.connection ||
-        (navigator as any).mozConnection ||
-        (navigator as any).webkitConnection;
+        navigator.connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
 
       if (connection && typeof connection === "object") {
         return connection.effectiveType || null;

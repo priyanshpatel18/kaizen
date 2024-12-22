@@ -37,7 +37,6 @@ interface token extends JWT {
 //      Create Google account
 // 7. Return user
 
-
 // Workflow (Credentials):
 // 1. Get Credentials
 // 2. Check if user already exists
@@ -66,9 +65,7 @@ export const authOptions: AuthOptions = {
         });
 
         if (user) {
-          const googleAccount = user.accounts.find(
-            (account) => account.provider === "GOOGLE"
-          );
+          const googleAccount = user.accounts.find((account) => account.provider === "GOOGLE");
 
           if (!googleAccount) {
             await prisma.account.create({
@@ -132,9 +129,7 @@ export const authOptions: AuthOptions = {
         });
 
         if (user) {
-          const hasEmailAccount = user.accounts.some(
-            (account) => account.provider === "EMAIL"
-          );
+          const hasEmailAccount = user.accounts.some((account) => account.provider === "EMAIL");
 
           if (hasEmailAccount && user.password) {
             const isMatch = await verify(user.password, password);
@@ -157,7 +152,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         const token = await generateToken({
           userId: user?.id as string,
-          email: user?.email as string
+          email: user?.email as string,
         });
 
         await prisma.user.update({

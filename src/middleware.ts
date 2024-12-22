@@ -22,7 +22,10 @@ export default withAuth(
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    if (req.nextUrl.pathname !== "/onboard/profile" && !cookies().get("onboarded") || cookies().get("onboarded")?.value === "false") {
+    if (
+      (req.nextUrl.pathname !== "/onboard/profile" && !cookies().get("onboarded")) ||
+      cookies().get("onboarded")?.value === "false"
+    ) {
       return NextResponse.redirect(new URL("/onboard/profile", req.url));
     }
     return NextResponse.next();

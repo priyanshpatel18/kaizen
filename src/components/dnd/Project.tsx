@@ -5,15 +5,7 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hitbox/util/get-reorder-destination-index";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
-import {
-  Dispatch,
-  FormEvent,
-  ReactNode,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, FormEvent, ReactNode, SetStateAction, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -67,12 +59,8 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
 
   // CANNOT CHECK
   const reorderColumn = useCallback(
-    ({
-      sourceIndex,
-      destinationIndex,
-      sourceColumnId,
-      destinationColumnId,
-    }: ReorderColumnProps) => {
+    // ({ sourceIndex, destinationIndex, sourceColumnId, destinationColumnId }: ReorderColumnProps) => {
+    ({ sourceIndex, destinationIndex }: ReorderColumnProps) => {
       if (sourceIndex === undefined || destinationIndex === undefined) return;
 
       if (!project) return;
@@ -111,12 +99,8 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
       // Ensure source and destination columns exist
       if (!project) return;
 
-      const sourceColumnData = project?.categories.find(
-        (column) => column.id === sourceColumnId
-      );
-      const destinationColumnData = project?.categories.find(
-        (column) => column.id === destinationColumnId
-      );
+      const sourceColumnData = project?.categories.find((column) => column.id === sourceColumnId);
+      const destinationColumnData = project?.categories.find((column) => column.id === destinationColumnId);
 
       if (!sourceColumnData || !destinationColumnData) {
         console.error("Invalid source or destination column ID");
@@ -124,10 +108,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
       }
 
       // Ensure the card index in source column is valid
-      if (
-        movedCardIndexInSourceColumn < 0 ||
-        movedCardIndexInSourceColumn >= sourceColumnData.tasks.length
-      ) {
+      if (movedCardIndexInSourceColumn < 0 || movedCardIndexInSourceColumn >= sourceColumnData.tasks.length) {
         console.error("Invalid card index in source column");
         return;
       }
@@ -141,10 +122,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
 
       // Insert the card into the destination column at the specified index
       const updatedDestinationCards = [...destinationColumnData.tasks];
-      const destinationIndex = Math.min(
-        movedCardIndexInDestinationColumn,
-        updatedDestinationCards.length
-      );
+      const destinationIndex = Math.min(movedCardIndexInDestinationColumn, updatedDestinationCards.length);
       updatedDestinationCards.splice(destinationIndex, 0, cardToMove);
 
       // Update the state with the modified source and destination columns
@@ -190,13 +168,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
       store.setWorkspaces(updatedWorkspaces || []);
 
       if (newData) {
-        changePosition(
-          sourceColumnId,
-          destinationColumnId,
-          destinationIndex,
-          false,
-          cardToMove.id
-        );
+        changePosition(sourceColumnId, destinationColumnId, destinationIndex, false, cardToMove.id);
       }
     },
     [project]
@@ -209,9 +181,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
       if (startIndex === finishIndex) return;
 
       // Find the source column by ID
-      const sourceColumnData = project?.categories.find(
-        (column) => column.id === columnId
-      );
+      const sourceColumnData = project?.categories.find((column) => column.id === columnId);
 
       if (sourceColumnData) {
         const updatedItems = reorder({
@@ -283,14 +253,10 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
         const sourceColumnId = sourceColumnRecord.data.categoryId;
 
         // Get the data of the source column
-        const sourceColumnData = project?.categories.find(
-          (category) => category.id === sourceColumnId
-        );
+        const sourceColumnData = project?.categories.find((category) => category.id === sourceColumnId);
 
         // Get the index of the card in the source column
-        const indexOfSource = sourceColumnData?.tasks.findIndex(
-          (task) => task.id === draggedCardId
-        );
+        const indexOfSource = sourceColumnData?.tasks.findIndex((task) => task.id === draggedCardId);
 
         if (location.current.dropTargets.length === 1) {
           // Tasks are dropped in the different column
@@ -303,10 +269,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
           if (sourceColumnId === destinationColumnId) {
             const destinationIndex = getReorderDestinationIndex({
               startIndex: indexOfSource!,
-              indexOfTarget:
-                project?.categories.findIndex(
-                  (category) => category.id === destinationColumnId
-                )! - 1,
+              indexOfTarget: project?.categories.findIndex((category) => category.id === destinationColumnId) - 1,
               closestEdgeOfTarget: null,
               axis: "vertical",
             });
@@ -320,9 +283,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
             return;
           }
 
-          const destinationColumn = project?.categories.find(
-            (col) => col.id === destinationColumnId
-          );
+          const destinationColumn = project?.categories.find((col) => col.id === destinationColumnId);
 
           // Dropped in the empty space in the column
           const destinationIndex = getReorderDestinationIndex({
@@ -340,16 +301,13 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
           });
         }
         if (location.current.dropTargets.length === 2) {
-          const [destinationCardRecord, destinationColumnRecord] =
-            location.current.dropTargets;
+          const [destinationCardRecord, destinationColumnRecord] = location.current.dropTargets;
 
           // Retrieve the ID of the destination column
           const destinationColumnId = destinationColumnRecord.data.categoryId;
 
           // Retrieve the destination column data using the destination column ID
-          const destinationColumn = project?.categories.find(
-            (col) => col.id === destinationColumnId
-          );
+          const destinationColumn = project?.categories.find((col) => col.id === destinationColumnId);
 
           if (destinationColumn) {
             // Find the index of the target card within the destination column's cards
@@ -358,9 +316,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
             );
 
             // Determine the closest edge of the target card: top or bottom
-            const closestEdgeOfTarget = extractClosestEdge(
-              destinationCardRecord.data
-            );
+            const closestEdgeOfTarget = extractClosestEdge(destinationCardRecord.data);
 
             if (sourceColumnId === destinationColumnId) {
               const destinationIndex = getReorderDestinationIndex({
@@ -379,10 +335,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
               return;
             }
 
-            const destinationIndex =
-              closestEdgeOfTarget === "bottom"
-                ? indexOfTarget + 1
-                : indexOfTarget;
+            const destinationIndex = closestEdgeOfTarget === "bottom" ? indexOfTarget + 1 : indexOfTarget;
 
             moveCard({
               movedCardIndexInSourceColumn: indexOfSource!,
@@ -395,9 +348,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
       }
 
       if (source.data.type === "category" && source.data.categoryId) {
-        const sourceIndex = project?.categories.findIndex(
-          (col) => col.id === source.data.categoryId
-        );
+        const sourceIndex = project?.categories.findIndex((col) => col.id === source.data.categoryId);
 
         const destinationIndex = project?.categories.findIndex(
           (col) => col.id === location.current.dropTargets[0].data.categoryId
@@ -408,8 +359,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
             sourceIndex,
             destinationIndex,
             sourceColumnId: source.data.categoryId,
-            destinationColumnId:
-              location.current.dropTargets[0].data.categoryId,
+            destinationColumnId: location.current.dropTargets[0].data.categoryId,
           });
         }
       }
@@ -429,19 +379,16 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
     }
 
     try {
-      const res = await fetch(
-        `/api/${isCategoryUpdated ? "category" : "task"}/update-position`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            projectId: project.id,
-            sourceCategoryId: sourceColumnId,
-            destinationCategoryId: destinationColumnId,
-            taskId,
-            newPosition,
-          }),
-        }
-      );
+      const res = await fetch(`/api/${isCategoryUpdated ? "category" : "task"}/update-position`, {
+        method: "PUT",
+        body: JSON.stringify({
+          projectId: project.id,
+          sourceCategoryId: sourceColumnId,
+          destinationCategoryId: destinationColumnId,
+          taskId,
+          newPosition,
+        }),
+      });
 
       const data = await res.json();
       if (!res.ok) {
@@ -451,6 +398,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
         return data;
       }
     } catch (error) {
+      console.error(error);
       toast.error("Something went wrong");
       return null;
     }
@@ -512,13 +460,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
       <h1 className="text-3xl font-semibold">{project?.name}</h1>
       <div className="flex gap-6">
         {project?.categories.map((category) => {
-          return (
-            <CategoryComponent
-              key={category.id}
-              category={category}
-              project={project}
-            />
-          );
+          return <CategoryComponent key={category.id} category={category} project={project} />;
         })}
         {showCategoryInput ? (
           <form className="flex flex-col gap-2" onSubmit={createCategory}>
@@ -536,7 +478,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
                 Add Category
               </Button>
               <div
-                className="cursor-pointer flex items-center px-4 border-muted-background rounded-md border-2 hover:bg-accent"
+                className="border-muted-background flex cursor-pointer items-center rounded-md border-2 px-4 hover:bg-accent"
                 onClick={() => setShowCategoryInput(false)}
               >
                 Cancel
@@ -544,11 +486,7 @@ export default function Project({ project, setProject, workspaceId }: IProps) {
             </div>
           </form>
         ) : (
-          <Button
-            variant="outline"
-            onClick={() => setShowCategoryInput(!showCategoryInput)}
-            className="w-[200px]"
-          >
+          <Button variant="outline" onClick={() => setShowCategoryInput(!showCategoryInput)} className="w-[200px]">
             Add Category
           </Button>
         )}

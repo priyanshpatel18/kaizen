@@ -24,21 +24,13 @@ interface EncryptedUser {
 }
 
 function isEncryptedUser(obj: unknown): obj is EncryptedUser {
-  return (
-    typeof obj === "object" &&
-    obj !== null &&
-    "email" in obj &&
-    "password" in obj
-  );
+  return typeof obj === "object" && obj !== null && "email" in obj && "password" in obj;
 }
-
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const { otp } = await z
-    .object({ otp: z.string() })
-    .parseAsync(body);
+  const { otp } = await z.object({ otp: z.string() }).parseAsync(body);
 
   if (!otp) {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
@@ -50,7 +42,7 @@ export async function POST(request: NextRequest) {
       where: {
         code: otp,
       },
-    })
+    });
     if (!verify || verify.expiresAt < new Date() || verify.code !== otp) {
       return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
     }
@@ -71,17 +63,13 @@ export async function POST(request: NextRequest) {
       // Cast to EncryptedUser after verifying the structure
       const decryptToken = decryptedToken.payload as unknown;
       if (!isEncryptedUser(decryptToken)) {
-        return NextResponse.json(
-          { message: "Invalid token structure" },
-          { status: 400 }
-        );
+        return NextResponse.json({ message: "Invalid token structure" }, { status: 400 });
       }
 
       const user = await prisma.user.update({
         where: { email: decryptToken.email },
         data: { isVerified: true },
       });
-
 
       await sendMail(decryptToken.email, "Welcome to Kaizen", OnboardingTemplate());
       cookies().set({
@@ -92,8 +80,7 @@ export async function POST(request: NextRequest) {
       const encryptedUser = await encryptData({
         email: user.email,
         password: decryptToken.password,
-      })
-
+      });
 
       return NextResponse.json({ message: "Account created successfully", user: encryptedUser }, { status: 200 });
     }
@@ -103,9 +90,7 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json({ message: "OTP verified successfully" });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

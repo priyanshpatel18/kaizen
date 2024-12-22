@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (body.signUpFlag === true) {
-      const token = cookies().get("user")?.value;
+      const token = (await cookies()).get("user")?.value;
       if (!token) {
         return NextResponse.json({ message: "Token not found" }, { status: 400 });
       }
@@ -72,9 +72,12 @@ export async function POST(request: NextRequest) {
       });
 
       await sendMail(decryptToken.email, "Welcome to Kaizen", OnboardingTemplate());
-      cookies().set({
+      (await cookies()).set({
         name: "sidebar:state",
         value: "true",
+      });
+      (await cookies()).delete({
+        name: "user",
       });
 
       const encryptedUser = await encryptData({

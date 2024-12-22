@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         },
       });
     });
-    cookies().set("user", encryptedData);
+    (await cookies()).set("user", encryptedData);
 
     if (result && result.userId) {
       return NextResponse.json({ message: "User created successfully" }, { status: 201 });

@@ -22,8 +22,8 @@ export default function ProjectPage() {
   const selectedProject = useMemo(() => {
     const allWorkspaces = store.workspaces || workspaces || [];
 
-    const id = projectId[0];
     if (!projectId) return null;
+    const id = projectId[0];
 
     const ws = allWorkspaces?.flatMap((ws) => ws.projects);
     if (ws) setWorkspaceId(ws[0]?.workspaceId || null);

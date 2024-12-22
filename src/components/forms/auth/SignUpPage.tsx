@@ -81,86 +81,84 @@ export default function SignUpPage() {
   }
 
   return (
-    <main className="flex h-screen w-full items-center justify-center bg-gray-100 p-4 sm:p-0">
-      <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
-        <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Create an Account</h1>
-          <p className="text-sm text-gray-600">Enter your details to create a new account</p>
-        </div>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(sendOTP)} className="space-y-4">
-            <div className="flex flex-col gap-4 py-2">
-              <FormField
-                control={form.control}
-                name="email"
-                disabled={isLoading}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input type="email" placeholder="Email" className="w-full" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                disabled={isLoading}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input type="password" placeholder="Password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-              Sign Up
-            </Button>
-          </form>
-        </Form>
-
-        <Button
-          className="w-full"
-          disabled={isLoading}
-          onClick={async () => {
-            const res = await signIn("google", {
-              callbackUrl: "/onboard/profile",
-            });
-
-            if (!res?.error) {
-              toast.success("Signed In");
-            } else {
-              toast.error("oops something went wrong..!");
-            }
-          }}
-        >
-          {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-          Sign up with Google
-        </Button>
-
-        <div className="text-center text-sm text-gray-500">
-          By signing up, you agree to our{" "}
-          <Link href="/terms-of-service" className="underline">
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link href="/privacy-policy" className="underline">
-            Privacy Policy
-          </Link>
-        </div>
-
-        <p className="text-center text-sm text-gray-500">
-          Already have an account?{" "}
-          <Link href="/sign-in" className="text-blue-500 hover:underline">
-            Sign In
-          </Link>
-        </p>
+    <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
+      <div className="flex flex-col space-y-2 text-center">
+        <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Create an Account</h1>
+        <p className="text-sm text-gray-600">Enter your details to create a new account</p>
       </div>
-    </main>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(sendOTP)} className="space-y-4">
+          <div className="flex flex-col gap-4 py-2">
+            <FormField
+              control={form.control}
+              name="email"
+              disabled={isLoading}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="email" placeholder="Email" className="w-full" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              disabled={isLoading}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="password" placeholder="Password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <Button className="w-full" type="submit" disabled={isLoading}>
+            {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+            Sign Up
+          </Button>
+        </form>
+      </Form>
+
+      <Button
+        className="w-full"
+        disabled={isLoading}
+        onClick={async () => {
+          const res = await signIn("google", {
+            callbackUrl: "/onboard/profile",
+          });
+
+          if (!res?.error) {
+            toast.success("Signed In");
+          } else {
+            toast.error("oops something went wrong..!");
+          }
+        }}
+      >
+        {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+        Sign up with Google
+      </Button>
+
+      <div className="text-center text-sm text-gray-500">
+        By signing up, you agree to our{" "}
+        <Link href="/terms-of-service" className="underline">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy-policy" className="underline">
+          Privacy Policy
+        </Link>
+      </div>
+
+      <p className="text-center text-sm text-gray-500">
+        Already have an account?{" "}
+        <Link href="/sign-in" className="text-blue-500 hover:underline">
+          Sign In
+        </Link>
+      </p>
+    </div>
   );
 }

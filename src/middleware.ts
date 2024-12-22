@@ -2,7 +2,6 @@ import { getToken } from "next-auth/jwt";
 import { withAuth } from "next-auth/middleware";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { toast } from "sonner";
 
 const publicPages = ["/sign-up", "/sign-in", "/forgot-password"];
 
@@ -18,15 +17,13 @@ export default withAuth(
     }
 
     if (!isAuth) {
-      toast.error("Sign-in first to continue");
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    if (
-      (req.nextUrl.pathname !== "/onboard/profile" && !cookies().get("onboarded")) ||
-      cookies().get("onboarded")?.value === "false"
-    ) {
-      return NextResponse.redirect(new URL("/onboard/profile", req.url));
+    const onBoarded = (await cookies()).get("onboarded");
+
+    if (req.nextUrl.pathname === "/onboard/profile" && onBoarded && onBoarded.value === "true") {
+      return NextResponse.redirect(new URL("/", req.url));
     }
     return NextResponse.next();
   },

@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    cookies().set("onboarded", "true");
+    (await cookies()).set("onboarded", "true");
 
     return NextResponse.json(
       { message: "Profile Created successfully", name, profilePicture: secure_url },

@@ -31,9 +31,7 @@ export default function Providers({ children }: { children: ReactNode }) {
             <AppSidebar />
             <SidebarInset>
               <main>
-                {sidebar.isMobile && (
-                  <SidebarTriggerComponent className="absolute left-2 top-2" state={sidebar.state} />
-                )}
+                {sidebar.isMobile && <SidebarTriggerComponent state={sidebar.state} />}
                 {children}
               </main>
             </SidebarInset>

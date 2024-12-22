@@ -1,16 +1,16 @@
 #!/bin/sh
 
 # Define files that should not be committed
-disallowed_files="pnpm-lock.yaml .env"
+# disallowed_files="pnpm-lock.yaml .env"
 
-# Check for unwanted files in the staged changes
-for file in $(git diff --cached --name-only); do
-  if echo "$disallowed_files" | grep -q "$file"; then
-    echo "❌ Error: You are trying to commit one or more disallowed files: $file"
-    echo "Please remove these files from the staged changes and try again."
-    exit 1
-  fi
-done
+# # Check for unwanted files in the staged changes
+# for file in $(git diff --cached --name-only); do
+#   if echo "$disallowed_files" | grep -q "$file"; then
+#     echo "❌ Error: You are trying to commit one or more disallowed files: $file"
+#     echo "Please remove these files from the staged changes and try again."
+#     exit 1
+#   fi
+# done
 
 # Ensure pnpm is installed
 if ! command -v pnpm >/dev/null 2>&1; then

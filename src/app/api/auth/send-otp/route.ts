@@ -1,42 +1,44 @@
 import { generateAndSendOtp } from "@/actions/emailService";
 import prisma from "@/db";
-import { genSalt, hash } from "bcrypt";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+// Workflow:
+// 1. Verify Schema
+// 2. If signUpFlag is true
+//      Check if user already exists
+// 3. Generate and send otp
+// 4. Encrypt otp in cookies
+// 5. Return Response Message
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const { email } = await z
-    .object({ email: z.string().email() })
-    .parseAsync(body);
-
+  const { email } = await z.object({ email: z.string().email() }).parseAsync(body);
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      return NextResponse.json(
-        { message: "Email already exists" },
-        { status: 400 }
-      );
+    if (body.signUpFlag === true) {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: { accounts: true },
+      });
+      if (user && user.accounts.some((account) => account.provider === "EMAIL")) {
+        return NextResponse.json({ message: "Email already exists" }, { status: 400 });
+      }
     }
 
     const otp = await generateAndSendOtp(email);
     if (!otp) {
-      return NextResponse.json(
-        { message: "Failed to send otp. Check your email and try again" },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: "Failed to send otp. Check your email and try again" }, { status: 500 });
     }
 
-    const hashedOtp = await hash(otp, await genSalt(10));
-
-    cookies().set({
-      name: "verificiation_token",
-      value: hashedOtp,
-      path: "/",
-      maxAge: 60 * 5,
+    // Delete Invalid OTP
+    await prisma.otp.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
     });
 
     return NextResponse.json({ message: `Email sent to ${email}` });
@@ -49,9 +51,7 @@ export async function POST(request: NextRequest) {
 
         const firstError = fieldErrors[firstErrorKey]?.[0];
         if (firstError === "Required") {
-          return `${firstErrorKey.charAt(0).toUpperCase()}${firstErrorKey.slice(
-            1
-          )} is required`;
+          return `${firstErrorKey.charAt(0).toUpperCase()}${firstErrorKey.slice(1)} is required`;
         }
         return firstError || "Invalid input";
       })();
@@ -59,9 +59,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: formattedMessage }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

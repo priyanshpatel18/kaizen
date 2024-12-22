@@ -1,17 +1,7 @@
 "use client";
 
-import SignInPage from "@/components/forms/SignInPage";
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import SignInPage from "@/components/forms/auth/SignInPage";
 
 export default function SignIn() {
-  const session = useSession();
-
-  useEffect(() => {
-    if (session.status === "authenticated") {
-      window.location.href = "/";
-    }
-  }, [session]);
-
   return <SignInPage />;
 }

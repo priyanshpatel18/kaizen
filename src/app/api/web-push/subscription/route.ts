@@ -15,10 +15,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await getUserData(session);
     if (!user) {
-      return NextResponse.json(
-        { message: "Please sign in first" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "Please sign in first" }, { status: 404 });
     }
 
     let subscription = await prisma.pushSubscription.findFirst({
@@ -33,10 +30,7 @@ export async function POST(request: NextRequest) {
         subscription.expirationTime === body.subscription.expirationTime;
 
       if (isEqual) {
-        return NextResponse.json(
-          { message: "Subscription data is already up to date" },
-          { status: 200 }
-        );
+        return NextResponse.json({ message: "Subscription data is already up to date" }, { status: 200 });
       }
 
       await prisma.pushSubscription.update({
@@ -49,10 +43,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json(
-        { message: "Allowed Push Notifications" },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: "Allowed Push Notifications" }, { status: 200 });
     }
 
     subscription = await prisma.pushSubscription.create({
@@ -66,17 +57,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!subscription) {
-      return NextResponse.json(
-        { message: "Something went wrong, please try again" },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: "Something went wrong, please try again" }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { message: "Allowed Push Notifications" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Allowed Push Notifications" }, { status: 200 });
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
       {
         message: "Something went wrong, please try again",

@@ -1,50 +1,51 @@
 import prisma from "@/db";
 import { forgotPasswordSchema } from "@/zod/user";
-import { compare, genSalt, hash } from "bcrypt";
-import { cookies } from "next/headers";
+import { hash } from "argon2";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+// Workflow:
+// 1. Verify Schema
+// 2. Verify OTP
+// 3. Find User
+// 4. Hash Password
+// 5. Update Password
+// 6. Return Response Message
+
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { email, password, otp } = await forgotPasswordSchema.parseAsync(body);
+  const { password, otp } = await forgotPasswordSchema.parseAsync(body);
 
-  if (!email || !password || !otp) {
+  if (!password || !otp) {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
   }
 
   try {
+    const verify = await prisma.otp.findFirst({
+      where: {
+        code: otp,
+      },
+    });
+    if (!verify || verify.expiresAt < new Date() || verify.code !== otp) {
+      return NextResponse.json({ message: "Invalid OTP" }, { status: 400 });
+    }
+    await prisma.otp.delete({
+      where: {
+        id: verify.id,
+      },
+    });
+
     const user = await prisma.user.findFirst({
-      where: { email },
+      where: { email: verify.email },
       include: { accounts: true },
     });
-    
 
     if (user) {
-      const hasAccount = user.accounts.some(
-        (account) => account.provider === "EMAIL"
-      );
+      const hasAccount = user.accounts.some((account) => account.provider === "EMAIL");
 
       if (hasAccount) {
-        const token = cookies().get("verificiation_token")?.value;
-        if (!token) {
-          return NextResponse.json(
-            { message: "Resent OTP and try again" },
-            { status: 400 }
-          );
-        }
-
-        const isVerified = compare(otp, token);
-        if (!isVerified) {
-          return NextResponse.json(
-            { message: "Incorrect OTP" },
-            { status: 400 }
-          );
-        }
-
         // Hash password
-        const salt = await genSalt(10);
-        const hashedPassword = await hash(password, salt);
+        const hashedPassword = await hash(password);
 
         await prisma.user.update({
           where: { id: user.id },
@@ -54,16 +55,10 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Password Reset Successfully" });
       }
 
-      return NextResponse.json(
-        { message: "Try again with Google sign in" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Try again with Google sign in" }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { message: "Account doesn't exist" },
-      { status: 400 }
-    );
+    return NextResponse.json({ message: "Account doesn't exist" }, { status: 400 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       const fieldErrors = error.flatten().fieldErrors;
@@ -82,16 +77,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: formattedMessage }, { status: 400 });
     }
 
-    if (
-      error instanceof Error &&
-      error.message === "Email already registered"
-    ) {
+    if (error instanceof Error && error.message === "Email already registered") {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

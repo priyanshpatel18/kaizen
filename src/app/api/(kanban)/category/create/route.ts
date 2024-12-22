@@ -45,10 +45,7 @@ export async function POST(request: NextRequest) {
     };
 
     if (!category) {
-      return NextResponse.json(
-        { message: "Something went wrong" },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -56,9 +53,7 @@ export async function POST(request: NextRequest) {
       category: categoryResponse,
     });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

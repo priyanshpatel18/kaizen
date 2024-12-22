@@ -74,7 +74,6 @@ export const useStore = create<ProjectState>((set) => ({
 
   fetchProjectData: async () => {
     set({ loading: true });
-    console.log("Fetching project data...");
 
     try {
       const res = await fetch("/api/project/get-projects", {
@@ -115,7 +114,7 @@ export const useStore = create<ProjectState>((set) => ({
 
       const data = await res.json();
       if (!res.ok) {
-        return null
+        return null;
       }
 
       const workspaces = data.workspaces as Workspace[];
@@ -126,12 +125,11 @@ export const useStore = create<ProjectState>((set) => ({
       }
 
       return null;
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error fetching workspace data:", error);
       return null;
     } finally {
       set({ loading: false });
     }
-  }
+  },
 }));

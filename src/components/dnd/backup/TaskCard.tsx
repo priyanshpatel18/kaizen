@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
@@ -61,17 +55,13 @@ export default function TaskCard({ id, title }: TaskProps) {
         onDragEnter: (args) => {
           if (args.source.data.cardId !== id) {
             // Update the closest edge when the draggable item enters the drop zone
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDrag: (args) => {
           // Continuously update the closest edge while dragging over the drop zone
           if (args.source.data.cardId !== id) {
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDragLeave: () => {
@@ -88,10 +78,7 @@ export default function TaskCard({ id, title }: TaskProps) {
 
   return (
     <div
-      className={`
-        ${isDragging && "border-black opacity-30"} 
-        rounded-lg p-6 relative cursor-pointer flex gap-4 items-center border-border border-2
-      `}
+      className={` ${isDragging && "border-black opacity-30"} relative flex cursor-pointer items-center gap-4 rounded-lg border-2 border-border p-6`}
       ref={cardRef}
     >
       {/* <p className="text-xs">{id}</p> */}

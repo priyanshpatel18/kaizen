@@ -2,17 +2,14 @@ import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { User } from "@/types/common";
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   const sessionUser = session?.user as User;
 
   if (!sessionUser) {
-    return NextResponse.json(
-      { message: "Please sign in first" },
-      { status: 404 }
-    );
+    return NextResponse.json({ message: "Please sign in first" }, { status: 404 });
   }
 
   try {
@@ -22,10 +19,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found. Please try again" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found. Please try again" }, { status: 404 });
     }
 
     const userData = {
@@ -37,9 +31,7 @@ export async function GET(request: NextRequest) {
     };
     return NextResponse.json({ user: userData }, { status: 200 });
   } catch (error) {
-    return NextResponse.json(
-      { message: "Something went wrong. Please try again" },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ message: "Something went wrong. Please try again" }, { status: 500 });
   }
 }

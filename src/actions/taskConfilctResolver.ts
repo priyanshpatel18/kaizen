@@ -4,15 +4,15 @@ export default async function taskConfilctResolver(categoryId: string) {
   try {
     const category = await prisma.category.findUnique({
       where: {
-        id: categoryId
+        id: categoryId,
       },
       include: {
         tasks: {
           orderBy: {
-            updatedAt: "asc"
-          }
-        }
-      }
+            updatedAt: "asc",
+          },
+        },
+      },
     });
     if (!category) {
       return;
@@ -39,11 +39,11 @@ export default async function taskConfilctResolver(categoryId: string) {
       const updatedTasks = sortedTasksByUpdatedAt.map((task, index) =>
         prisma.task.update({
           where: {
-            id: task.id
+            id: task.id,
           },
           data: {
-            position: (index + 1) * 1000
-          }
+            position: (index + 1) * 1000,
+          },
         })
       );
 

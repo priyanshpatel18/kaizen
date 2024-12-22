@@ -2,14 +2,7 @@
 
 import ConnectionStatus from "@/components/ConnectionStatus";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useUserSocket } from "@/hooks/useUserSocket";
 import { CONNECTED } from "@/messages";
@@ -20,7 +13,7 @@ import { toast } from "sonner";
 
 export default function TestPage() {
   const { data } = useSession();
-  
+
   const { socket, connectionType } = useUserSocket();
   const [labels, setLabels] = useState<Label[]>([]);
   const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -88,6 +81,7 @@ export default function TestPage() {
         toast.error("Error creating label");
       }
     } catch (error) {
+      console.log(error);
       toast.error("Something went wrong, please try again");
     } finally {
       setShowDialog(false);
@@ -96,11 +90,11 @@ export default function TestPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen w-screen gap-4 p-6">
+    <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 p-6">
       <p className="text-lg font-semibold">{data?.user?.email}</p>
 
       <ConnectionStatus connectionType={connectionType} />
-      <ul className="flex flex-col items-center gap-1 mt-4">
+      <ul className="mt-4 flex flex-col items-center gap-1">
         {labels.map((label) => (
           <li key={label.id} className="font-medium">
             {label.name}

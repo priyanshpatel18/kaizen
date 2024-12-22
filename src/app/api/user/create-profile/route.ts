@@ -2,6 +2,7 @@ import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { deleteFromCloudinary, uploadToCloudinary } from "@/lib/helper";
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -16,10 +17,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json(
-        { message: "Please sign in first to continue" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "Please sign in first to continue" }, { status: 401 });
     }
 
     const user = await prisma.user.findFirst({
@@ -48,10 +46,7 @@ export async function POST(request: NextRequest) {
 
       const response = await uploadToCloudinary(fileUri, profile.name);
       if (!response) {
-        return NextResponse.json(
-          { message: "Failed to upload profile" },
-          { status: 500 }
-        );
+        return NextResponse.json({ message: "Failed to upload profile" }, { status: 500 });
       }
 
       secure_url = response.secure_url;
@@ -67,15 +62,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    (await cookies()).set("onboarded", "true");
+
     return NextResponse.json(
       { message: "Profile Created successfully", name, profilePicture: secure_url },
       { status: 200 }
     );
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

@@ -10,24 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-} from "lucide-react";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
+import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SessionUser } from "./appSidebar";
+import { useRouter } from "next/navigation";
 
 interface User {
   user: SessionUser | undefined;
@@ -35,18 +23,20 @@ interface User {
 
 export default function NavUser({ user }: { user: User["user"] }) {
   const { isMobile } = useSidebar();
-  const router = useRouter();
-  const [profilePicture, setProfilePicture] = useState<string | undefined>(
-    undefined
-  );
+  const [profilePicture, setProfilePicture] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
 
-  useEffect(() => {
-    setProfilePicture(
-      localStorage.getItem("profilePicture")?.replace(/"/g, "") || undefined
-    );
+  const router = useRouter();
 
-    setName(localStorage.getItem("name")?.replace(/"/g, "") || undefined);
+  useEffect(() => {
+    const profilePicture = localStorage.getItem("profilePicture")?.replace(/"/g, "");
+    const name = localStorage.getItem("name")?.replace(/"/g, "");
+
+    if (!name) {
+      router.push("/onboard/profile");
+    }
+    setProfilePicture(profilePicture || undefined);
+    setName(name || undefined);
   }, []);
   return (
     <SidebarMenu>
@@ -55,13 +45,8 @@ export default function NavUser({ user }: { user: User["user"] }) {
           <DropdownMenuTrigger asChild className="border-0">
             <SidebarMenuButton size="lg" className="focus-visible:ring-0">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage
-                  src={profilePicture || undefined}
-                  alt={name || "profile"}
-                />
-                <AvatarFallback className="rounded-lg">
-                  {name?.charAt(0) || "U"}
-                </AvatarFallback>
+                <AvatarImage src={profilePicture || undefined} alt={name || "profile"} />
+                <AvatarFallback className="rounded-lg">{name?.charAt(0) || "U"}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{name}</span>
@@ -80,13 +65,8 @@ export default function NavUser({ user }: { user: User["user"] }) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage
-                    src={profilePicture || undefined}
-                    alt={name || "profile"}
-                  />
-                  <AvatarFallback className="rounded-lg">
-                    {name?.charAt(0) || "U"}
-                  </AvatarFallback>
+                  <AvatarImage src={profilePicture || undefined} alt={name || "profile"} />
+                  <AvatarFallback className="rounded-lg">{name?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{name}</span>

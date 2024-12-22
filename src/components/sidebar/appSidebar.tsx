@@ -29,7 +29,6 @@ export default function AppSidebar() {
   const { state, isMobile } = useSidebar();
 
   const store = useStore();
-
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
 
   useEffect(() => {
@@ -50,11 +49,7 @@ export default function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenuButton asChild>
-          <div
-            className={`flex ${
-              !isMobile && "flex-row-reverse"
-            } items-center justify-between`}
-          >
+          <div className={`flex ${!isMobile && "flex-row-reverse"} items-center justify-between`}>
             {!isMobile && <SidebarTriggerComponent state={state} />}
             <span className="cursor-pointer" onClick={() => router.push("/")}>
               kaizen

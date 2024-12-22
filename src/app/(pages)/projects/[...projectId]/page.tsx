@@ -22,11 +22,11 @@ export default function ProjectPage() {
   const selectedProject = useMemo(() => {
     const allWorkspaces = store.workspaces || workspaces || [];
 
-    const id = projectId[0];
     if (!projectId) return null;
+    const id = projectId[0];
 
     const ws = allWorkspaces?.flatMap((ws) => ws.projects);
-    ws && setWorkspaceId(ws[0]?.workspaceId || null);
+    if (ws) setWorkspaceId(ws[0]?.workspaceId || null);
 
     const project = ws?.find((p) => p.id === id);
 
@@ -50,7 +50,7 @@ export default function ProjectPage() {
 
   return project ? (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <div className="p-6 h-screen flex">
+      <div className="flex h-screen p-6">
         <Project
           workspaceId={workspaceId}
           project={project}

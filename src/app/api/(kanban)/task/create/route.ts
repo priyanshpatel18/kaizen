@@ -29,10 +29,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!category) {
-      return NextResponse.json(
-        { message: "No Category! Create a category and try again" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "No Category! Create a category and try again" }, { status: 404 });
     }
 
     const tasks = await prisma.task.count({
@@ -51,10 +48,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!task) {
-      return NextResponse.json(
-        { message: "Task not created" },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: "Task not created" }, { status: 500 });
     }
 
     taskConfilctResolver(category.id);
@@ -62,9 +56,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Task created successfully", task });
   } catch (error) {
     console.log(error);
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

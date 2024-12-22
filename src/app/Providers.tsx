@@ -2,11 +2,7 @@
 
 import AppSidebar from "@/components/sidebar/appSidebar";
 import SidebarTriggerComponent from "@/components/sidebar/SidebarTrigger";
-import {
-  SidebarInset,
-  SidebarProvider,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { SidebarInset, useSidebar } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -18,13 +14,15 @@ const authRoutes = [
   "/sign-in",
   "/sign-up",
   "/forgot-password",
+  "/reset-password",
+  "/verify-otp",
   "/test",
 ];
 
 export default function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const sidebar = useSidebar();
-  
+
   return (
     <SessionProvider>
       <TooltipProvider>
@@ -33,12 +31,7 @@ export default function Providers({ children }: { children: ReactNode }) {
             <AppSidebar />
             <SidebarInset>
               <main>
-                {sidebar.isMobile && (
-                  <SidebarTriggerComponent
-                    className="absolute top-2 left-2"
-                    state={sidebar.state}
-                  />
-                )}
+                {sidebar.isMobile && <SidebarTriggerComponent state={sidebar.state} />}
                 {children}
               </main>
             </SidebarInset>

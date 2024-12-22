@@ -4,23 +4,10 @@ import { cn } from "@/lib/utils";
 import { Option, Project, useStore, Workspace } from "@/store";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useRouter } from "next/navigation";
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useEffect,
-  useState,
-} from "react";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "../ui/command";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { DialogContent, DialogHeader } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -32,14 +19,9 @@ interface IProps {
   setShowProjectForm: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function CreateProjectForm({
-  workspaces,
-  selectedWorkspaceId,
-  setShowProjectForm,
-}: IProps) {
+export default function CreateProjectForm({ workspaces, selectedWorkspaceId, setShowProjectForm }: IProps) {
   const [projectName, setProjectName] = useState<string>("");
   const store = useStore();
-  const router = useRouter();
   const [currentState, setCurrentState] = useState<Option | null>(null);
   const [list, setList] = useState<Option[]>([]);
   useEffect(() => {
@@ -72,9 +54,7 @@ export default function CreateProjectForm({
     const formData = new FormData();
     formData.append("name", projectName);
     if (!currentState?.value) {
-      return toast.error(
-        "Something went wrong, please refresh the page and try again"
-      );
+      return toast.error("Something went wrong, please refresh the page and try again");
     }
     formData.append("workspaceId", currentState.value);
 
@@ -116,7 +96,7 @@ export default function CreateProjectForm({
         <DialogTitle>Create Project</DialogTitle>
       </DialogHeader>
 
-      <form onSubmit={createProject} className="space-y-4 flex flex-col">
+      <form onSubmit={createProject} className="flex flex-col space-y-4">
         <Label>
           <span className="sr-only">Enter Project Name</span>
           <Input
@@ -128,11 +108,7 @@ export default function CreateProjectForm({
           />
         </Label>
 
-        <WorkspaceComboBox
-          currentState={currentState}
-          setCurrentState={setCurrentState}
-          list={list}
-        />
+        <WorkspaceComboBox currentState={currentState} setCurrentState={setCurrentState} list={list} />
 
         <Button type="submit">
           <span>Create Project</span>
@@ -162,11 +138,7 @@ function WorkspaceComboBox({ currentState, list, setCurrentState }: CBProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          className="w-1/2 justify-between"
-        >
+        <Button variant="outline" role="combobox" className="w-1/2 justify-between">
           {currentState?.label || "Select an option"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -178,18 +150,9 @@ function WorkspaceComboBox({ currentState, list, setCurrentState }: CBProps) {
           <CommandList>
             <CommandGroup>
               {list.map((v, index) => (
-                <CommandItem
-                  key={index}
-                  onSelect={() => handleSelect(v.value)}
-                  className="cursor-pointer"
-                >
+                <CommandItem key={index} onSelect={() => handleSelect(v.value)} className="cursor-pointer">
                   <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      currentState?.value === v?.value
-                        ? "opacity-100"
-                        : "opacity-0"
-                    )}
+                    className={cn("mr-2 h-4 w-4", currentState?.value === v?.value ? "opacity-100" : "opacity-0")}
                   />
                   {v.label}
                 </CommandItem>

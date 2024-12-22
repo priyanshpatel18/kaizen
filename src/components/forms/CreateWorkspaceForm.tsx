@@ -1,8 +1,4 @@
-import {
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useStore, Workspace } from "@/store";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "sonner";
@@ -15,10 +11,7 @@ interface IProps {
   setShowWorkspaceForm: Dispatch<SetStateAction<boolean>>;
 }
 
-export default function CreateWorkspaceForm({
-  workspaces,
-  setShowWorkspaceForm,
-}: IProps) {
+export default function CreateWorkspaceForm({ workspaces, setShowWorkspaceForm }: IProps) {
   const [workspaceName, setWorkspaceName] = useState<string>("");
   const store = useStore();
 
@@ -47,11 +40,7 @@ export default function CreateWorkspaceForm({
 
       toast.success(data.message);
 
-      if (
-        workspaces &&
-        workspaces.length > 0 &&
-        (data.workspace as Workspace)
-      ) {
+      if (workspaces && workspaces.length > 0 && (data.workspace as Workspace)) {
         const updatedWorkspaces = [...workspaces];
         updatedWorkspaces.push(data.workspace);
         store.setWorkspaces(updatedWorkspaces);
@@ -70,7 +59,7 @@ export default function CreateWorkspaceForm({
       <DialogHeader>
         <DialogTitle>Create Workspace</DialogTitle>
       </DialogHeader>
-      <form onSubmit={createWorkspace} className="space-y-4 flex flex-col">
+      <form onSubmit={createWorkspace} className="flex flex-col space-y-4">
         <Label>
           <span className="sr-only">Enter Task Title</span>
           <Input

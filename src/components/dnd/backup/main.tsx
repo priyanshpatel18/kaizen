@@ -4,7 +4,6 @@ import { getReorderDestinationIndex } from "@atlaskit/pragmatic-drag-and-drop-hi
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import CategoryComponent from "../Category";
 
 interface HandleDropProps {
@@ -49,12 +48,8 @@ export default function Main({ selectedProject }: IProps) {
   const [projects, setProjects] = useState<Project[] | null>(null);
 
   const reorderCategory = useCallback(
-    async ({
-      sourceIndex,
-      destinationIndex,
-      sourceCategoryId,
-      destinationCategoryId,
-    }: ReorderCategoryProps) => {
+    // async ({ sourceIndex, destinationIndex, sourceCategoryId, destinationCategoryId }: ReorderCategoryProps) => {
+    async ({ sourceIndex, destinationIndex }: ReorderCategoryProps) => {
       if (sourceIndex === undefined || destinationIndex === undefined) return;
 
       if (!selectedProject) {
@@ -74,7 +69,7 @@ export default function Main({ selectedProject }: IProps) {
       };
 
       // Send request to database
-      
+
       // Update the project in the projectsData state
       const updatedProjects = projects?.map((project) => {
         if (project.id === selectedProject.id) {
@@ -90,18 +85,11 @@ export default function Main({ selectedProject }: IProps) {
   );
 
   const moveTask = useCallback(
-    async ({
-      sourceIndex,
-      sourceCategoryId,
-      destinationIndex,
-      destinationCategoryId,
-    }: MoveTaskProps) => {
+    async ({ sourceIndex, sourceCategoryId, destinationIndex, destinationCategoryId }: MoveTaskProps) => {
       // Ensure source and destination categories exist
       if (!selectedProject) return;
 
-      const sourceCategoryData = selectedProject?.categories.find(
-        (category) => category.id === sourceCategoryId
-      );
+      const sourceCategoryData = selectedProject?.categories.find((category) => category.id === sourceCategoryId);
       const destinationCategoryData = selectedProject?.categories.find(
         (category) => category.id === destinationCategoryId
       );
@@ -121,14 +109,10 @@ export default function Main({ selectedProject }: IProps) {
       const task = sourceCategoryData.tasks[sourceIndex];
 
       // Remove the task from the source category
-      const updatedSourceTasks = [
-        ...sourceCategoryData.tasks.splice(sourceIndex, 1),
-      ];
+      const updatedSourceTasks = [...sourceCategoryData.tasks.splice(sourceIndex, 1)];
 
       // Insert the task into the destination category at the specified index
-      const updatedDestinationTasks = [
-        ...destinationCategoryData.tasks.splice(destinationIndex, 0, task),
-      ];
+      const updatedDestinationTasks = [...destinationCategoryData.tasks.splice(destinationIndex, 0, task)];
 
       // Update the state with the modified source and destination categories
       const newData = selectedProject?.categories.map((category) => {
@@ -147,7 +131,7 @@ export default function Main({ selectedProject }: IProps) {
         return category;
       });
 
-      const isLast = destinationCategoryData.tasks.length === destinationIndex;
+      // const isLast = destinationCategoryData.tasks.length === destinationIndex;
 
       if (newData) {
         // Send request to database
@@ -170,14 +154,13 @@ export default function Main({ selectedProject }: IProps) {
   );
 
   const reorderTask = useCallback(
-    ({ categoryId, startIndex, finishIndex, taskId }: ReorderTaskProps) => {
+    // ({ categoryId, startIndex, finishIndex, taskId }: ReorderTaskProps) => {
+    ({ categoryId, startIndex, finishIndex }: ReorderTaskProps) => {
       // Ensure the startIndex and finishIndex are different; no need to reorder if they’re the same
       if (startIndex === finishIndex) return;
 
       // Find the source category by ID
-      const sourceCategoryData = selectedProject?.categories.find(
-        (category) => category.id === categoryId
-      );
+      const sourceCategoryData = selectedProject?.categories.find((category) => category.id === categoryId);
 
       if (sourceCategoryData) {
         const updatedItems = reorder({
@@ -200,11 +183,7 @@ export default function Main({ selectedProject }: IProps) {
         });
 
         // Send request to database
-        if (
-          selectedProject?.categories.find(
-            (category) => category.id === categoryId
-          )
-        ) {
+        if (selectedProject?.categories.find((category) => category.id === categoryId)) {
           // Send request to database
         }
 
@@ -242,31 +221,24 @@ export default function Main({ selectedProject }: IProps) {
         const sourceCategoryId = sourceCategoryRecord.data.categoryId;
 
         // Get the data of the source category
-        const sourceCategoryData = selectedProject?.categories.find(
-          (category) => category.id === sourceCategoryId
-        );
+        const sourceCategoryData = selectedProject?.categories.find((category) => category.id === sourceCategoryId);
 
         // Get the index of the task in the source category
-        const indexOfSource = sourceCategoryData?.tasks.findIndex(
-          (task) => task.id === draggedTaskId
-        );
+        const indexOfSource = sourceCategoryData?.tasks.findIndex((task) => task.id === draggedTaskId);
 
         if (location.current.dropTargets.length === 1) {
           // Tasks are dropped in the different categories
           const [destinationCategoryRecord] = location.current.dropTargets;
 
           // Retrieve the ID of the destination category
-          const destinationCategoryId =
-            destinationCategoryRecord.data.categoryId;
+          const destinationCategoryId = destinationCategoryRecord.data.categoryId;
 
           // Check if the source and destination categories are the same
           if (sourceCategoryId === destinationCategoryId) {
             const destinationIndex = getReorderDestinationIndex({
               startIndex: indexOfSource!,
               indexOfTarget:
-                selectedProject?.categories.findIndex(
-                  (category) => category.id === destinationCategoryId
-                )! - 1,
+                selectedProject?.categories.findIndex((category) => category.id === destinationCategoryId) - 1,
               closestEdgeOfTarget: null,
               axis: "vertical",
             });
@@ -300,12 +272,10 @@ export default function Main({ selectedProject }: IProps) {
           });
         }
         if (location.current.dropTargets.length === 2) {
-          const [destinationTaskRecord, destinationCategoryRecord] =
-            location.current.dropTargets;
+          const [destinationTaskRecord, destinationCategoryRecord] = location.current.dropTargets;
 
           // Retrieve the ID of the destination category
-          const destinationCategoryId =
-            destinationCategoryRecord.data.categoryId;
+          const destinationCategoryId = destinationCategoryRecord.data.categoryId;
 
           // Retrieve the destination category data using the destination category ID
           const destinationCategory = selectedProject?.categories.find(
@@ -319,9 +289,7 @@ export default function Main({ selectedProject }: IProps) {
             );
 
             // Determine the closest edge of the target task: top or bottom
-            const closestEdgeOfTarget = extractClosestEdge(
-              destinationCategoryRecord.data
-            );
+            const closestEdgeOfTarget = extractClosestEdge(destinationCategoryRecord.data);
             if (sourceCategoryId === destinationCategoryId) {
               const destinationIndex = getReorderDestinationIndex({
                 startIndex: indexOfSource!,
@@ -339,10 +307,7 @@ export default function Main({ selectedProject }: IProps) {
               return;
             }
 
-            const destinationIndex =
-              closestEdgeOfTarget === "bottom"
-                ? indexOfTarget + 1
-                : indexOfTarget;
+            const destinationIndex = closestEdgeOfTarget === "bottom" ? indexOfTarget + 1 : indexOfTarget;
 
             moveTask({
               sourceIndex: indexOfSource!,
@@ -355,13 +320,10 @@ export default function Main({ selectedProject }: IProps) {
       }
 
       if (source.data.type === "category" && source.data.categoryId) {
-        const sourceIndex = selectedProject?.categories.findIndex(
-          (category) => category.id === source.data.categoryId
-        );
+        const sourceIndex = selectedProject?.categories.findIndex((category) => category.id === source.data.categoryId);
 
         const destinationIndex = selectedProject?.categories.findIndex(
-          (category) =>
-            category.id === location.current.dropTargets[0].data.categoryId
+          (category) => category.id === location.current.dropTargets[0].data.categoryId
         );
 
         if (sourceIndex !== -1 && destinationIndex !== -1) {
@@ -369,8 +331,7 @@ export default function Main({ selectedProject }: IProps) {
             sourceIndex,
             destinationIndex,
             sourceCategoryId: source.data.categoryId,
-            destinationCategoryId:
-              location.current.dropTargets[0].data.categoryId,
+            destinationCategoryId: location.current.dropTargets[0].data.categoryId,
           });
         }
       }
@@ -378,40 +339,37 @@ export default function Main({ selectedProject }: IProps) {
     [selectedProject, reorderTask]
   );
 
-  async function changePosition(
-    sourceCategoryId: string,
-    destinationCategoryId: string,
-    newPosition: number,
-    isCategoryUpdated?: boolean,
-    taskId?: string
-  ) {
-    if (!selectedProject) {
-      return toast.error("Something went wrong");
-    }
+  // async function changePosition(
+  //   sourceCategoryId: string,
+  //   destinationCategoryId: string,
+  //   newPosition: number,
+  //   isCategoryUpdated?: boolean,
+  //   taskId?: string
+  // ) {
+  //   if (!selectedProject) {
+  //     return toast.error("Something went wrong");
+  //   }
 
-    try {
-      const res = await fetch(
-        `/api/${isCategoryUpdated ? "category" : "task"}/update-position`,
-        {
-          method: "PUT",
-          body: JSON.stringify({
-            projectId: selectedProject.id,
-            sourceCategoryId,
-            destinationCategoryId,
-            taskId,
-            newPosition,
-          }),
-        }
-      );
+  //   try {
+  //     const res = await fetch(`/api/${isCategoryUpdated ? "category" : "task"}/update-position`, {
+  //       method: "PUT",
+  //       body: JSON.stringify({
+  //         projectId: selectedProject.id,
+  //         sourceCategoryId,
+  //         destinationCategoryId,
+  //         taskId,
+  //         newPosition,
+  //       }),
+  //     });
 
-      const data = await res.json();
-      if (!res.ok) {
-        return toast.error(data.message);
-      }
-    } catch (error) {
-      return toast.error("Something went wrong");
-    }
-  }
+  //     const data = await res.json();
+  //     if (!res.ok) {
+  //       return toast.error(data.message);
+  //     }
+  //   } catch (error) {
+  //     return toast.error("Something went wrong");
+  //   }
+  // }
 
   useEffect(() => {
     return monitorForElements({
@@ -431,11 +389,7 @@ export default function Main({ selectedProject }: IProps) {
       <div className="flex gap-6">
         {selectedProject &&
           selectedProject.categories.map((category, index) => (
-            <CategoryComponent
-              key={index}
-              category={category}
-              project={selectedProject}
-            />
+            <CategoryComponent key={index} category={category} project={selectedProject} />
           ))}
       </div>
     </div>

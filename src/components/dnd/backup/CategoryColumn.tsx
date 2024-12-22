@@ -1,22 +1,9 @@
 "use client";
 
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import {
-  draggable,
-  dropTargetForElements,
-} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import {
-  Dispatch,
-  FormEvent,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useRef, useState } from "react";
 // @ts-ignore
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,13 +21,7 @@ interface ColumnProps {
   setProjectsData: Dispatch<SetStateAction<Project[] | null>>;
 }
 
-export default function CategoryColumn({
-  name,
-  id,
-  projectId,
-  projectsData,
-  setProjectsData,
-}: ColumnProps) {
+export default function CategoryColumn({ name, id, projectId, projectsData, setProjectsData }: ColumnProps) {
   const columnRef = useRef<HTMLDivElement>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [closestEdge, setClosestEdge] = useState(null);
@@ -78,17 +59,13 @@ export default function CategoryColumn({
         onDragEnter: (args) => {
           if (args.source.data.columnId !== id) {
             // Update the closest edge when the draggable item enters the drop zone
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDrag: (args) => {
           // Continuously update the closest edge while dragging over the drop zone
           if (args.source.data.columnId !== id) {
-            setClosestEdge(
-              extractClosestEdge(args.self.data) as SetStateAction<null>
-            );
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
           }
         },
         onDragLeave: () => {
@@ -126,9 +103,7 @@ export default function CategoryColumn({
         setTaskTitle("");
 
         // Find the project that matches projectId
-        const selectedProject = projectsData?.find(
-          (project) => project.id === projectId
-        );
+        const selectedProject = projectsData?.find((project) => project.id === projectId);
 
         selectedProject?.categories.forEach((category) => {
           if (category.id === id) {
@@ -146,20 +121,20 @@ export default function CategoryColumn({
         }
       }
     } catch (error) {
+      console.error(error);
       toast.error("Something went wrong");
     }
   }
 
   return (
     <div
-      className={`min-w-[300px] flex flex-col border-[1px] p-4 border-muted-foreground rounded-lg hover:border-border 
-        ${isReordering && "opacity-30"} relative`}
+      className={`flex min-w-[300px] flex-col rounded-lg border-[1px] border-muted-foreground p-4 hover:border-border ${isReordering && "opacity-30"} relative`}
       ref={columnRef}
     >
-      <h1 className="text-lg font-bold mb-1">{name}</h1>
-      <h3 className="text-xs mb-4">{id}</h3>
+      <h1 className="mb-1 text-lg font-bold">{name}</h1>
+      <h3 className="mb-4 text-xs">{id}</h3>
       <form
-        className="flex flex-col gap-2 p-2 border-muted-foreground rounded-lg border-[0.5px] mb-4"
+        className="mb-4 flex flex-col gap-2 rounded-lg border-[0.5px] border-muted-foreground p-2"
         onSubmit={createTask}
       >
         <Input
@@ -167,13 +142,13 @@ export default function CategoryColumn({
           onChange={(e) => setTaskTitle(e.target.value)}
           placeholder="Task Title"
           type="text"
-          className="bg-gray-900 text-gray-200 border-muted-foreground focus:border-border"
+          className="border-muted-foreground bg-gray-900 text-gray-200 focus:border-border"
         />
         <Button variant="secondary" type="submit">
           Create Task
         </Button>
       </form>
-      <div className="space-y-2 flex-1">
+      <div className="flex-1 space-y-2">
         {projectsData?.map((project) => {
           return project.categories.map((category) => {
             if (category.id === id && category.tasks) {

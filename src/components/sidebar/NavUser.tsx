@@ -38,6 +38,7 @@ export default function NavUser({ user }: { user: User["user"] }) {
     setProfilePicture(profilePicture || undefined);
     setName(name || undefined);
   }, []);
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>

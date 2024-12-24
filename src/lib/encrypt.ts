@@ -1,10 +1,7 @@
-import { EncryptJWT, SignJWT, jwtDecrypt, jwtVerify } from "jose";
+import { CompactEncrypt, SignJWT, compactDecrypt, importJWK, jwtVerify } from "jose";
 
 // Load keys from environment variables
-const KEY = process.env.NEXT_PUBLIC_SECRET || "";
-
-const BASE_URL = process.env.NEXTAUTH_URL || "http://localhost:3000";
-const SECRET_KEY = new TextEncoder().encode(KEY);
+const SECRET_KEY = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "");
 
 // Generate a JWT token
 export const generateToken = async (payload: Record<string, any>, expiresIn: string = "1h") => {
@@ -18,24 +15,28 @@ export const verifyToken = async (token: string) => {
 };
 
 // Encrypt data using the public key
-export const encryptData = async (data: Record<string, any>) => {
-  const ENCODING_KEY = Uint8Array.from(atob(KEY), (c) => c.charCodeAt(0));
+export const encryptData = async (data: Record<string, any>, key: string) => {
+  const encoder = new TextEncoder();
+  const jwk = JSON.parse(Buffer.from(key, "base64").toString("utf-8"));
+  const publicKey = await importJWK(jwk, "RSA-OAEP");
+  const jsonData = JSON.stringify(data);
 
-  return await new EncryptJWT(data)
-    .setProtectedHeader({ alg: "dir", enc: "A256GCM" })
-    .setIssuedAt()
-    .setAudience(BASE_URL)
-    .setIssuer(BASE_URL)
-    .setExpirationTime("2h")
-    .encrypt(ENCODING_KEY);
+  const encrypted = await new CompactEncrypt(encoder.encode(jsonData))
+    .setProtectedHeader({ alg: "RSA-OAEP", enc: "A256GCM" })
+    .encrypt(publicKey);
+
+  return encrypted;
 };
 
 // Decrypt data using the private key
-export const decryptData = async (encryptedData: string) => {
-  const ENCODING_KEY = Uint8Array.from(atob(KEY), (c) => c.charCodeAt(0));
+export const decryptData = async (encryptedData: string, key: string) => {
+  const jwk = JSON.parse(Buffer.from(key, "base64").toString("utf-8"));
 
-  return await jwtDecrypt(encryptedData, ENCODING_KEY, {
-    audience: BASE_URL,
-    issuer: BASE_URL,
-  });
+  const privateKey = await importJWK(jwk, "RSA-OAEP");
+
+  const { plaintext } = await compactDecrypt(encryptedData, privateKey);
+  const decoder = new TextDecoder();
+  const decodedData = JSON.parse(decoder.decode(plaintext));
+
+  return decodedData;
 };

@@ -3,8 +3,6 @@
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { decryptData } from "@/lib/encrypt";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
@@ -35,21 +33,6 @@ export function VerifyOtpPage() {
 
       if (res.ok) {
         toast.success(data.message);
-
-        const encryptedData = data.user;
-
-        // Decrypt the body
-        const user = await decryptData(encryptedData);
-        if (!user) {
-          return toast.error("Something went wrong");
-        }
-
-        await signIn("credentials", {
-          redirect: false,
-          email: user.payload.email,
-          password: user.payload.password,
-        });
-
         router.push("/onboard/profile");
       } else {
         toast.error(data.message);

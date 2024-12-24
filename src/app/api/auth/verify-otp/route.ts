@@ -1,10 +1,13 @@
 import OnboardingTemplate from "@/components/emailTemplates/OnboardingTemplate";
 import prisma from "@/db";
-import { decryptData, encryptData } from "@/lib/encrypt";
+import { decryptData } from "@/lib/encrypt";
 import { sendMail } from "@/lib/resend";
+import { hash } from "argon2";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 // Workflow:
 // 1. Verify Schema
@@ -21,10 +24,6 @@ import { z } from "zod";
 interface EncryptedUser {
   email: string;
   password: string;
-}
-
-function isEncryptedUser(obj: unknown): obj is EncryptedUser {
-  return typeof obj === "object" && obj !== null && "email" in obj && "password" in obj;
 }
 
 export async function POST(request: NextRequest) {
@@ -53,25 +52,91 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Token not found" }, { status: 400 });
       }
 
-      // Decrypt token and assert the payload type
-      const decryptedToken = await decryptData(token as string);
+      const result = await prisma.$transaction(async (prisma) => {
+        // Decrypt token
+        const decryptedToken = (await decryptData(token as string, PRIVATE_KEY as string)) as EncryptedUser;
+        if (!decryptedToken) {
+          return null;
+        }
 
-      if (!decryptedToken || !decryptedToken.payload) {
-        return NextResponse.json({ message: "Invalid token" }, { status: 400 });
-      }
+        // Find User
+        let user = await prisma.user.findFirst({
+          where: { email: decryptedToken.email },
+          include: { accounts: true },
+        });
 
-      // Cast to EncryptedUser after verifying the structure
-      const decryptToken = decryptedToken.payload as unknown;
-      if (!isEncryptedUser(decryptToken)) {
-        return NextResponse.json({ message: "Invalid token structure" }, { status: 400 });
-      }
+        // If user does not exist, create a new user
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: decryptedToken.email,
+              password: await hash(decryptedToken.password),
+              isVerified: true,
+              accounts: {
+                create: {
+                  provider: "EMAIL",
+                },
+              },
+            },
+            include: { accounts: true },
+          });
+        } else {
+          user = await prisma.user.update({
+            where: { email: decryptedToken.email },
+            data: {
+              isVerified: true,
+              accounts: {
+                create: {
+                  provider: "EMAIL",
+                },
+              },
+            },
+            include: { accounts: true },
+          });
+        }
 
-      const user = await prisma.user.update({
-        where: { email: decryptToken.email },
-        data: { isVerified: true },
+        // Create Workspace
+        const workspace = await prisma.workspace.create({
+          data: {
+            name: "My Projects",
+            isDefault: true,
+            userWorkspace: {
+              create: {
+                userId: user.id,
+              },
+            },
+          },
+        });
+        if (!workspace) return null;
+
+        const newProject = await prisma.project.create({
+          data: {
+            name: "Inbox",
+            workspaceId: workspace.id,
+            userId: user.id,
+            isDefault: true,
+          },
+        });
+        if (!newProject) return null;
+
+        const defaultCategory = await prisma.category.create({
+          data: {
+            name: "default",
+            isDefault: true,
+            projectId: newProject.id,
+          },
+        });
+        if (!defaultCategory) return null;
+
+        return user;
       });
 
-      await sendMail(decryptToken.email, "Welcome to Kaizen", OnboardingTemplate());
+      if (!result || !result.email) {
+        console.log("Error: User does not have a valid email or result is null");
+        return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
+      }
+
+      await sendMail(result.email, "Welcome to Kaizen", OnboardingTemplate());
       (await cookies()).set({
         name: "sidebar:state",
         value: "true",
@@ -80,12 +145,7 @@ export async function POST(request: NextRequest) {
         name: "user",
       });
 
-      const encryptedUser = await encryptData({
-        email: user.email,
-        password: decryptToken.password,
-      });
-
-      return NextResponse.json({ message: "Account created successfully", user: encryptedUser }, { status: 200 });
+      return NextResponse.json({ message: "Account created successfully" }, { status: 200 });
     }
 
     await prisma.otp.deleteMany({

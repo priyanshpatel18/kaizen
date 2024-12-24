@@ -31,45 +31,32 @@ export default function SignUpPage() {
   async function sendOTP(values: z.infer<typeof signUpSchema>) {
     setIsLoading(true);
     try {
+      const publicKey = process.env.NEXT_PUBLIC_PUBLIC_KEY;
+      if (!publicKey || typeof publicKey !== "string") {
+        console.error("Missing or invalid public key");
+        return toast.error("Something went wrong");
+      }
+      const encryptedData = await encryptData(
+        {
+          email: values.email,
+          password: values.password,
+        },
+        publicKey
+      );
+
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email: values.email,
-          signUpFlag: true,
-        }),
+        body: JSON.stringify({ encryptedData, signUpFlag: true }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Encrypt the body
-        const encryptedData = await encryptData({
-          email: values.email,
-          password: values.password,
-        });
-        const body = JSON.stringify({
-          encryptedData: `${encryptedData}`,
-        });
-
-        const response = await fetch("/api/auth/sign-up", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body,
-        });
-
-        const responseData = await response.json();
-
-        if (response.ok) {
-          toast.success(data.message);
-          router.push("/verify-otp");
-        } else {
-          toast.error(responseData.message);
-        }
+        toast.success(data.message);
+        router.push("/verify-otp");
       } else {
         toast.error(data.message);
       }
@@ -83,7 +70,7 @@ export default function SignUpPage() {
   return (
     <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
       <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-3xl font-bold tracking-tighter text-gray-800">Create an Account</h1>
+        <h1 className="tracking text-3xl font-bold text-gray-800">Create an Account</h1>
         <p className="text-sm text-gray-600">Enter your details to create a new account</p>
       </div>
       <Form {...form}>
@@ -116,7 +103,7 @@ export default function SignUpPage() {
               )}
             />
           </div>
-          <Button className="w-full" type="submit" disabled={isLoading}>
+          <Button className="w-full font-semibold" type="submit" disabled={isLoading}>
             {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Sign Up
           </Button>
@@ -124,7 +111,7 @@ export default function SignUpPage() {
       </Form>
 
       <Button
-        className="w-full"
+        className="w-full font-semibold"
         disabled={isLoading}
         onClick={async () => {
           const res = await signIn("google", {

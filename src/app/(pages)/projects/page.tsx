@@ -1,60 +1,51 @@
 "use client";
 
+import HashIcon from "@/components/svg/HashIcon";
+import OptionIcon from "@/components/svg/OptionIcon";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Project, useStore } from "@/store";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Projects() {
-  const store = useStore();
-
-  const [projects, setProjects] = useState<Project[] | undefined>(undefined);
-
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredProjects = projects?.filter((project) =>
-    project.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      const projects = await store.fetchProjectData();
-      setProjects(projects || []);
-    };
-    fetchProjects();
-  }, [store]);
-
   return (
-    <div className="flex h-screen flex-col p-6">
-      <h1 className="text-3xl font-bold capitalize">My Projects</h1>
-      <Separator className="my-4" />
+    <div className="flex w-full flex-1 flex-col items-center py-16">
+      <div className="flex w-full max-w-3xl flex-col gap-6 px-4">
+        <header className="flex flex-col">
+          <h1 className="select-none truncate text-3xl font-black text-gray-900">My Projects</h1>
+        </header>
 
-      <div className="flex w-full max-w-5xl flex-col self-center">
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search for a project..."
-          className="mb-4"
-        />
+        <div className="flex w-full max-w-5xl flex-col gap-3 self-center">
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search for a project..."
+            className="mb-4"
+          />
 
-        {filteredProjects?.length === 0 ? (
-          <p>No projects found.</p>
-        ) : (
-          filteredProjects?.map((project) => <ProjectCard key={project.id} project={project} />)
-        )}
+          {/* <div className="select-none truncate  text-md font-medium text-gray-900">{projects && projects.length ? projects.length : 0} project{projects && projects.length > 1 ? "s" : ""}</div> */}
+
+          <Separator />
+
+          <div className="group mb-4 cursor-pointer rounded-lg p-3 px-4 hover:bg-accent">
+            <Link href="/projects/new" className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HashIcon className="h-6 rounded-sm p-0.5 opacity-50" />
+                <span>Project Name</span>
+              </div>
+              <Tooltip>
+                <TooltipTrigger>
+                  <OptionIcon className="h-6 rounded-sm p-0.5 opacity-0 hover:bg-accent group-hover:opacity-100" />
+                </TooltipTrigger>
+                <TooltipContent>More actions</TooltipContent>
+              </Tooltip>
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
-
-// ProjectCard Component
-function ProjectCard({ project }: { project: Project }) {
-  return (
-    <div className="mb-4 rounded-lg border border-gray-300 p-4">
-      <Link href={`/projects/${project.id}`} className="text-xl">
-        {project.name}
-      </Link>
     </div>
   );
 }

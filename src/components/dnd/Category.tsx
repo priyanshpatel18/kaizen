@@ -86,7 +86,7 @@ export default function CategoryComponent({ category, project }: CategoryProps) 
       ref={categoryRef}
     >
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <h2 className="text-md mb-2 font-montserrat font-semibold">{category.name}</h2>
+        <h2 className="text-md font-montserrat mb-2 font-semibold">{category.name}</h2>
         <div className="flex items-start gap-6">
           <div className="flex flex-col gap-2">
             <ScrollArea className="max-h-fit overflow-y-auto">

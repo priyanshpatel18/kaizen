@@ -15,6 +15,7 @@ declare module "next-auth" {
       email: string;
       name: string;
       token: string;
+      image: string;
     };
   }
 }
@@ -155,13 +156,14 @@ export const authOptions: AuthOptions = {
           email: user?.email as string,
         });
 
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: { id: user.id },
           data: { token },
         });
 
         newToken.uid = user.id;
         newToken.token = token;
+        newToken.picture = updatedUser.profilePicture as string;
       }
       return newToken;
     },
@@ -172,6 +174,7 @@ export const authOptions: AuthOptions = {
         newSession.user.id = token.uid as string;
         newSession.user.email = session.user?.email ?? "";
         newSession.user.token = token.token as string;
+        newSession.user.image = token.picture as string;
       }
       return newSession!;
     },

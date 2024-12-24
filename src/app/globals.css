@@ -7,8 +7,38 @@ body {
 }
 
 :root {
-  --font-montserrat: "Montserrat", sans-serif;
-  --font-source-sans-pro: "Source Sans 3", sans-serif;
+  --font-helvetica: "Helvetica", sans-serif;
+  --font-avenir: "Avenir", sans-serif;
+  --font-sf-pro: "SF Pro", sans-serif;
+  --font-product-sans: "Product Sans", sans-serif;
+}
+
+@font-face {
+  font-family: "Helvetica";
+  src: url("/fonts/Helvetica.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Avenir";
+  src: url("/fonts/Avenir.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SFPro";
+  src: url("/fonts/SFPro.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ProductSans";
+  src: url("/fonts/ProductSans.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 
 @layer base {
@@ -25,7 +55,7 @@ body {
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
+    --accent: 240 4.8% 93%;
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;

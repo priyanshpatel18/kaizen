@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -10,9 +11,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // Google Fonts
-        montserrat: ["var(--font-montserrat)", "sans-serif"],
-        "source-sans-pro": ["var(--font-source-sans-pro)", "sans-serif"],
+        helvetica: ["var(--font-helvetica)", "sans-serif"],
+        avenir: ["var(--font-avenir)", "sans-serif"],
+        sfPro: ["var(--font-sf-pro)", "sans-serif"],
+        productSans: ["var(--font-product-sans)", "sans-serif"],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -73,6 +75,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindAnimate],
 };
 export default config;

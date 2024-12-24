@@ -25,11 +25,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (projects && flag === "true") {
-      const parsedProjects = JSON.parse(projects);
-      if (!Array.isArray(parsedProjects)) {
-        return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
-      }
-
       const workspace = await prisma.workspace.findFirst({
         where: {
           userWorkspace: {
@@ -41,6 +36,11 @@ export async function POST(request: NextRequest) {
         },
       });
       if (!workspace) {
+        return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
+      }
+
+      const parsedProjects = JSON.parse(projects);
+      if (!Array.isArray(parsedProjects)) {
         return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
       }
 

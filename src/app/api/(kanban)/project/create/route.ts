@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const name = formData.get("name") as string;
     const workspaceId = formData.get("workspaceId") as string;
 
-    if (!projects && !flag && !name && !workspaceId) {
+    if (!projects && !flag && !name) {
       return NextResponse.json({ message: "Invalid request" }, { status: 400 });
     }
 
@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({ message: "Welcome to Kaizen" });
+    }
+    if (!workspaceId) {
+      return NextResponse.json({ message: "Invalid request" }, { status: 400 });
     }
     if (name && workspaceId) {
       const project = await prisma.project.create({

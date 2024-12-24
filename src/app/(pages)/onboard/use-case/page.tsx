@@ -11,25 +11,35 @@ const projectNames = ["Personal", "Work", "Education"];
 export default function UseCasePage() {
   const [selected, setSelected] = useState<string[]>([]);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleContinue() {
-    const formData = new FormData();
-    formData.append("projects", JSON.stringify(selected));
-    formData.append("usecaseFlag", "true");
+    setIsLoading(true);
 
-    const res = await fetch("/api/project/create", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      return toast.error(data.message);
+    try {
+      const formData = new FormData();
+      formData.append("projects", JSON.stringify(selected));
+      formData.append("usecaseFlag", "true");
+
+      const res = await fetch("/api/project/create", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return toast.error(data.message);
+      }
+
+      toast.success(data.message);
+      setTimeout(() => {
+        router.push("/");
+      }, 500);
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong, Please reload and try again");
+    } finally {
+      setIsLoading(false);
     }
-
-    toast.success(data.message);
-    setTimeout(() => {
-      router.push("/");
-    }, 500);
   }
 
   return (
@@ -61,7 +71,11 @@ export default function UseCasePage() {
         </div>
       </div>
 
-      <Button className="w-full py-3 text-lg font-medium" disabled={selected.length === 0} onClick={handleContinue}>
+      <Button
+        className="w-full py-3 text-lg font-medium"
+        disabled={selected.length === 0 || isLoading}
+        onClick={handleContinue}
+      >
         Continue to Kaizen
       </Button>
     </div>

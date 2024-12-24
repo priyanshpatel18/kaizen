@@ -28,20 +28,38 @@ export default function AppSidebar() {
 
   useEffect(() => {
     if (session?.user) {
-      localStorage.setItem("profilePicture", session.user.image);
+      localStorage.setItem("profilePicture", session.user.image || "");
+      localStorage.setItem("name", session.user.name || "");
     }
   }, [session]);
 
-  useEffect(() => {
-    const profilePicture = localStorage.getItem("profilePicture")?.replace(/"/g, "");
-    const name = localStorage.getItem("name")?.replace(/"/g, "");
+  const loadProfileData = () => {
+    const storedProfilePicture = localStorage.getItem("profilePicture")?.replace(/"/g, "");
+    const storedName = localStorage.getItem("name")?.replace(/"/g, "");
 
-    if (!name) {
+    if (!storedName) {
       router.push("/onboard/profile");
     }
-    setProfilePicture(profilePicture || undefined);
-    setName(name || undefined);
-  }, [localStorage]);
+
+    setProfilePicture(storedProfilePicture || undefined);
+    setName(storedName || undefined);
+  };
+
+  useEffect(() => {
+    loadProfileData();
+  }, []);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      loadProfileData();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   return (
     <main className="flex w-[15%] flex-col gap-2 border-[1px] border-r-border p-2">

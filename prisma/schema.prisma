@@ -77,14 +77,15 @@ model Project {
   id          String        @id @default(uuid())
   name        String
   userId      String
-  User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @default(now()) @updatedAt
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
   workspaceId String
+  isDefault   Boolean       @default(false)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   activityLog ActivityLog[]
   categories  Category[]
   invites     Invite[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now()) @updatedAt
 }
 
 model Category {
@@ -92,6 +93,7 @@ model Category {
   name         String
   tasks        Task[]
   position     Float    @default(1000)
+  isDefault    Boolean  @default(false)
   projectId    String
   reorderCount Int      @default(0)
   project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)

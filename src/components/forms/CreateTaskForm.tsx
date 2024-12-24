@@ -21,6 +21,7 @@ interface IProps {
 
 export default function CreateTaskForm({ workspaces, setShowDialog, project, taskOption }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
+  const [taskDescription, setTaskDescription] = useState<string>("");
   const [list, setList] = useState<Option[]>([]);
   const store = useStore();
   const [currentState, setCurrentState] = useState<Option | null>(null);
@@ -69,6 +70,9 @@ export default function CreateTaskForm({ workspaces, setShowDialog, project, tas
       const formData = new FormData();
       formData.append("title", taskTitle);
       formData.append("categoryId", currentState.value.split("#")[1].trim());
+      if (taskDescription) {
+        formData.append("description", taskDescription);
+      }
 
       const res = await fetch("/api/task/create", {
         method: "POST",
@@ -140,7 +144,17 @@ export default function CreateTaskForm({ workspaces, setShowDialog, project, tas
           <Input
             value={taskTitle}
             onChange={(e) => setTaskTitle(e.target.value)}
-            placeholder="Task Title"
+            placeholder="Title"
+            type="text"
+            className="text-gray-900"
+          />
+        </Label>
+        <Label>
+          <span className="sr-only">Enter Task Title</span>
+          <Input
+            value={taskDescription}
+            onChange={(e) => setTaskDescription(e.target.value)}
+            placeholder="Description (Optional)"
             type="text"
             className="text-gray-900"
           />

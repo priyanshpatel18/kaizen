@@ -23,13 +23,33 @@ export async function generateAndSendOtp(email: string) {
       return null;
     }
 
-    const newOtp = await prisma.otp.create({
-      data: {
-        code: otp,
+    const exists = await prisma.otp.findFirst({
+      where: {
         email: email,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
       },
     });
+
+    let newOtp;
+
+    if (exists) {
+      newOtp = await prisma.otp.update({
+        where: {
+          id: exists.id,
+        },
+        data: {
+          code: otp,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        },
+      });
+    } else {
+      newOtp = await prisma.otp.create({
+        data: {
+          code: otp,
+          email: email,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        },
+      });
+    }
 
     return newOtp.code;
   } catch (error) {

@@ -6,12 +6,12 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
-import { DialogContent, DialogHeader } from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Button } from "@/components/ui/button";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface IProps {
   workspaces: Workspace[] | null;

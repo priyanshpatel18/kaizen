@@ -9,7 +9,8 @@ export interface Workspace {
   id: string;
   name: string;
   isDefault: boolean;
-  projects: Project[];
+  projectIds: string[];
+  projects?: Project[];
   user: User;
 }
 
@@ -60,7 +61,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       return null;
     }
   },
-
   fetchAllData: async ({ setTasks, setCategories, setProjects, setWorkspaces }) => {
     try {
       const response = await fetch("/api/workspace/get-workspaces", {
@@ -88,25 +88,53 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       const allTasks: Task[] = [];
 
       workspaces.forEach((ws: Workspace) => {
-        ws.projects.forEach((project) => {
-          allProjects.push(project);
+        ws.projects?.forEach((project: Project) => {
+          // Add projects to allProjects
+          const projectData: Project = {
+            id: project.id,
+            name: project.name,
+            workspaceId: ws.id,
+            isDefault: project.isDefault,
+            categoryIds: project.categories?.map((category) => category.id) || [],
+          };
+          allProjects.push(projectData);
 
-          project.categories.forEach((category) => {
-            allCategories.push(category);
+          project.categories?.forEach((category) => {
+            // Add categories to allCategories
+            const categoryData: Category = {
+              id: category.id,
+              name: category.name,
+              projectId: project.id,
+              position: category.position,
+              isDefault: category.isDefault,
+              taskIds: category.tasks?.map((task) => task.id) || [],
+            };
+            allCategories.push(categoryData);
 
-            category.tasks.forEach((task) => {
-              allTasks.push(task);
+            category.tasks?.forEach((task) => {
+              // Add tasks to allTasks
+              const taskData: Task = {
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                categoryId: category.id,
+                priority: task.priority,
+                isCompleted: task.isCompleted,
+              };
+              allTasks.push(taskData);
             });
           });
         });
       });
 
-      setTasks(allTasks);
-      setCategories(allCategories);
+      // Update the state with the fetched data
       setProjects(allProjects);
+      setCategories(allCategories);
+      setTasks(allTasks);
       setWorkspaces(workspaces);
     } catch (error) {
       console.log(error);
+      toast.error("An error occurred while fetching the data.");
     }
   },
 }));

@@ -6,9 +6,11 @@ export interface Category {
   id: string;
   name: string;
   position: number;
+  taskIds: string[];
   projectId: string;
-  tasks: Task[];
-  project: Project;
+  isDefault: boolean;
+  tasks?: Task[];
+  project?: Project;
 }
 
 interface CategoryState {

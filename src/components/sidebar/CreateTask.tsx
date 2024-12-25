@@ -4,9 +4,9 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Workspace } from "@/store";
 import { SquarePlus } from "lucide-react";
 import { useState } from "react";
-import CreateTaskForm from "../forms/CreateTaskForm";
-import { SidebarMenu, SidebarMenuButton } from "../ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import CreateTaskForm from "@/components/forms/CreateTaskForm";
+import { SidebarMenu, SidebarMenuButton } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface IProps {
   workspaces: Workspace[] | null;

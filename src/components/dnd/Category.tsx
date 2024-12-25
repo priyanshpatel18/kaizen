@@ -7,10 +7,10 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
-import CreateTaskForm from "../forms/CreateTaskForm";
-import { Button } from "../ui/button";
-import { Dialog, DialogTrigger } from "../ui/dialog";
-import { ScrollArea } from "../ui/scroll-area";
+import CreateTaskForm from "@/components/forms/CreateTaskForm";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import TaskCard from "./Task";
 
 interface CategoryProps {

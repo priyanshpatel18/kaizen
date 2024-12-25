@@ -1,6 +1,6 @@
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
-import { deleteFromCloudinary, uploadToCloudinary } from "@/lib/helper";
+import { deleteFromCloudinary, uploadToCloudinary } from "@/lib/cloudinary";
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";

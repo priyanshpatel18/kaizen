@@ -3,7 +3,7 @@
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +12,13 @@ export default function ProfilePage() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const name = localStorage.getItem("name");
+    if (!name) {
+      router.back();
+    }
+  }, []);
 
   async function createProfile(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

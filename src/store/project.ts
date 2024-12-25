@@ -6,8 +6,10 @@ export interface Project {
   id: string;
   name: string;
   isDefault: boolean;
-  categories: Category[];
-  workspace: Workspace;
+  categoryIds: string[];
+  workspaceId: string;
+  categories?: Category[];
+  workspace?: Workspace;
 }
 
 interface ProjectState {

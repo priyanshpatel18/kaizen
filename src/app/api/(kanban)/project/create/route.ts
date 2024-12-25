@@ -2,6 +2,7 @@ import { getUserData } from "@/actions/getUserData";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -45,15 +46,24 @@ export async function POST(request: NextRequest) {
       }
 
       for (const project of parsedProjects) {
-        await prisma.project.create({
+        const newProject = await prisma.project.create({
           data: {
             name: project,
             workspaceId: workspace.id,
             userId: user.id,
           },
         });
+
+        await prisma.category.create({
+          data: {
+            name: "default",
+            isDefault: true,
+            projectId: newProject.id,
+          },
+        });
       }
 
+      (await cookies()).set("onboarded", "true");
       return NextResponse.json({ message: "Welcome to Kaizen" });
     }
     if (!workspaceId) {

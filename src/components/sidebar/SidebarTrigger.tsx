@@ -1,5 +1,5 @@
-import { SidebarTrigger } from "../ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SidebarTriggerProps {
   state: "expanded" | "collapsed";

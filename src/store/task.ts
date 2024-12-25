@@ -1,5 +1,4 @@
 import { Category } from "@/store/category";
-import { Project } from "@/store/project";
 import { create } from "zustand";
 
 export interface Task {
@@ -8,8 +7,8 @@ export interface Task {
   description?: string;
   priority: number;
   isCompleted: boolean;
-  category: Category;
-  project: Project;
+  categoryId: string;
+  category?: Category;
 }
 
 interface TaskState {

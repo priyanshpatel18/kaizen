@@ -9,10 +9,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCategoryStore } from "@/store/category";
-import { useProjectStore } from "@/store/project";
-import { useTaskStore } from "@/store/task";
-import { useWorkspaceStore } from "@/store/workspace";
 import { usePathname } from "next/navigation";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
@@ -26,25 +22,6 @@ interface ViewOption {
 export default function PagesWithTasksLayout({ children }: { children: React.ReactNode }) {
   const [view, setView] = useState<"list" | "board">("list");
   const pathname = usePathname();
-  // All Stores
-  const taskStore = useTaskStore();
-  const categoryStore = useCategoryStore();
-  const projectStore = useProjectStore();
-  const workspaceStore = useWorkspaceStore();
-  // const commonStore = useStore();
-
-  useEffect(() => {
-    if (workspaceStore.workspaces.length > 0) {
-      return;
-    }
-
-    workspaceStore.fetchAllData({
-      setTasks: taskStore.setTasks,
-      setCategories: categoryStore.setCategories,
-      setProjects: projectStore.setProjects,
-      setWorkspaces: workspaceStore.setWorkspaces,
-    });
-  }, [view, workspaceStore.workspaces]);
 
   return (
     <DropdownMenu modal={true}>

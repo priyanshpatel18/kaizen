@@ -1,14 +1,17 @@
+import { useCategoryStore } from "@/store/category";
 import { useProjectStore } from "@/store/project";
+import { useTaskStore } from "@/store/task";
+import { useWorkspaceStore } from "@/store/workspace";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import CalendarIcon from "../svg/CalendarIcon";
-import HashIcon from "../svg/HashIcon";
-import InboxIcon from "../svg/InboxIcon";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Separator } from "../ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import CalendarIcon from "@/components/svg/CalendarIcon";
+import HashIcon from "@/components/svg/HashIcon";
+import InboxIcon from "@/components/svg/InboxIcon";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface SessionUser {
   id: string;
@@ -60,6 +63,26 @@ export default function AppSidebar() {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
+
+  // All Stores
+  const taskStore = useTaskStore();
+  const categoryStore = useCategoryStore();
+  const projectStore = useProjectStore();
+  const workspaceStore = useWorkspaceStore();
+  // const commonStore = useStore();
+
+  useEffect(() => {
+    if (workspaceStore.workspaces.length > 0) {
+      return;
+    }
+
+    workspaceStore.fetchAllData({
+      setTasks: taskStore.setTasks,
+      setCategories: categoryStore.setCategories,
+      setProjects: projectStore.setProjects,
+      setWorkspaces: workspaceStore.setWorkspaces,
+    });
+  }, [workspaceStore.workspaces]);
 
   return (
     <main className="flex w-[15%] flex-col gap-2 border-[1px] border-r-border p-2">

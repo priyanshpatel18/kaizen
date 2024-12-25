@@ -7,8 +7,8 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
 import { Dispatch, FormEvent, ReactNode, SetStateAction, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import CategoryComponent from "./Category";
 
 interface HandleDropProps {

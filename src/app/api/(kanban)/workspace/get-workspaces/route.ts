@@ -24,6 +24,7 @@ export async function GET() {
       include: {
         projects: {
           include: {
+            workspace: true,
             categories: {
               include: {
                 tasks: {
@@ -31,6 +32,7 @@ export async function GET() {
                     position: "asc",
                   },
                 },
+                project: true,
               },
               orderBy: {
                 position: "asc",
@@ -41,13 +43,13 @@ export async function GET() {
       },
     });
 
-    if (!workspaces) {
+    if (!workspaces || workspaces.length === 0) {
       return NextResponse.json({ message: "Workspaces not found" }, { status: 404 });
     }
 
     return NextResponse.json({ workspaces });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching workspaces:", error);
     return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   }
 }

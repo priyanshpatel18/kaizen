@@ -1,6 +1,6 @@
 import { useState } from "react";
 import confetti from "canvas-confetti";
-import TickIcon from "../svg/TickIcon";
+import TickIcon from "@/components/svg/TickIcon";
 
 export default function CompleteTaskButton() {
   const [isExpanded, setIsExpanded] = useState(false);

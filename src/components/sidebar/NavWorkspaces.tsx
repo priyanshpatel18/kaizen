@@ -11,17 +11,17 @@ import { useStore, Workspace } from "@/store";
 import { Ellipsis, FilePlus, Folder, FolderPlus, Forward, Hash, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import CreateProjectForm from "../forms/CreateProjectForm";
-import CreateWorkspaceForm from "../forms/CreateWorkspaceForm";
-import { Dialog } from "../ui/dialog";
+import CreateProjectForm from "@/components/forms/CreateProjectForm";
+import CreateWorkspaceForm from "@/components/forms/CreateWorkspaceForm";
+import { Dialog } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function NavWorkspaces({ workspaces }: { workspaces: Workspace[] | null }) {
   // const [showProjects, setShowProjects] = useState<boolean>(false);

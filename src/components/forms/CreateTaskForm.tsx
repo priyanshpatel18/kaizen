@@ -1,60 +1,58 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import UpdateStoreData from "@/lib/UpdateStoreData";
 import { cn } from "@/lib/utils";
-import { Option, Project, Task, useStore, Workspace } from "@/store";
+import { Option, Project, Task, Workspace } from "@/store";
+import { useCategoryStore } from "@/store/category";
+import { useProjectStore } from "@/store/project";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 interface IProps {
   workspaces?: Workspace[] | null;
   setShowDialog: Dispatch<SetStateAction<boolean>>;
-  project?: Project | null;
   taskOption?: Option | null;
+  project?: Project | null;
 }
 
-export default function CreateTaskForm({ workspaces, setShowDialog, project, taskOption }: IProps) {
+interface UpdateProps {
+  task: Task;
+  action: "create" | "update";
+}
+
+export default function CreateTaskForm({ setShowDialog }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<string>("");
   const [list, setList] = useState<Option[]>([]);
-  const store = useStore();
   const [currentState, setCurrentState] = useState<Option | null>(null);
+
+  const { categories: storeCategories } = useCategoryStore();
+  const { projects: storeProjects } = useProjectStore();
+
+  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
 
   useEffect(() => {
     setTaskTitle("");
 
-    if (workspaces && workspaces.length > 0) {
-      const options: Option[] = workspaces.flatMap((ws) => {
-        const projects = ws.projects.flatMap((project) => {
-          const categories = project.categories.flatMap((category) => {
-            return {
-              value: `${project.id} # ${category.id}`,
-              label: `${project.name} # ${category.name}`,
-            };
-          });
-
-          return categories;
-        });
-        return projects;
-      });
-
-      setList(options);
-    } else if (project) {
-      const options: Option[] = project.categories.flatMap((category) => {
-        return {
-          value: `${project.id} # ${category.id}`,
-          label: `${project.name} # ${category.name}`,
-        };
+    if (storeProjects && storeCategories) {
+      const options: Option[] = storeProjects.flatMap((p) => {
+        return storeCategories
+          .filter((c) => p.categoryIds.includes(c.id))
+          .map((c) => ({
+            value: `${p.id} # ${c.id}`,
+            label: `${p.name}${c.isDefault ? "" : ` # ${c.name}`}`,
+          }));
       });
       setList(options);
     }
-  }, [workspaces, taskOption]);
+  }, [storeProjects]);
 
   async function createTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -74,57 +72,29 @@ export default function CreateTaskForm({ workspaces, setShowDialog, project, tas
         formData.append("description", taskDescription);
       }
 
+      setProps(undefined);
+
       const res = await fetch("/api/task/create", {
         method: "POST",
         body: formData,
       });
+
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.message);
+        return false;
       } else {
         toast.success(data.message);
-        setTaskTitle("");
 
         const task = data.task as Task;
-
-        if (task) {
-          const newData = store.workspaces?.map((ws) => {
-            const newProjects = ws.projects.map((p) => {
-              if (p.id === project?.id) {
-                if (project) {
-                  return {
-                    ...project,
-                    categories:
-                      project?.categories.map((c) => {
-                        if (c.id === task.categoryId) {
-                          c.tasks?.push(task);
-                        }
-                        return c;
-                      }) || [],
-                  };
-                }
-              }
-
-              const newCategories = p.categories.map((c) => {
-                if (c.id === task.categoryId) {
-                  c.tasks?.push(task);
-                }
-                return c;
-              });
-              return {
-                ...p,
-                categories: newCategories,
-              };
-            });
-
-            return {
-              ...ws,
-              projects: newProjects,
-            };
+        if (typeof task.title === "string") {
+          setProps({
+            task,
+            action: "create",
           });
-
-          store.setWorkspaces(newData);
         }
+        setTaskTitle("");
+        setTaskDescription("");
         setShowDialog(false);
       }
     } catch (error) {
@@ -135,6 +105,8 @@ export default function CreateTaskForm({ workspaces, setShowDialog, project, tas
 
   return (
     <DialogContent>
+      {props && <UpdateStoreData data={props.task} type="task" action={props.action} />}
+
       <DialogHeader>
         <DialogTitle>Create Task</DialogTitle>
       </DialogHeader>
@@ -159,8 +131,8 @@ export default function CreateTaskForm({ workspaces, setShowDialog, project, tas
             className="text-gray-900"
           />
         </Label>
-        <ComboBox list={list} currentState={currentState} setCurrentState={setCurrentState} workspaces={workspaces} />
-        <Button>
+        <ComboBox list={list} currentState={currentState} setCurrentState={setCurrentState} />
+        <Button type="submit">
           <span>Create Task</span>
         </Button>
       </form>
@@ -172,7 +144,6 @@ interface ComboBoxProps {
   list: Option[];
   currentState: Option | null;
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
-  workspaces?: Workspace[] | null;
 }
 
 function ComboBox({ list, currentState, setCurrentState }: ComboBoxProps) {

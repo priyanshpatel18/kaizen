@@ -28,8 +28,14 @@ export default withAuth(
 
     // Handle onboarded users trying to access /onboard/* routes
     const onboardedCookie = (await cookies()).get("onboarded");
-    if (req.nextUrl.pathname.startsWith("/onboard/") && onboardedCookie?.value === "true") {
-      return NextResponse.redirect(new URL("/", req.url));
+
+    if (req.nextUrl.pathname.startsWith("/onboard/")) {
+      // Redirect if onboarded
+      if (onboardedCookie?.value === "true") {
+        return NextResponse.redirect(new URL("/", req.url));
+      } else {
+        return NextResponse.next();
+      }
     }
 
     // Allow public pages if not authenticated

@@ -8,6 +8,8 @@ export interface Task {
   priority: number;
   isCompleted: boolean;
   categoryId: string;
+  dueDate: Date | string;
+  projectId?: string;
   category?: Category;
 }
 

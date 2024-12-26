@@ -9,8 +9,9 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
 
   const name = formData.get("title") as string;
-  // const description = formData.get("description") as string;
+  const description = formData.get("description") as string;
   const categoryId = formData.get("categoryId") as string;
+  const dueDateInput = formData.get("dueDate");
 
   if (!name || !categoryId) {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
@@ -38,10 +39,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    const dueDate = dueDateInput ? new Date(dueDateInput.toString()) : new Date().setHours(23, 59, 59, 999);
+
     const task = await prisma.task.create({
       data: {
         title: name,
-        // description,
+        description,
+        dueDate: new Date(dueDate),
         categoryId: category.id,
         position: tasks ? (tasks + 1) * 1000 : 1000,
       },

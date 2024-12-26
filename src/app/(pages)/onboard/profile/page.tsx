@@ -14,8 +14,9 @@ export default function ProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const name = localStorage.getItem("name");
-    if (!name) {
+    const name = localStorage.getItem("name")?.trim();
+
+    if (name?.length !== 0) {
       router.back();
     }
   }, []);
@@ -35,7 +36,7 @@ export default function ProfilePage() {
         formData.append("profile", profileImage);
       }
 
-      const res = await fetch("/api/user/create-profile", {
+      const res = await fetch("/api/onboard/create-profile", {
         method: "POST",
         body: formData,
       });
@@ -50,8 +51,8 @@ export default function ProfilePage() {
       } else {
         toast.success(data.message);
 
-        localStorage.setItem("profilePicture", JSON.stringify(data.profilePicture));
-        localStorage.setItem("name", JSON.stringify(data.name));
+        localStorage.setItem("profilePicture", data.profilePicture);
+        localStorage.setItem("name", data.name);
 
         router.push("/onboard/use-case");
       }

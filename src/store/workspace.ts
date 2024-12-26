@@ -119,7 +119,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
                 description: task.description,
                 categoryId: category.id,
                 priority: task.priority,
+                dueDate: task.dueDate,
                 isCompleted: task.isCompleted,
+                projectId: project.id,
               };
               allTasks.push(taskData);
             });

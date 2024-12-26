@@ -1,23 +1,69 @@
-import { useState } from "react";
-import confetti from "canvas-confetti";
 import TickIcon from "@/components/svg/TickIcon";
+import UpdateStoreData from "@/lib/UpdateStoreData";
+import { Task } from "@/store/task";
+import confetti from "canvas-confetti";
+import { useState } from "react";
+import { toast } from "sonner";
 
-export default function CompleteTaskButton() {
+interface Props {
+  task: Task;
+  completeTask: () => Promise<Task | undefined>;
+}
+
+export default function CompleteTaskButton({ task }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
+  // const { toasts } = useSonner();
+  const [newTask, setNewTask] = useState<Task | undefined>();
 
-  function handleTaskComplete() {
+  async function handleTaskComplete() {
     setIsExpanded(true);
+    setNewTask(undefined);
+
+    try {
+      const response = await fetch("/api/task/update", {
+        method: "PUT",
+        body: JSON.stringify({
+          id: task.id,
+          updateValue: {
+            isCompleted: true,
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.task) {
+          toast("Task Completed🎉", {
+            action: {
+              label: "Undo",
+              onClick: () => console.log(task.id),
+            },
+            duration: 3500,
+          });
+          setNewTask(data.task);
+        }
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
+
+    // Play Audio
     const audio = new Audio("/assets/completion.mp3");
     audio.play();
 
+    // Launch Confetti
     launchConfetti();
 
+    // Button animation
     setTimeout(() => {
       setIsExpanded(false);
     }, 200);
   }
 
-  // Function to launch confetti
   const launchConfetti = () => {
     confetti({
       particleCount: 120,
@@ -43,6 +89,8 @@ export default function CompleteTaskButton() {
           color="#cdcdd5"
         />
       </div>
+
+      <UpdateStoreData data={newTask} action="update" type="task" />
     </div>
   );
 }

@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import UpdateStoreData from "@/lib/UpdateStoreData";
 import { cn } from "@/lib/utils";
-import { Option, Project, Task, Workspace } from "@/store";
+import { Option, Project, Workspace } from "@/store";
+import { Task } from "@/store/task";
 import { useCategoryStore } from "@/store/category";
 import { useProjectStore } from "@/store/project";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -32,6 +33,7 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
   const [taskDescription, setTaskDescription] = useState<string>("");
   const [list, setList] = useState<Option[]>([]);
   const [currentState, setCurrentState] = useState<Option | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { categories: storeCategories } = useCategoryStore();
   const { projects: storeProjects } = useProjectStore();
@@ -56,11 +58,14 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
 
   async function createTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setIsLoading(true);
 
     if (!taskTitle) {
+      setIsLoading(false);
       return toast.error("Task title is required");
     }
     if (!currentState) {
+      setIsLoading(false);
       return toast.error("Select a Category to create a task");
     }
 
@@ -82,17 +87,19 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.message);
-        return false;
       } else {
         toast.success(data.message);
 
         const task = data.task as Task;
+        console.log(task);
+
         if (typeof task.title === "string") {
           setProps({
             task,
             action: "create",
           });
         }
+
         setTaskTitle("");
         setTaskDescription("");
         setShowDialog(false);
@@ -100,6 +107,8 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
+    } finally {
+      setIsLoading(true);
     }
   }
 
@@ -132,7 +141,7 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
           />
         </Label>
         <ComboBox list={list} currentState={currentState} setCurrentState={setCurrentState} />
-        <Button type="submit">
+        <Button disabled={isLoading} type="submit">
           <span>Create Task</span>
         </Button>
       </form>

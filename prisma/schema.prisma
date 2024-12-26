@@ -105,6 +105,7 @@ model Task {
   id          String        @id @default(uuid())
   title       String
   description String?
+  dueDate     DateTime
   priority    Int           @default(0)
   isCompleted Boolean       @default(false)
   categoryId  String

@@ -21,8 +21,7 @@ fi
 
 # Run linting and formatting commands
 echo "🔍 Running format and lint fixes on staged files..."
-pnpm run format
-pnpm run lint
+pnpm run check-prod
 
 # Stage all changes after fixing
 echo "🔄 Staging updated files..."

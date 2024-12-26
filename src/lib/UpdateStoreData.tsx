@@ -40,10 +40,8 @@ export default function UpdateStoreData({ data, type, action }: UseUpdateDataPro
           handleCategoryAction(data, action, {
             categories,
             projects,
-            workspaces,
             setCategories,
             setProjects,
-            setWorkspaces,
           });
         } else {
           console.error("Data is not a valid Category");
@@ -97,46 +95,48 @@ function handleTaskAction(
     setWorkspaces: (workspaces: Workspace[]) => void;
   }
 ) {
-  const { tasks, categories, projects, workspaces, setTasks, setCategories, setProjects, setWorkspaces } = stores;
+  const { tasks, categories, setTasks, setCategories } = stores;
+
+  // Fetching ProjectId to store in the Task State
+  const category = categories.find((c) => c.id === data.categoryId);
+  const projectId = category ? category.projectId : null;
+
+  if (!projectId) {
+    console.error("Unable to set projectId: Missing both projectId and valid category.");
+    return;
+  }
+
+  // Adding ProjectId to data
+  const taskWithProjectId = { ...data, projectId };
+  console.log(taskWithProjectId);
 
   switch (action) {
     case "create":
       try {
-        const newTasks = [...tasks, data];
+        const newTasks = [...tasks, taskWithProjectId];
         setTasks(newTasks);
 
         const updatedCategories = updateNestedEntity(
           categories,
-          (category) => category.id === data.categoryId,
+          (category) => category.id === taskWithProjectId.categoryId,
           (category) => ({
             ...category,
-            taskIds: [...category.taskIds, data.id],
+            taskIds: [...category.taskIds, taskWithProjectId.id],
           })
         );
-        setCategories(updatedCategories);
 
-        updateProjectAndWorkspaceAfterCategoryUpdate(
-          data.categoryId,
-          updatedCategories,
-          projects,
-          workspaces,
-          setProjects,
-          setWorkspaces
-        );
-        return true;
+        setCategories(updatedCategories);
       } catch (error) {
         console.error("Error handling task create action:", error);
-        return false;
       }
-
     case "update":
       try {
-        const modifiedTasks = updateNestedEntity(
-          tasks,
-          (task) => task.id === data.id,
-          () => data
+        const updatedTasks = tasks.map((task) =>
+          task.id === taskWithProjectId.id ? { ...task, ...taskWithProjectId } : task
         );
-        setTasks(modifiedTasks);
+        console.log(updatedTasks);
+
+        setTasks(updatedTasks);
         return true;
       } catch (error) {
         console.error("Error handling task update action:", error);
@@ -145,27 +145,18 @@ function handleTaskAction(
 
     case "delete":
       try {
-        const remainingTasks = tasks.filter((task) => task.id !== data.id);
+        const remainingTasks = tasks.filter((task) => task.id !== taskWithProjectId.id);
         setTasks(remainingTasks);
 
         const updatedCategoriesAfterTaskDeletion = updateNestedEntity(
           categories,
-          (category) => category.id === data.categoryId,
+          (category) => category.id === taskWithProjectId.categoryId,
           (category) => ({
             ...category,
-            taskIds: category.taskIds.filter((id) => id !== data.id),
+            taskIds: category.taskIds.filter((id) => id !== taskWithProjectId.id),
           })
         );
         setCategories(updatedCategoriesAfterTaskDeletion);
-
-        updateProjectAndWorkspaceAfterCategoryUpdate(
-          data.categoryId,
-          updatedCategoriesAfterTaskDeletion,
-          projects,
-          workspaces,
-          setProjects,
-          setWorkspaces
-        );
         return true;
       } catch (error) {
         console.error("Error handling task delete action:", error);
@@ -181,28 +172,30 @@ function handleCategoryAction(
   stores: {
     categories: Category[];
     projects: Project[];
-    workspaces: Workspace[];
     setCategories: (categories: Category[]) => void;
     setProjects: (projects: Project[]) => void;
-    setWorkspaces: (workspaces: Workspace[]) => void;
   }
 ): boolean {
-  const { categories, projects, workspaces, setCategories, setProjects, setWorkspaces } = stores;
+  const { categories, projects, setCategories, setProjects } = stores;
 
   switch (action) {
     case "create":
       try {
+        // Add the new category
         const newCategories = [...categories, data];
         setCategories(newCategories);
 
-        updateProjectAndWorkspaceAfterCategoryUpdate(
-          data.id,
-          newCategories,
+        // Update the associated project with the new category
+        const updatedProjects = updateNestedEntity(
           projects,
-          workspaces,
-          setProjects,
-          setWorkspaces
+          (project) => project.id === data.projectId,
+          (project) => ({
+            ...project,
+            categoryIds: [...(project.categoryIds || []), data.id],
+          })
         );
+        setProjects(updatedProjects);
+
         return true;
       } catch (error) {
         console.error("Error handling category create action:", error);
@@ -211,12 +204,13 @@ function handleCategoryAction(
 
     case "update":
       try {
-        const modifiedCategories = updateNestedEntity(
+        // Update only the specific category
+        const updatedCategories = updateNestedEntity(
           categories,
           (category) => category.id === data.id,
           () => data
         );
-        setCategories(modifiedCategories);
+        setCategories(updatedCategories);
         return true;
       } catch (error) {
         console.error("Error handling category update action:", error);
@@ -225,22 +219,30 @@ function handleCategoryAction(
 
     case "delete":
       try {
+        // Remove the category
         const remainingCategories = categories.filter((category) => category.id !== data.id);
         setCategories(remainingCategories);
 
-        updateProjectAndWorkspaceAfterCategoryUpdate(
-          data.id,
-          remainingCategories,
+        // Update the associated project by removing the category ID
+        const updatedProjects = updateNestedEntity(
           projects,
-          workspaces,
-          setProjects,
-          setWorkspaces
+          (project) => project.id === data.projectId,
+          (project) => ({
+            ...project,
+            categoryIds: project.categoryIds.filter((id) => id !== data.id),
+          })
         );
+        setProjects(updatedProjects);
+
         return true;
       } catch (error) {
         console.error("Error handling category delete action:", error);
         return false;
       }
+
+    default:
+      console.error("Invalid action type for category");
+      return false;
   }
 }
 
@@ -348,37 +350,6 @@ function handleWorkspaceAction(
 // ======= Utility Functions =======
 function updateNestedEntity<T>(entities: T[], condition: (entity: T) => boolean, updater: (entity: T) => T): T[] {
   return entities.map((entity) => (condition(entity) ? updater(entity) : entity));
-}
-
-function updateProjectAndWorkspaceAfterCategoryUpdate(
-  categoryId: string,
-  updatedCategories: Category[],
-  projects: Project[],
-  workspaces: Workspace[],
-  setProjects: (projects: Project[]) => void,
-  setWorkspaces: (workspaces: Workspace[]) => void
-) {
-  const category = updatedCategories.find((c) => c.id === categoryId);
-  const updatedProjects = updateNestedEntity(
-    projects,
-    (project) => project.id === category?.projectId,
-    (project) => ({
-      ...project,
-      categories: updatedCategories,
-    })
-  );
-  setProjects(updatedProjects);
-
-  const project = updatedProjects.find((p) => p.id === category?.projectId);
-  const updatedWorkspaces = updateNestedEntity(
-    workspaces,
-    (workspace) => workspace.id === project?.workspaceId,
-    (workspace) => ({
-      ...workspace,
-      projects: updatedProjects,
-    })
-  );
-  setWorkspaces(updatedWorkspaces);
 }
 
 function updateWorkspaceAfterProjectUpdate(

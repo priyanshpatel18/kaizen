@@ -47,16 +47,13 @@ export default function ListTemplate({ heading }: ListTemplateProps) {
       setTasks(filteredTasks);
       return;
     }
-    if (project) {
-      const filteredTasks = storeTasks.filter((t) => {
-        if (t.projectId === project.id && t.isCompleted === false) {
-          return t;
-        }
-      });
+    const filteredTasks = storeTasks.filter((t) => {
+      if (t.projectId === project?.id && t.isCompleted === false) {
+        return t;
+      }
+    });
 
-      setTasks(filteredTasks);
-      return;
-    }
+    setTasks(filteredTasks);
   }, [storeTasks, project]);
 
   return (

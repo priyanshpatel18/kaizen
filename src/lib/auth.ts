@@ -163,6 +163,8 @@ export const authOptions: AuthOptions = {
 
         newToken.uid = user.id;
         newToken.token = token;
+        newToken.name = user.name;
+        newToken.image = user.image;
         newToken.picture = updatedUser.profilePicture as string;
       }
       return newToken;
@@ -174,6 +176,7 @@ export const authOptions: AuthOptions = {
         newSession.user.id = token.uid as string;
         newSession.user.email = session.user?.email ?? "";
         newSession.user.token = token.token as string;
+        newSession.user.name = token.name as string;
         newSession.user.image = token.picture as string;
       }
       return newSession!;

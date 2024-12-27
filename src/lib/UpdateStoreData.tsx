@@ -107,13 +107,12 @@ function handleTaskAction(
   }
 
   // Adding ProjectId to data
-  const taskWithProjectId = { ...data, projectId };
-  console.log(taskWithProjectId);
+  const taskWithProjectId: Task = { ...data, projectId };
 
   switch (action) {
     case "create":
       try {
-        const newTasks = [...tasks, taskWithProjectId];
+        const newTasks: Task[] = [...tasks, taskWithProjectId];
         setTasks(newTasks);
 
         const updatedCategories = updateNestedEntity(
@@ -126,6 +125,7 @@ function handleTaskAction(
         );
 
         setCategories(updatedCategories);
+        break;
       } catch (error) {
         console.error("Error handling task create action:", error);
       }
@@ -134,13 +134,12 @@ function handleTaskAction(
         const updatedTasks = tasks.map((task) =>
           task.id === taskWithProjectId.id ? { ...task, ...taskWithProjectId } : task
         );
-        console.log(updatedTasks);
 
         setTasks(updatedTasks);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling task update action:", error);
-        return false;
+        break;
       }
 
     case "delete":
@@ -157,10 +156,10 @@ function handleTaskAction(
           })
         );
         setCategories(updatedCategoriesAfterTaskDeletion);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling task delete action:", error);
-        return false;
+        break;
       }
   }
 }
@@ -175,7 +174,7 @@ function handleCategoryAction(
     setCategories: (categories: Category[]) => void;
     setProjects: (projects: Project[]) => void;
   }
-): boolean {
+) {
   const { categories, projects, setCategories, setProjects } = stores;
 
   switch (action) {
@@ -196,10 +195,10 @@ function handleCategoryAction(
         );
         setProjects(updatedProjects);
 
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling category create action:", error);
-        return false;
+        break;
       }
 
     case "update":
@@ -211,10 +210,10 @@ function handleCategoryAction(
           () => data
         );
         setCategories(updatedCategories);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling category update action:", error);
-        return false;
+        break;
       }
 
     case "delete":
@@ -234,15 +233,15 @@ function handleCategoryAction(
         );
         setProjects(updatedProjects);
 
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling category delete action:", error);
-        return false;
+        break;
       }
 
     default:
       console.error("Invalid action type for category");
-      return false;
+      break;
   }
 }
 
@@ -256,7 +255,7 @@ function handleProjectAction(
     setProjects: (projects: Project[]) => void;
     setWorkspaces: (workspaces: Workspace[]) => void;
   }
-): boolean {
+) {
   const { projects, workspaces, setProjects, setWorkspaces } = stores;
 
   switch (action) {
@@ -266,10 +265,10 @@ function handleProjectAction(
         setProjects(newProjects);
 
         updateWorkspaceAfterProjectUpdate(data.workspaceId, newProjects, workspaces, setWorkspaces);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling project create action:", error);
-        return false;
+        break;
       }
 
     case "update":
@@ -280,10 +279,10 @@ function handleProjectAction(
           () => data
         );
         setProjects(modifiedProjects);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling project update action:", error);
-        return false;
+        break;
       }
 
     case "delete":
@@ -292,10 +291,10 @@ function handleProjectAction(
         setProjects(remainingProjects);
 
         updateWorkspaceAfterProjectUpdate(data.workspaceId, remainingProjects, workspaces, setWorkspaces);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling project delete action:", error);
-        return false;
+        break;
       }
   }
 }
@@ -308,17 +307,17 @@ function handleWorkspaceAction(
     workspaces: Workspace[];
     setWorkspaces: (workspaces: Workspace[]) => void;
   }
-): boolean {
+) {
   const { workspaces, setWorkspaces } = stores;
 
   switch (action) {
     case "create":
       try {
         setWorkspaces([...workspaces, data]);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling workspace create action:", error);
-        return false;
+        break;
       }
 
     case "update":
@@ -329,20 +328,20 @@ function handleWorkspaceAction(
           () => data
         );
         setWorkspaces(modifiedWorkspaces);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling workspace update action:", error);
-        return false;
+        break;
       }
 
     case "delete":
       try {
         const remainingWorkspaces = workspaces.filter((workspace) => workspace.id !== data.id);
         setWorkspaces(remainingWorkspaces);
-        return true;
+        break;
       } catch (error) {
         console.error("Error handling workspace delete action:", error);
-        return false;
+        break;
       }
   }
 }

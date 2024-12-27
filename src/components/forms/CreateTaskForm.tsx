@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,6 +16,9 @@ import { useProjectStore } from "@/store/project";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Calendar } from "../ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import CalendarIcon from "@/components/svg/CalendarIcon";
 
 interface IProps {
   workspaces?: Workspace[] | null;
@@ -31,6 +35,8 @@ interface UpdateProps {
 export default function CreateTaskForm({ setShowDialog }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<string>("");
+  const [taskDate, setTaskDate] = useState<Date | undefined>(undefined);
+
   const [list, setList] = useState<Option[]>([]);
   const [currentState, setCurrentState] = useState<Option | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -39,6 +45,10 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
   const { projects: storeProjects } = useProjectStore();
 
   const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+
+  useEffect(() => {
+    setIsLoading(false);
+  });
 
   useEffect(() => {
     setTaskTitle("");
@@ -58,7 +68,6 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
 
   async function createTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setIsLoading(true);
 
     if (!taskTitle) {
       setIsLoading(false);
@@ -70,11 +79,16 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
     }
 
     try {
+      setIsLoading(true);
+
       const formData = new FormData();
       formData.append("title", taskTitle);
       formData.append("categoryId", currentState.value.split("#")[1].trim());
       if (taskDescription) {
         formData.append("description", taskDescription);
+      }
+      if (taskDate) {
+        formData.append("dueDate", taskDate.toISOString());
       }
 
       setProps(undefined);
@@ -85,13 +99,10 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message);
-      } else {
+      if (res.ok) {
         toast.success(data.message);
 
         const task = data.task as Task;
-        console.log(task);
 
         if (typeof task.title === "string") {
           setProps({
@@ -103,6 +114,8 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
         setTaskTitle("");
         setTaskDescription("");
         setShowDialog(false);
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
       console.error(error);
@@ -140,7 +153,12 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
             className="text-gray-900"
           />
         </Label>
-        <ComboBox list={list} currentState={currentState} setCurrentState={setCurrentState} />
+
+        <div className="flex space-x-4">
+          <ComboBox list={list} currentState={currentState} setCurrentState={setCurrentState} />
+          <DateSelection date={taskDate} setDate={setTaskDate} />
+        </div>
+
         <Button disabled={isLoading} type="submit">
           <span>Create Task</span>
         </Button>
@@ -190,6 +208,91 @@ function ComboBox({ list, currentState, setCurrentState }: ComboBoxProps) {
             </CommandGroup>
           </CommandList>
         </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+interface DateSelectionProps {
+  date: Date | undefined;
+  setDate: Dispatch<SetStateAction<Date | undefined>>;
+}
+
+function DateSelection({ date, setDate }: DateSelectionProps) {
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [year, setYear] = useState<number>(2024);
+  const [years, setYears] = useState<string[]>([]);
+
+  const today = new Date();
+
+  useEffect(() => {
+    const currentYear = today.getFullYear();
+    const years: string[] = [];
+
+    for (let index = 0; index < 5; index++) {
+      years.push((currentYear + index).toString());
+    }
+    setDate(today);
+    setYear(currentYear);
+    setYears(years);
+  }, []);
+
+  function handleYearChange(value: string) {
+    const selectedYear = parseInt(value);
+
+    if (date) {
+      const updatedDate = new Date(new Date(selectedYear, date.getMonth(), date.getDate()));
+      setDate(updatedDate);
+    }
+
+    setYear(selectedYear);
+  }
+
+  function handledateSelection(value: Date | undefined) {
+    if (!value) {
+      return;
+    }
+
+    setDate(value);
+    setCalendarOpen(false);
+  }
+
+  return (
+    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+      <PopoverTrigger asChild>
+        <Button variant={"outline"} className="w-1/2 justify-start text-left font-normal">
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? format(date, "PPP") : <span>Pick a date</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <div className="flex flex-col items-center">
+          {/* Year Selection */}
+          <Select onValueChange={handleYearChange} value={year.toString()}>
+            <SelectTrigger className="w-[80%]">
+              <SelectValue placeholder="Select year" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map((y) => (
+                <SelectItem key={y} value={y.toString()}>
+                  {y}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Calendar */}
+          <Calendar
+            key={year}
+            mode="single"
+            selected={date}
+            onSelect={(value) => handledateSelection(value)}
+            initialFocus
+            fromDate={today}
+            defaultMonth={date}
+            toDate={new Date(year + 5, 11, 31)}
+          />
+        </div>
       </PopoverContent>
     </Popover>
   );

@@ -77,12 +77,11 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
         <p className="text-sm text-gray-600">Enter your email to sign in to your account</p>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-4">
+        <form onSubmit={form.handleSubmit((values) => handleSignIn(values))} className="space-y-4">
           <div className="flex flex-col gap-4 py-2">
             <FormField
               control={form.control}
               name="email"
-              disabled={isLoading}
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -95,7 +94,6 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
             <FormField
               control={form.control}
               name="password"
-              disabled={isLoading}
               render={({ field }) => (
                 <FormItem>
                   <FormControl>

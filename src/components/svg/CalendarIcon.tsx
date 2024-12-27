@@ -3,9 +3,10 @@ import React from "react";
 interface Props {
   color?: string;
   active?: boolean;
+  className?: string;
 }
 
-export default function CalenderIcon({ color = "#000000", active = true }: Props) {
+export default function CalenderIcon({ color = "#000000", active = true, className = "" }: Props) {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
@@ -15,6 +16,7 @@ export default function CalenderIcon({ color = "#000000", active = true }: Props
         fill={color}
         stroke={color}
         strokeWidth="1.5"
+        className={className}
       />
       <path
         fillRule="evenodd"

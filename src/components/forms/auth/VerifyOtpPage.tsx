@@ -33,7 +33,7 @@ export function VerifyOtpPage() {
 
       if (res.ok) {
         toast.success(data.message);
-        router.push("/onboard/profile");
+        router.push("/sign-in");
       } else {
         toast.error(data.message);
       }

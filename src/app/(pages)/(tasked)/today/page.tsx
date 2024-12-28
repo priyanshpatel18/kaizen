@@ -1,7 +1,7 @@
 "use client";
 
-import ListTemplate from "@/components/board/ListTemplate";
+import Board from "@/components/templates/Board";
 
 export default function Today() {
-  return <ListTemplate heading="Today" />;
+  return <Board heading="Today" />;
 }

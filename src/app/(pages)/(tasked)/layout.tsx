@@ -9,32 +9,35 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useStore, ViewOption } from "@/store";
 import { usePathname } from "next/navigation";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 const taskedRoutes = ["/inbox", "/today"];
 
-interface ViewOption {
-  route: string;
-  view: "list" | "board";
-}
-
 export default function PagesWithTasksLayout({ children }: { children: React.ReactNode }) {
-  const [view, setView] = useState<"list" | "board">("list");
+  const { viewOptions, setViewOptions } = useStore();
   const pathname = usePathname();
+
+  const currentView = viewOptions.find((option) => option.route === pathname)?.view || "list";
 
   return (
     <DropdownMenu modal={true}>
       <div className="relative flex h-screen w-full flex-col">
-        <ViewOption />
+        <ViewOptionComponent />
         {children}
       </div>
-      <ViewOptionDropDown view={view} setView={setView} pathname={pathname} />
+      <ViewOptionDropDown
+        viewOptions={viewOptions}
+        currentView={currentView}
+        setViewOptions={setViewOptions}
+        pathname={pathname}
+      />
     </DropdownMenu>
   );
 }
 
-function ViewOption({}) {
+function ViewOptionComponent() {
   return (
     <div className="300ms absolute right-6 top-2">
       <DropdownMenuTrigger className="outline-none">
@@ -48,22 +51,22 @@ function ViewOption({}) {
 }
 
 interface DropDownProps {
-  view: "list" | "board";
-  setView: Dispatch<SetStateAction<"list" | "board">>;
+  currentView: "list" | "board";
+  viewOptions: ViewOption[];
+  setViewOptions: (viewOptions: ViewOption[]) => void;
   pathname: string;
 }
 
-function ViewOptionDropDown({ view, setView, pathname }: DropDownProps) {
+function ViewOptionDropDown({ currentView, setViewOptions, pathname, viewOptions }: DropDownProps) {
   function changeView(view: "list" | "board") {
-    const view_options: ViewOption[] = JSON.parse(localStorage.getItem("view_options") as string);
-    const updatedViewOptions = view_options.map((option: ViewOption) => {
+    const updatedViewOptions = viewOptions.map((option: ViewOption) => {
       if (option.route === pathname) {
         return { ...option, view };
       }
       return option;
     });
-    localStorage.setItem("view_options", JSON.stringify(updatedViewOptions));
-    setView(view);
+
+    setViewOptions(updatedViewOptions);
   }
 
   useEffect(() => {
@@ -74,7 +77,7 @@ function ViewOptionDropDown({ view, setView, pathname }: DropDownProps) {
         route,
         view: "list",
       }));
-      localStorage.setItem("view_options", JSON.stringify(initialView));
+      setViewOptions(initialView);
       return;
     }
 
@@ -83,16 +86,15 @@ function ViewOptionDropDown({ view, setView, pathname }: DropDownProps) {
       const viewOption = view_options.find((option) => option.route === pathname);
 
       if (viewOption) {
-        setView(viewOption.view);
+        setViewOptions(view_options);
       } else {
-        const updatedViewOptions = [...view_options, { route: pathname, view: "list" }];
-        localStorage.setItem("view_options", JSON.stringify(updatedViewOptions));
-        setView("list");
+        const updatedViewOptions: ViewOption[] = [...view_options, { route: pathname, view: "list" }];
+        setViewOptions(updatedViewOptions);
       }
     } catch (error) {
       console.error("Failed to parse view options:", error);
     }
-  }, [pathname]);
+  }, [pathname, setViewOptions]);
 
   return (
     <DropdownMenuContent side="bottom" align="end">
@@ -102,23 +104,19 @@ function ViewOptionDropDown({ view, setView, pathname }: DropDownProps) {
       <div className="flex w-full items-center gap-2">
         <DropdownMenuItem
           onClick={() => changeView("list")}
-          className={`flex h-20 w-20 cursor-pointer flex-col items-center justify-center text-sm ${
-            view === "list" ? "bg-accent font-bold text-primary" : ""
-          }`}
+          className={`flex h-20 w-20 cursor-pointer flex-col items-center justify-center text-sm ${currentView === "list" ? "bg-accent font-bold text-primary" : ""}`}
         >
           <div className="flex flex-col items-center gap-0.5">
-            <ViewTypeIcon className="h-5 w-5" active={view === "list"} />
+            <ViewTypeIcon className="h-5 w-5" active={currentView === "list"} />
             List
           </div>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => changeView("board")}
-          className={`flex h-20 w-20 cursor-pointer items-center justify-center text-sm ${
-            view === "board" ? "bg-accent font-bold text-primary" : ""
-          }`}
+          className={`flex h-20 w-20 cursor-pointer items-center justify-center text-sm ${currentView === "board" ? "bg-accent font-bold text-primary" : ""}`}
         >
           <div className="flex flex-col items-center gap-0.5">
-            <ViewTypeIcon className="h-5 w-5 rotate-90" active={view === "board"} />
+            <ViewTypeIcon className="h-5 w-5 rotate-90" active={currentView === "board"} />
             Board
           </div>
         </DropdownMenuItem>

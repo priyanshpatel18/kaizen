@@ -50,6 +50,11 @@ export interface Option {
   label: string;
 }
 
+export interface ViewOption {
+  route: string;
+  view: "list" | "board";
+}
+
 interface ProjectState {
   loading: boolean;
   setLoading: (loading: boolean) => void;
@@ -63,6 +68,9 @@ interface ProjectState {
   setWorkspaces: (workspaces: Workspace[]) => void;
 
   fetchWorkspaceData: () => Promise<Workspace[] | null>;
+
+  viewOptions: ViewOption[];
+  setViewOptions: (viewOptions: ViewOption[]) => void;
 }
 
 export const useStore = create<ProjectState>((set) => ({
@@ -131,5 +139,11 @@ export const useStore = create<ProjectState>((set) => ({
     } finally {
       set({ loading: false });
     }
+  },
+
+  viewOptions: JSON.parse(localStorage.getItem("view_options") || "[]"),
+  setViewOptions: (viewOptions) => {
+    set({ viewOptions });
+    localStorage.setItem("view_options", JSON.stringify(viewOptions));
   },
 }));

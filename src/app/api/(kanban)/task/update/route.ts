@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest) {
       data: updates,
     });
 
-    return NextResponse.json({ message: "Task Completed🎉", task: newTask });
+    return NextResponse.json({ message: "Task updated", task: newTask });
   } catch (error) {
     console.log(error);
     return NextResponse.json({ message: "Something went wrong" }, { status: 500 });

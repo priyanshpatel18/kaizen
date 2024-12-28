@@ -1,6 +1,6 @@
 "use client";
 
-import CreateTaskForm from "@/components/forms/CreateTaskForm";
+import TaskForm from "@/components/forms/TaskForm";
 import Task from "@/components/task/Task";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -16,7 +16,10 @@ interface ListTemplateProps {
 }
 
 export default function ListTemplate({ heading }: ListTemplateProps) {
-  const [showCreateTask, setShowCreateTask] = useState<boolean>(false);
+  const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
+  const [taskInput, setTaskInput] = useState<TaskType | undefined>(undefined);
+  const [action, setAction] = useState<"create" | "update" | undefined>(undefined);
+
   const { tasks: storeTasks } = useTaskStore();
   // const { categories } = useCategoryStore();
   const { projects } = useProjectStore();
@@ -58,9 +61,9 @@ export default function ListTemplate({ heading }: ListTemplateProps) {
 
   return (
     <Dialog
-      open={showCreateTask}
+      open={showTaskForm}
       onOpenChange={() => {
-        setShowCreateTask(!showCreateTask);
+        setShowTaskForm(!showTaskForm);
       }}
     >
       <div className="flex w-full flex-1 flex-col items-center py-16">
@@ -76,7 +79,13 @@ export default function ListTemplate({ heading }: ListTemplateProps) {
                     if (task.projectId === project.id && task.isCompleted === false) {
                       return (
                         <div key={task.id} className="flex flex-col gap-4">
-                          <Task key={task.id} task={task} />
+                          <Task
+                            key={task.id}
+                            task={task}
+                            setTaskInput={setTaskInput}
+                            setShowDialog={setShowTaskForm}
+                            setAction={setAction}
+                          />
                           <Separator />
                         </div>
                       );
@@ -85,21 +94,29 @@ export default function ListTemplate({ heading }: ListTemplateProps) {
                 : tasks.map((task) => {
                     return (
                       <div key={task.id} className="flex flex-col gap-4">
-                        <Task key={task.id} task={task} />
+                        <Task key={task.id} task={task} setAction={setAction} />
                         <Separator />
                       </div>
                     );
                   })}
             </div>
 
-            <Button onClick={() => setShowCreateTask(true)} className="self-start" variant="outline">
+            <Button
+              onClick={() => {
+                setTaskInput(undefined);
+                setAction("create");
+                setShowTaskForm(true);
+              }}
+              className="self-start"
+              variant="outline"
+            >
               Add Task
             </Button>
           </section>
         </div>
       </div>
 
-      <CreateTaskForm setShowDialog={setShowCreateTask} />
+      <TaskForm setShowDialog={setShowTaskForm} action={action} taskInput={taskInput} />
     </Dialog>
   );
 }

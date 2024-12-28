@@ -1,7 +1,7 @@
 "use client";
 
 import Project from "@/components/dnd/Project";
-import CreateTaskForm from "@/components/forms/CreateTaskForm";
+import TaskForm from "@/components/forms/TaskForm";
 import { Dialog } from "@/components/ui/dialog";
 import { Option, Project as ProjectState, useStore, Workspace } from "@/store";
 import { useParams } from "next/navigation";
@@ -59,7 +59,7 @@ export default function ProjectPage() {
           setCurrentState={setCurrentState}
         />
       </div>
-      <CreateTaskForm setShowDialog={setShowDialog} />
+      <TaskForm setShowDialog={setShowDialog} action="create" />
     </Dialog>
   ) : (
     <div>

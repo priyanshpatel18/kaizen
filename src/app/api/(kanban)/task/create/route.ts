@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
         dueDate: new Date(dueDate),
         categoryId: category.id,
         position: tasks ? (tasks + 1) * 1000 : 1000,
+        priority: 4,
       },
     });
 

@@ -4,7 +4,7 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Workspace } from "@/store";
 import { SquarePlus } from "lucide-react";
 import { useState } from "react";
-import CreateTaskForm from "@/components/forms/CreateTaskForm";
+import CreateTaskForm from "@/components/forms/TaskForm";
 import { SidebarMenu, SidebarMenuButton } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -38,7 +38,7 @@ export default function CreateTask({ workspaces }: IProps) {
         </SidebarMenuButton>
       </SidebarMenu>
 
-      <CreateTaskForm workspaces={workspaces} setShowDialog={setShowCreateTask} />
+      <CreateTaskForm workspaces={workspaces} setShowDialog={setShowCreateTask} action="create" />
     </Dialog>
   );
 }

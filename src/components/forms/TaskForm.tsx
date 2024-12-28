@@ -19,12 +19,16 @@ import { toast } from "sonner";
 import { Calendar } from "../ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import CalendarIcon from "@/components/svg/CalendarIcon";
+import { usePathname } from "next/navigation";
 
 interface IProps {
   workspaces?: Workspace[] | null;
   setShowDialog: Dispatch<SetStateAction<boolean>>;
   taskOption?: Option | null;
   project?: Project | null;
+
+  action: "create" | "update" | undefined;
+  taskInput?: Task | undefined;
 }
 
 interface UpdateProps {
@@ -32,7 +36,7 @@ interface UpdateProps {
   action: "create" | "update";
 }
 
-export default function CreateTaskForm({ setShowDialog }: IProps) {
+export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<string>("");
   const [taskDate, setTaskDate] = useState<Date | undefined>(undefined);
@@ -45,10 +49,31 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
   const { projects: storeProjects } = useProjectStore();
 
   const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+  const pathname = usePathname();
 
   useEffect(() => {
+    setProps(undefined);
     setIsLoading(false);
-  });
+    setTaskTitle("");
+    setTaskDescription("");
+    setTaskDate(undefined);
+    if (pathname === "/inbox") {
+      if (pathname === "/inbox") {
+        const inboxProject = list.find((item) => item.label.toLowerCase().includes("inbox"));
+        setCurrentState(inboxProject || null);
+      }
+    }
+
+    if (taskInput) {
+      setTaskTitle(taskInput.title || "");
+      setTaskDescription(taskInput.description || "");
+      if (typeof taskInput.dueDate === "object") {
+        setTaskDate(taskInput.dueDate);
+      }
+      const matchedState = list.find((item) => item.value.split("#")[1].trim() === taskInput.categoryId);
+      setCurrentState(matchedState || null);
+    }
+  }, [action, taskInput]);
 
   useEffect(() => {
     setTaskTitle("");
@@ -113,7 +138,6 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
 
         setTaskTitle("");
         setTaskDescription("");
-        setShowDialog(false);
       } else {
         toast.error(data.message);
       }
@@ -122,6 +146,86 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
       toast.error("Something went wrong");
     } finally {
       setIsLoading(true);
+      setShowDialog(false);
+    }
+  }
+
+  async function updateTask(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!taskTitle) {
+      setIsLoading(false);
+      return toast.error("Task title is required");
+    }
+    if (!currentState) {
+      setIsLoading(false);
+      return toast.error("Select a Category to create a task");
+    }
+
+    try {
+      setIsLoading(true);
+
+      if (taskInput) {
+        const updateValue: { [key: string]: any } = {};
+
+        if (taskTitle && taskTitle !== taskInput.title) {
+          updateValue.title = taskTitle;
+        }
+        if (taskDescription && taskDescription !== taskInput.description) {
+          updateValue.description = taskDescription;
+        }
+        if (
+          taskDate &&
+          typeof taskInput.dueDate === "object" &&
+          taskDate.toISOString() !== taskInput.dueDate.toISOString()
+        ) {
+          updateValue.dueDate = taskDate.toISOString();
+        }
+        if (currentState.value.split("#")[1].trim() !== taskInput.categoryId) {
+          updateValue.categoryId = currentState?.value.split("#")[1].trim();
+        }
+
+        if (Object.keys(updateValue).length === 0) {
+          toast.success("No changes were made, everything is up-to-date!");
+          setIsLoading(false);
+          setShowDialog(false);
+          return;
+        }
+
+        const response = await fetch("/api/task/update", {
+          method: "PUT",
+          body: JSON.stringify({
+            id: taskInput.id,
+            updateValue,
+          }),
+        });
+
+        const { task, message } = await response.json();
+
+        if (response.ok) {
+          if (task) {
+            toast(message, {
+              action: {
+                label: "Undo",
+                onClick: () => console.log(task.id),
+              },
+              duration: 3500,
+            });
+            setProps({
+              task,
+              action: "update",
+            });
+          }
+        } else {
+          toast.error(message);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong. Please refresh the page");
+    } finally {
+      setIsLoading(false);
+      setShowDialog(false);
     }
   }
 
@@ -132,7 +236,7 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
       <DialogHeader>
         <DialogTitle>Create Task</DialogTitle>
       </DialogHeader>
-      <form onSubmit={createTask} className="flex flex-col space-y-4">
+      <form onSubmit={action === "create" ? createTask : updateTask} className="flex flex-col space-y-4">
         <Label>
           <span className="sr-only">Enter Task Title</span>
           <Input
@@ -159,9 +263,15 @@ export default function CreateTaskForm({ setShowDialog }: IProps) {
           <DateSelection date={taskDate} setDate={setTaskDate} />
         </div>
 
-        <Button disabled={isLoading} type="submit">
-          <span>Create Task</span>
-        </Button>
+        {action === "create" && !taskInput ? (
+          <Button disabled={isLoading} type="submit">
+            <span>Create Task</span>
+          </Button>
+        ) : (
+          <Button disabled={isLoading} type="submit">
+            <span>Save Changes</span>
+          </Button>
+        )}
       </form>
     </DialogContent>
   );

@@ -7,7 +7,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
-import CreateTaskForm from "@/components/forms/CreateTaskForm";
+import CreateTaskForm from "@/components/forms/TaskForm";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -114,7 +114,7 @@ export default function CategoryComponent({ category, project }: CategoryProps) 
           </div>
         </div>
         {closestEdge && <DropIndicator edge={closestEdge} gap="24px" />}
-        <CreateTaskForm taskOption={taskOption} project={project} setShowDialog={setShowDialog} />
+        <CreateTaskForm taskOption={taskOption} project={project} setShowDialog={setShowDialog} action="create" />
       </Dialog>
     </div>
   );

@@ -25,6 +25,7 @@ interface TaskProps {
   setTaskInput?: Dispatch<SetStateAction<TaskType | undefined>>;
   setShowDialog?: Dispatch<SetStateAction<boolean>>;
   setAction: Dispatch<SetStateAction<"create" | "update" | undefined>>;
+  view: "list" | "board";
 }
 
 interface UpdateProps {
@@ -32,7 +33,7 @@ interface UpdateProps {
   action: "create" | "update" | "delete";
 }
 
-export default function Task({ task, setTaskInput, setShowDialog, setAction }: TaskProps) {
+export default function Task({ task, setTaskInput, setShowDialog, setAction, view }: TaskProps) {
   const [showMoreActions, setShowMoreActions] = useState<boolean>(false);
   const [props, setProps] = useState<UpdateProps | undefined>(undefined);
 
@@ -142,6 +143,23 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction }: T
       console.log(error);
       toast.error("Something went wrong");
     }
+  }
+
+  if (view === "board") {
+    return (
+      <div
+        key={task.id}
+        className="flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md border-[1px] border-border p-2"
+      >
+        <CompleteTaskButton task={task} completeTask={completeTask} />
+        <div className="flex w-full flex-col">
+          <span className="truncate font-medium">{task.title}</span>
+          <span className="w-[70%] overflow-hidden truncate text-ellipsis text-xs text-muted-foreground">
+            {task.description}
+          </span>
+        </div>
+      </div>
+    );
   }
 
   return (

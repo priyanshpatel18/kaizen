@@ -85,6 +85,7 @@ export default function ListTemplate({ heading }: ListTemplateProps) {
                             setTaskInput={setTaskInput}
                             setShowDialog={setShowTaskForm}
                             setAction={setAction}
+                            view="list"
                           />
                           <Separator />
                         </div>
@@ -94,7 +95,14 @@ export default function ListTemplate({ heading }: ListTemplateProps) {
                 : tasks.map((task) => {
                     return (
                       <div key={task.id} className="flex flex-col gap-4">
-                        <Task key={task.id} task={task} setAction={setAction} />
+                        <Task
+                          key={task.id}
+                          task={task}
+                          setTaskInput={setTaskInput}
+                          setShowDialog={setShowTaskForm}
+                          setAction={setAction}
+                          view="list"
+                        />
                         <Separator />
                       </div>
                     );

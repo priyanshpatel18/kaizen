@@ -119,8 +119,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
                 description: task.description,
                 categoryId: category.id,
                 priority: task.priority,
+                position: task.position,
                 dueDate: task.dueDate,
-                isCompleted: task.isCompleted,
                 projectId: project.id,
               };
               allTasks.push(taskData);
@@ -132,7 +132,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       // Update the state with the fetched data
       setProjects(allProjects);
       setCategories(allCategories);
-      setTasks(allTasks);
+      setTasks(allTasks.sort((a, b) => a.position - b.position));
       setWorkspaces(workspaces);
     } catch (error) {
       console.log(error);

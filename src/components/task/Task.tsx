@@ -15,9 +15,15 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import UpdateStoreData from "@/lib/UpdateStoreData";
 import { Task as TaskType } from "@/store/task";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import CompleteTaskButton from "./CompleteTaskButton";
+
+import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import invariant from "tiny-invariant";
+import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 
 interface TaskProps {
   task: TaskType;
@@ -36,12 +42,66 @@ interface UpdateProps {
 export default function Task({ task, setTaskInput, setShowDialog, setAction, view }: TaskProps) {
   const [showMoreActions, setShowMoreActions] = useState<boolean>(false);
   const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+  // DND States
+  const taskRef = useRef<HTMLDivElement | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [closestEdge, setClosestEdge] = useState(null);
 
   const flags = ["#de0a26", "#ffae42", "#1035ac", "#292D32"];
 
   useEffect(() => {
     setProps(undefined);
-  });
+    const taskEl = taskRef.current;
+    invariant(taskEl);
+
+    return combine(
+      // Add draggable to make the card draggable
+      draggable({
+        element: taskEl,
+        getInitialData: () => ({ type: "task", taskId: task.id }),
+        onDragStart: () => setIsDragging(true),
+        onDrop: () => setIsDragging(false),
+      }),
+      // Add dropTargetForElements to make the card a drop target
+      dropTargetForElements({
+        element: taskEl,
+        getData: ({ input, element, source }) => {
+          // To attach card data to a drop target
+          const data = { type: "task", taskId: task.id };
+
+          if (source.data.type === "task") {
+            return attachClosestEdge(data, {
+              input,
+              element,
+              allowedEdges: ["top", "bottom"],
+            });
+          }
+
+          return data;
+        },
+        onDragEnter: (args) => {
+          if (args.source.data.taskId !== task.id) {
+            // Update the closest edge when the draggable item enters the drop zone
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
+          }
+        },
+        onDrag: (args) => {
+          // Continuously update the closest edge while dragging over the drop zone
+          if (args.source.data.taskId !== task.id) {
+            setClosestEdge(extractClosestEdge(args.self.data) as SetStateAction<null>);
+          }
+        },
+        onDragLeave: () => {
+          // Reset the closest edge when the draggable item leaves the drop zone
+          setClosestEdge(null);
+        },
+        onDrop: () => {
+          // Reset the closest edge when the draggable item is dropped
+          setClosestEdge(null);
+        },
+      })
+    );
+  }, [task.id]);
 
   async function completeTask() {
     try {
@@ -148,8 +208,9 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
   if (view === "board") {
     return (
       <div
+        ref={taskRef}
         key={task.id}
-        className="flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md border-[1px] border-border p-2"
+        className={`relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-md border-[1px] p-2 ${isDragging ? "border-black bg-accent" : "border-border"}`}
       >
         <CompleteTaskButton task={task} completeTask={completeTask} />
         <div className="flex w-full flex-col">
@@ -158,6 +219,7 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
             {task.description}
           </span>
         </div>
+        {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
       </div>
     );
   }
@@ -172,7 +234,11 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
     >
       {props && <UpdateStoreData data={props.task} action={props.action} type="task" />}
 
-      <div className="group relative flex cursor-pointer select-none items-center justify-between">
+      <div
+        ref={taskRef}
+        className={`group relative flex cursor-pointer select-none items-center justify-between rounded px-2 py-5 ${isDragging && "bg-accent"}`}
+      >
+        {closestEdge && <DropIndicator edge={closestEdge} gap="1px" />}
         <div className="flex items-center gap-2">
           <CompleteTaskButton task={task} completeTask={completeTask} />
           <span>{task.title}</span>

@@ -1,4 +1,5 @@
 import { getUserData } from "@/actions/getUserData";
+import taskConfilctResolver from "@/actions/taskConfilctResolver";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { taskSchema } from "@/zod/task";
@@ -40,6 +41,10 @@ export async function PUT(request: NextRequest) {
       },
       data: updates,
     });
+
+    if (updates.position) {
+      taskConfilctResolver(newTask.categoryId);
+    }
 
     return NextResponse.json({ message: "Task updated", task: newTask });
   } catch (error) {

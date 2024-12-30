@@ -6,7 +6,7 @@ export interface Task {
   title: string;
   description?: string;
   priority: number;
-  isCompleted: boolean;
+  position: number;
   categoryId: string;
   dueDate: Date | string;
   projectId?: string;

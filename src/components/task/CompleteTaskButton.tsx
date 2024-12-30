@@ -87,8 +87,8 @@ export default function CompleteTaskButton({ task }: Props) {
   return (
     <div>
       <div
-        style={{ borderColor: color }}
-        className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-[1px] transition-all duration-200 ease-in-out ${
+        style={{ borderColor: color, backgroundColor: `${color}25` }}
+        className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-[1px] bg-opacity-50 transition-all duration-200 ease-in-out ${
           isExpanded ? "scale-[1.15]" : "scale-100"
         }`}
         onClick={handleTaskComplete}

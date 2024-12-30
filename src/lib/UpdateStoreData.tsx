@@ -135,6 +135,12 @@ function handleTaskAction(
           task.id === taskWithProjectId.id ? { ...task, ...taskWithProjectId } : task
         );
 
+        const sortedCategories = categories.map((category) => ({
+          ...category,
+          taskIds: sortTaskIds(category.taskIds, updatedTasks),
+        }));
+
+        setCategories(sortedCategories);
         setTasks(updatedTasks);
         break;
       } catch (error) {
@@ -209,6 +215,7 @@ function handleCategoryAction(
           (category) => category.id === data.id,
           () => data
         );
+
         setCategories(updatedCategories);
         break;
       } catch (error) {
@@ -367,6 +374,14 @@ function updateWorkspaceAfterProjectUpdate(
   );
   setWorkspaces(updatedWorkspaces);
 }
+
+const sortTaskIds = (taskIds: string[], tasks: Task[]): string[] => {
+  return taskIds
+    .map((id) => tasks.find((task) => task.id === id))
+    .filter((task): task is Task => task !== undefined)
+    .sort((a, b) => a.position - b.position)
+    .map((task) => task.id);
+};
 
 // ======= Type Guards =======
 function isTask(data: any): data is Task {

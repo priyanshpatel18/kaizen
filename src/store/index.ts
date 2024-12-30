@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 
 export interface Task {
@@ -141,9 +143,8 @@ export const useStore = create<ProjectState>((set) => ({
     }
   },
 
-  viewOptions: JSON.parse(localStorage.getItem("view_options") || "[]"),
+  viewOptions: [],
   setViewOptions: (viewOptions) => {
     set({ viewOptions });
-    localStorage.setItem("view_options", JSON.stringify(viewOptions));
   },
 }));

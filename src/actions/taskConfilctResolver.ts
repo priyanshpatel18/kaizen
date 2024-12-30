@@ -11,6 +11,9 @@ export default async function taskConfilctResolver(categoryId: string) {
           orderBy: {
             updatedAt: "asc",
           },
+          where: {
+            isCompleted: false,
+          },
         },
       },
     });

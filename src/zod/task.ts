@@ -4,6 +4,7 @@ export const taskSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   priority: z.number().optional(),
-  isCompleted: z.boolean().optional(),
   categoryId: z.string().optional(),
+  position: z.number().optional(),
+  dueDate: z.date().optional(),
 });

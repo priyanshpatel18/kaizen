@@ -15,6 +15,10 @@ import React, { useEffect } from "react";
 
 const taskedRoutes = ["/inbox", "/today"];
 
+function updateLocalStorageViewOptions(viewOptions: ViewOption[]) {
+  localStorage.setItem("view_options", JSON.stringify(viewOptions));
+}
+
 export default function PagesWithTasksLayout({ children }: { children: React.ReactNode }) {
   const { viewOptions, setViewOptions } = useStore();
   const pathname = usePathname();
@@ -67,6 +71,7 @@ function ViewOptionDropDown({ currentView, setViewOptions, pathname, viewOptions
     });
 
     setViewOptions(updatedViewOptions);
+    updateLocalStorageViewOptions(updatedViewOptions);
   }
 
   useEffect(() => {
@@ -78,6 +83,7 @@ function ViewOptionDropDown({ currentView, setViewOptions, pathname, viewOptions
         view: "list",
       }));
       setViewOptions(initialView);
+      updateLocalStorageViewOptions(initialView);
       return;
     }
 
@@ -87,9 +93,11 @@ function ViewOptionDropDown({ currentView, setViewOptions, pathname, viewOptions
 
       if (viewOption) {
         setViewOptions(view_options);
+        updateLocalStorageViewOptions(view_options);
       } else {
         const updatedViewOptions: ViewOption[] = [...view_options, { route: pathname, view: "list" }];
         setViewOptions(updatedViewOptions);
+        updateLocalStorageViewOptions(updatedViewOptions);
       }
     } catch (error) {
       console.error("Failed to parse view options:", error);

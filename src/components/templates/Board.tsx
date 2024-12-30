@@ -4,7 +4,7 @@ import BoardTemplate from "@/components/templates/BoardTemplate";
 import ListTemplate from "@/components/templates/ListTemplate";
 import { useStore } from "@/store";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface BoardProps {
   heading: string;
@@ -12,15 +12,12 @@ interface BoardProps {
 
 export default function Board({ heading }: BoardProps) {
   const pathname = usePathname();
-  const { viewOptions, setViewOptions } = useStore();
-
-  const currentView = viewOptions.find((option) => option.route === pathname)?.view || "list";
+  const { viewOptions } = useStore();
+  const [currentView, setCurrentView] = useState<"list" | "board">("list");
 
   useEffect(() => {
-    if (!viewOptions.some((option) => option.route === pathname)) {
-      setViewOptions([...viewOptions, { route: pathname, view: "list" }]);
-    }
-  }, [pathname, viewOptions, setViewOptions]);
+    setCurrentView(viewOptions.find((option) => option.route === pathname)?.view || "list");
+  }, [viewOptions]);
 
   return <div>{currentView === "list" ? <ListTemplate heading={heading} /> : <BoardTemplate heading={heading} />}</div>;
 }

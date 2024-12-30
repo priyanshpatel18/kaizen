@@ -31,6 +31,9 @@ export async function GET() {
                   orderBy: {
                     position: "asc",
                   },
+                  where: {
+                    isCompleted: false,
+                  },
                 },
                 project: true,
               },

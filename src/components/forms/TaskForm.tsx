@@ -20,6 +20,7 @@ import { Calendar } from "../ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import CalendarIcon from "@/components/svg/CalendarIcon";
 import { usePathname } from "next/navigation";
+import { UpdateProps } from "../templates/BoardTemplate";
 
 interface IProps {
   workspaces?: Workspace[] | null;
@@ -29,14 +30,12 @@ interface IProps {
 
   action: "create" | "update" | undefined;
   taskInput?: Task | undefined;
+
+  props?: UpdateProps | undefined;
+  setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
 }
 
-interface UpdateProps {
-  task: Task;
-  action: "create" | "update";
-}
-
-export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
+export default function TaskForm({ setShowDialog, taskInput, action, props, setProps }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<string>("");
   const [taskDate, setTaskDate] = useState<Date | undefined>(undefined);
@@ -48,20 +47,17 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
   const { categories: storeCategories } = useCategoryStore();
   const { projects: storeProjects } = useProjectStore();
 
-  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
   const pathname = usePathname();
 
   useEffect(() => {
-    setProps(undefined);
     setIsLoading(false);
     setTaskTitle("");
     setTaskDescription("");
     setTaskDate(undefined);
+
     if (pathname === "/inbox") {
-      if (pathname === "/inbox") {
-        const inboxProject = list.find((item) => item.label.toLowerCase().includes("inbox"));
-        setCurrentState(inboxProject || null);
-      }
+      const inboxProject = list.find((item) => item.label.toLowerCase().includes("inbox"));
+      setCurrentState(inboxProject || null);
     }
 
     if (taskInput) {
@@ -72,12 +68,16 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
       }
       const matchedState = list.find((item) => item.value.split("#")[1].trim() === taskInput.categoryId);
       setCurrentState(matchedState || null);
+      if (setProps)
+        setProps({
+          data: taskInput,
+          action: "update",
+          type: "task",
+        });
     }
   }, [action, taskInput]);
 
   useEffect(() => {
-    setTaskTitle("");
-
     if (storeProjects && storeCategories) {
       const options: Option[] = storeProjects.flatMap((p) => {
         return storeCategories
@@ -93,13 +93,12 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
 
   async function createTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (setProps) setProps(undefined);
 
     if (!taskTitle) {
-      setIsLoading(false);
       return toast.error("Task title is required");
     }
     if (!currentState) {
-      setIsLoading(false);
       return toast.error("Select a Category to create a task");
     }
 
@@ -116,8 +115,6 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
         formData.append("dueDate", taskDate.toISOString());
       }
 
-      setProps(undefined);
-
       const res = await fetch("/api/task/create", {
         method: "POST",
         body: formData,
@@ -130,15 +127,19 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
         const task = data.task as Task;
 
         if (typeof task.title === "string") {
-          setProps({
-            task,
-            action: "create",
-          });
+          if (setProps)
+            setProps({
+              data: task,
+              action: "create",
+              type: "task",
+            });
         }
 
+        setIsLoading(false);
         setTaskTitle("");
         setTaskDescription("");
       } else {
+        setIsLoading(false);
         toast.error(data.message);
       }
     } catch (error) {
@@ -154,11 +155,9 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
     e.preventDefault();
 
     if (!taskTitle) {
-      setIsLoading(false);
       return toast.error("Task title is required");
     }
     if (!currentState) {
-      setIsLoading(false);
       return toast.error("Select a Category to create a task");
     }
 
@@ -211,10 +210,12 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
               },
               duration: 3500,
             });
-            setProps({
-              task,
-              action: "update",
-            });
+            if (setProps)
+              setProps({
+                data: task,
+                type: "task",
+                action: "update",
+              });
           }
         } else {
           toast.error(message);
@@ -231,7 +232,7 @@ export default function TaskForm({ setShowDialog, taskInput, action }: IProps) {
 
   return (
     <DialogContent>
-      {props && <UpdateStoreData data={props.task} type="task" action={props.action} />}
+      {props && <UpdateStoreData data={props.data} type="task" action={props.action} />}
 
       <DialogHeader>
         <DialogTitle>Create Task</DialogTitle>

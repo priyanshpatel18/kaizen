@@ -38,9 +38,9 @@ function getUpdatedPosition(tasks: Task[], newPosition: number, src: string, des
 
 export async function PUT(request: Request) {
   const body = await request.json();
-  const { projectId, sourceCategoryId, destinationCategoryId, taskId, newPosition } = body;
+  const { sourceCategoryId, destinationCategoryId, taskId, newPosition } = body;
 
-  if (!projectId || !sourceCategoryId || !destinationCategoryId || typeof newPosition !== "number") {
+  if (!sourceCategoryId || !destinationCategoryId || typeof newPosition !== "number") {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
   }
 
@@ -51,22 +51,11 @@ export async function PUT(request: Request) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      include: {
-        categories: {
-          include: {
-            tasks: true,
-          },
-        },
-      },
-    });
-    if (!project) {
-      return NextResponse.json({ message: "Project not found" }, { status: 404 });
-    }
+    const [sourceColumn, destinationColumn] = await prisma.$transaction([
+      prisma.category.findUnique({ where: { id: sourceCategoryId }, include: { tasks: true } }),
+      prisma.category.findUnique({ where: { id: destinationCategoryId }, include: { tasks: true } }),
+    ]);
 
-    const sourceColumn = project.categories.find((category) => category.id === sourceCategoryId);
-    const destinationColumn = project.categories.find((category) => category.id === destinationCategoryId);
     if (!sourceColumn || !destinationColumn) {
       return NextResponse.json({ message: "Source or destination column not found" }, { status: 404 });
     }
@@ -101,7 +90,7 @@ export async function PUT(request: Request) {
     }
     taskConfilctResolver(destinationCategoryId);
 
-    return NextResponse.json({ message: "Position updated successfully" }, { status: 200 });
+    return NextResponse.json({ message: "Position updated successfully", task: updatedTask }, { status: 200 });
   } catch (error) {
     console.error("Error in PUT request:", error);
     return NextResponse.json({ message: "Error updating task position" }, { status: 500 });

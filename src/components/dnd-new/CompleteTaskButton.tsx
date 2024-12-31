@@ -9,7 +9,6 @@ import { toast } from "sonner";
 
 interface Props {
   task: Task;
-  completeTask: () => Promise<Task | undefined>;
 }
 const colors = ["#de0a26", "#ffae42", "#1035ac", "#292D32"];
 
@@ -99,7 +98,7 @@ export default function CompleteTaskButton({ task }: Props) {
         />
       </div>
 
-      <UpdateStoreData data={newTask} action="update" type="task" />
+      <UpdateStoreData data={newTask} action="delete" type="task" />
     </div>
   );
 }

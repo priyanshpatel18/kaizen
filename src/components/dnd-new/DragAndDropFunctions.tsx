@@ -7,7 +7,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { UpdateProps } from "../templates/BoardTemplate";
+import { UpdateProps } from "./Board";
 
 interface ReorderCardProps {
   categoryId: string;
@@ -81,8 +81,15 @@ export default function DragAndDropFunctions() {
           updatedPosition = (preTaskPosition + postTaskPosition) / 2;
         }
 
-        if (updatedPosition !== 0 && updatedPosition !== task?.position) {
-          await updatePosition("task", taskId, {
+        if (task && updatedPosition !== 0 && updatedPosition !== task?.position) {
+          const newTask = { ...task, position: updatedPosition, categoryId: updatedSourceCategory.id };
+
+          setProps({
+            data: newTask,
+            action: "update",
+            type: "task",
+          });
+          updatePosition("task", taskId, {
             position: updatedPosition,
             categoryId: updatedSourceCategory.id,
           });
@@ -181,24 +188,7 @@ export default function DragAndDropFunctions() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        if (data.task) {
-          setProps({
-            data: data.task,
-            action: "update",
-            type: "task",
-          });
-        }
-        if (data.category) {
-          setProps({
-            data: data.category,
-            action: "update",
-            type: "category",
-          });
-        }
-      } else {
-        toast.error(data.message);
-      }
+      if (!response.ok) toast.error(data.message);
     } catch (error) {
       console.log(error);
     }

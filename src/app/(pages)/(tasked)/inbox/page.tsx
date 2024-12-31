@@ -1,6 +1,6 @@
 "use client";
 
-import Board from "@/components/templates/Board";
+import Board from "@/components/dnd-new/Board";
 
 export default function Inbox() {
   return <Board heading="Inbox" />;

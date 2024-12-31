@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 
+import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,8 @@ import * as z from "zod";
 export default function SignUpPage() {
   const router = useRouter();
 
+  const [isEmailLoading, setIsEmailLoading] = useState<boolean>(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof signUpSchema>>({
@@ -29,6 +32,7 @@ export default function SignUpPage() {
 
   async function sendOTP(values: z.infer<typeof signUpSchema>) {
     setIsLoading(true);
+    setIsEmailLoading(true);
     try {
       const publicKey = process.env.NEXT_PUBLIC_PUBLIC_KEY;
       if (!publicKey || typeof publicKey !== "string") {
@@ -63,6 +67,7 @@ export default function SignUpPage() {
       console.log(error);
     } finally {
       setIsLoading(false);
+      setIsEmailLoading(false);
     }
   }
 
@@ -103,6 +108,7 @@ export default function SignUpPage() {
             />
           </div>
           <Button className="w-full font-semibold" type="submit" disabled={isLoading}>
+            {isEmailLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Sign Up
           </Button>
         </form>
@@ -112,6 +118,7 @@ export default function SignUpPage() {
         className="w-full font-semibold"
         disabled={isLoading}
         onClick={async () => {
+          setIsGoogleLoading(true);
           const res = await signIn("google", {
             callbackUrl: "/onboard/profile",
           });
@@ -123,6 +130,7 @@ export default function SignUpPage() {
           }
         }}
       >
+        {isGoogleLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
         Sign up with Google
       </Button>
 

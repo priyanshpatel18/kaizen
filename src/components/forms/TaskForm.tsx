@@ -55,7 +55,7 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
     setTaskDescription("");
     setTaskDate(undefined);
 
-    if (pathname === "/inbox") {
+    if (pathname === "/app/inbox") {
       const inboxProject = list.find((item) => item.label.toLowerCase().includes("inbox"));
       setCurrentState(inboxProject || null);
     }

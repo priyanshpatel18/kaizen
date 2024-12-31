@@ -42,7 +42,7 @@ export default function Category({
   const [tasks, setTasks] = useState<TaskType[]>([]);
 
   useEffect(() => {
-    if (pathname === "/today") {
+    if (pathname === "/app/today") {
       const todayEnd = new Date();
       const todayStart = new Date();
       todayEnd.setHours(23, 59, 59, 999);

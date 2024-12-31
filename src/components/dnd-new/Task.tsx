@@ -53,9 +53,6 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
 
   useEffect(() => {
     setProps(undefined);
-    if (!category) {
-      return;
-    }
 
     const taskEl = taskRef.current;
     invariant(taskEl);

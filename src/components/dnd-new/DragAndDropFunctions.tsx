@@ -28,7 +28,11 @@ interface HandleDropProps {
   location: any;
 }
 
-export default function DragAndDropFunctions() {
+interface IProps {
+  pathname?: string;
+}
+
+export default function DragAndDropFunctions({ pathname }: IProps) {
   const { categories } = useCategoryStore();
   const [props, setProps] = useState<UpdateProps | undefined>(undefined);
   const { tasks } = useTaskStore();
@@ -89,10 +93,12 @@ export default function DragAndDropFunctions() {
             action: "update",
             type: "task",
           });
-          updatePosition("task", taskId, {
-            position: updatedPosition,
-            categoryId: updatedSourceCategory.id,
-          });
+          if (pathname === "/app/today") {
+            updatePosition("task", taskId, {
+              position: updatedPosition,
+              categoryId: updatedSourceCategory.id,
+            });
+          }
         }
       }
     },

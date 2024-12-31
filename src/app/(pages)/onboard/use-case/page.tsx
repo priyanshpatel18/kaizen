@@ -32,7 +32,7 @@ export default function UseCasePage() {
 
       toast.success(data.message);
       setTimeout(() => {
-        router.push("/");
+        router.push("/app/today");
       }, 500);
     } catch (error) {
       console.log(error);

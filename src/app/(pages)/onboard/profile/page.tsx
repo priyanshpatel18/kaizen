@@ -50,6 +50,7 @@ export default function ProfilePage() {
         return toast.error(data.message);
       } else {
         toast.success(data.message);
+
         localStorage.setItem("profilePicture", data.profilePicture);
         localStorage.setItem("name", data.name);
 

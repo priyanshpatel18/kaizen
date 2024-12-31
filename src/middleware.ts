@@ -16,14 +16,19 @@ export default withAuth(
     // Get the attempted URL
     const attemptedUrl = req.nextUrl.pathname + req.nextUrl.search;
 
+    // Redirect "/" to "/app/today" if accessed
+    if (req.nextUrl.pathname === "/") {
+      return NextResponse.redirect(new URL("/app/today", req.url));
+    }
+
     // Restrict access to public pages if authenticated
     if (isAuth && isPublic) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/app/today", req.url));
     }
 
     // Restrict access to restricted pages
     if (isRestricted) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/app/today", req.url));
     }
 
     // Handle onboarded users trying to access /onboard/* routes
@@ -32,7 +37,7 @@ export default withAuth(
     if (req.nextUrl.pathname.startsWith("/onboard/")) {
       // Redirect if onboarded
       if (onboardedCookie?.value === "true") {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(new URL("/app/today", req.url));
       } else {
         return NextResponse.next();
       }
@@ -64,7 +69,8 @@ export default withAuth(
 export const config = {
   matcher: [
     "/",
-    "/inbox",
+    "/app/inbox",
+    "/app/today",
     "/labels",
     "/onboard/profile",
     "/onboard/use-case",

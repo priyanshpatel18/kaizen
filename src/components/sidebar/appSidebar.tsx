@@ -31,8 +31,13 @@ export default function AppSidebar() {
 
   useEffect(() => {
     if (session?.user) {
-      localStorage.setItem("profilePicture", session.user.image || "");
-      localStorage.setItem("name", session.user.name || "");
+      if (!localStorage.getItem("profilePicture") && session.user.image) {
+        localStorage.setItem("profilePicture", session.user.image);
+      }
+
+      if (!localStorage.getItem("name") && session.user.name) {
+        localStorage.setItem("name", session.user.name);
+      }
     }
   }, [session]);
 
@@ -108,16 +113,16 @@ export default function AppSidebar() {
       <Separator />
 
       <div className="flex flex-col gap-1">
-        <Link href={"/inbox"}>
-          <SidebarItem className={`${pathname === "/inbox" && "bg-accent"}`}>
-            <InboxIcon color="#292D32" active={pathname === "/inbox"} />
-            <span className={`${pathname === "/inbox" ? "font-semibold" : ""}`}>Inbox</span>
+        <Link href={"/app/inbox"}>
+          <SidebarItem className={`${pathname === "/app/inbox" && "bg-accent"}`}>
+            <InboxIcon color="#292D32" active={pathname === "/app/inbox"} />
+            <span className={`${pathname === "/app/inbox" ? "font-semibold" : ""}`}>Inbox</span>
           </SidebarItem>
         </Link>
-        <Link href={"/today"}>
-          <SidebarItem className={`${pathname === "/today" && "bg-accent"}`}>
-            <CalendarIcon color="#292D32" active={pathname === "/today"} />
-            <span className={`${pathname === "/today" ? "font-semibold" : ""}`}>Today</span>
+        <Link href={"/app/today"}>
+          <SidebarItem className={`${pathname === "/app/today" && "bg-accent"}`}>
+            <CalendarIcon color="#292D32" active={pathname === "/app/today"} />
+            <span className={`${pathname === "/app/today" ? "font-semibold" : ""}`}>Today</span>
           </SidebarItem>
         </Link>
       </div>

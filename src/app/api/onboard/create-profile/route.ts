@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
     if (!session?.user) {
       return NextResponse.json({ message: "Please sign in first to continue" }, { status: 401 });
     }
-    console.log(session.user);
 
     const user = await prisma.user.findFirst({
       where: { email: session.user.email },

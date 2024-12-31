@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 
-import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -104,7 +103,6 @@ export default function SignUpPage() {
             />
           </div>
           <Button className="w-full font-semibold" type="submit" disabled={isLoading}>
-            {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Sign Up
           </Button>
         </form>
@@ -125,7 +123,6 @@ export default function SignUpPage() {
           }
         }}
       >
-        {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
         Sign up with Google
       </Button>
 

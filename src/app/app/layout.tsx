@@ -13,7 +13,7 @@ import { useStore, ViewOption } from "@/store";
 import { usePathname } from "next/navigation";
 import React, { useEffect } from "react";
 
-const taskedRoutes = ["/inbox", "/today"];
+const taskedRoutes = ["/app/inbox", "/app/today"];
 
 function updateLocalStorageViewOptions(viewOptions: ViewOption[]) {
   localStorage.setItem("view_options", JSON.stringify(viewOptions));

@@ -1,6 +1,5 @@
 "use client";
 
-import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -33,7 +32,7 @@ export default function SignInPage() {
 
     if (!res?.error) {
       toast.success("Signed In");
-      router.push("/");
+      router.push("/app/today");
     } else {
       if (res.status === 401) {
         toast.error("Invalid Credentials, try again!");
@@ -112,7 +111,6 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
           </div>
 
           <Button className="w-full" type="submit" disabled={isLoading}>
-            {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
         </form>
@@ -131,7 +129,6 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
           }
         }}
       >
-        {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
         Sign in with Google
       </Button>
 

@@ -42,7 +42,7 @@ export default function Board({ heading }: BoardProps) {
   const { categories } = useCategoryStore();
 
   useEffect(() => {
-    if (pathname === "/inbox") {
+    if (pathname === "/app/inbox") {
       const project = projects.find((p) => p.isDefault === true && p.name === "Inbox");
 
       if (project) setProject(project);

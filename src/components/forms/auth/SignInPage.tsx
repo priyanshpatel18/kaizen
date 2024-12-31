@@ -1,5 +1,6 @@
 "use client";
 
+import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -8,12 +9,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
 export default function SignInPage() {
   const router = useRouter();
+  const [isEmailLoading, setIsEmailLoading] = useState<boolean>(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -24,6 +29,9 @@ export default function SignInPage() {
   });
 
   async function handleSignIn(values: z.infer<typeof signUpSchema>) {
+    setIsLoading(true);
+    setIsEmailLoading(true);
+
     const res = await signIn("credentials", {
       email: values.email,
       password: values.password,
@@ -46,17 +54,32 @@ export default function SignInPage() {
         toast.error("oops something went wrong..!");
       }
     }
+
+    setIsLoading(false);
+    setIsEmailLoading(false);
   }
 
   return (
     <main className="flex h-screen w-full items-center justify-center bg-gray-100 p-4 sm:p-0">
-      <SignInForm form={form} isLoading={false} handleSignIn={handleSignIn} />
+      <SignInForm
+        isLoading={isLoading}
+        setIsLoading={setIsLoading}
+        isGoogleLoading={isGoogleLoading}
+        isEmailLoading={isEmailLoading}
+        setIsGoogleLoading={setIsGoogleLoading}
+        form={form}
+        handleSignIn={handleSignIn}
+      />
     </main>
   );
 }
 
 interface SignInFormProps {
   isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  isGoogleLoading: boolean;
+  setIsGoogleLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  isEmailLoading: boolean;
   form: UseFormReturn<
     {
       email: string;
@@ -68,7 +91,15 @@ interface SignInFormProps {
   handleSignIn: (values: z.infer<typeof signUpSchema>) => void;
 }
 
-function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
+function SignInForm({
+  isLoading,
+  form,
+  handleSignIn,
+  setIsLoading,
+  isGoogleLoading,
+  setIsGoogleLoading,
+  isEmailLoading,
+}: SignInFormProps) {
   return (
     <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
       <div className="flex flex-col space-y-2 text-center">
@@ -111,6 +142,7 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
           </div>
 
           <Button className="w-full" type="submit" disabled={isLoading}>
+            {isEmailLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
             Sign In
           </Button>
         </form>
@@ -120,6 +152,9 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
         className="w-full"
         disabled={isLoading}
         onClick={async () => {
+          setIsGoogleLoading(true);
+          setIsLoading(true);
+
           const res = await signIn("google", { redirect: false });
 
           if (!res?.error) {
@@ -127,8 +162,12 @@ function SignInForm({ isLoading, form, handleSignIn }: SignInFormProps) {
           } else {
             toast.error("oops something went wrong..!");
           }
+
+          setIsGoogleLoading(false);
+          setIsLoading(false);
         }}
       >
+        {isGoogleLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
         Sign in with Google
       </Button>
 

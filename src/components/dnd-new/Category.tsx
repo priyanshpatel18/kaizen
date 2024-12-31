@@ -12,7 +12,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { usePathname } from "next/navigation";
 import Task from "./Task";
-import { UpdateProps } from "../templates/BoardTemplate";
+import { UpdateProps } from "./Board";
 
 interface ColumnProps {
   setTaskInput: React.Dispatch<React.SetStateAction<TaskType | undefined>>;
@@ -131,28 +131,42 @@ export default function Category({
     }
   }, []);
 
-  if (view === "board" && category) {
+  if (view === "board") {
     return (
-      <div key={category.id} className="flex h-full w-full max-w-64 flex-col gap-2 rounded-md p-2">
+      <div className="flex h-full w-full max-w-64 flex-col gap-2 rounded-md p-2">
         {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
-        <span className={`h-3} text-sm font-semibold`}>{category.isDefault ? "(No Category)" : category.name}</span>
+        <span className={`h-3} text-sm font-semibold`}>{category?.isDefault ? "(No Category)" : category?.name}</span>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2" ref={categoryRef}>
-            {tasks.map((task) => {
-              if (task.categoryId === category.id) {
-                return (
-                  <Task
-                    key={task.id}
-                    task={task}
-                    setTaskInput={setTaskInput}
-                    setShowDialog={setShowTaskForm}
-                    view="board"
-                    setAction={setAction}
-                  />
-                );
-              }
-              return null;
-            })}
+            {category
+              ? tasks.map((task) => {
+                  if (task.categoryId === category?.id) {
+                    return (
+                      <Task
+                        key={task.id}
+                        task={task}
+                        setTaskInput={setTaskInput}
+                        setShowDialog={setShowTaskForm}
+                        view="board"
+                        setAction={setAction}
+                        category={category}
+                      />
+                    );
+                  }
+                  return null;
+                })
+              : tasks.map((task) => {
+                  return (
+                    <Task
+                      key={task.id}
+                      task={task}
+                      setTaskInput={setTaskInput}
+                      setShowDialog={setShowTaskForm}
+                      view="board"
+                      setAction={setAction}
+                    />
+                  );
+                })}
           </div>
           <Button
             onClick={() => {
@@ -207,7 +221,7 @@ export default function Category({
           >
             Add Task
           </Button>
-          <div className="relative cursor-pointer opacity-0 transition-opacity duration-300 hover:opacity-100">
+          <div className="duration-00 relative cursor-pointer opacity-0 transition-opacity hover:opacity-100">
             <Separator />
             <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-gray-600">
               Add Category

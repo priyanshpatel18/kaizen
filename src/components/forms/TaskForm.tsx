@@ -16,11 +16,11 @@ import { useProjectStore } from "@/store/project";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Calendar } from "../ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CalendarIcon from "@/components/svg/CalendarIcon";
 import { usePathname } from "next/navigation";
-import { UpdateProps } from "../templates/BoardTemplate";
+import { UpdateProps } from "@/components/dnd-new/Board";
 
 interface IProps {
   workspaces?: Workspace[] | null;
@@ -260,7 +260,12 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
         </Label>
 
         <div className="flex space-x-4">
-          <ComboBox list={list} currentState={currentState} setCurrentState={setCurrentState} />
+          <ComboBox
+            list={list}
+            currentState={currentState}
+            setCurrentState={setCurrentState}
+            setIsLoading={setIsLoading}
+          />
           <DateSelection date={taskDate} setDate={setTaskDate} />
         </div>
 
@@ -282,9 +287,10 @@ interface ComboBoxProps {
   list: Option[];
   currentState: Option | null;
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
 }
 
-function ComboBox({ list, currentState, setCurrentState }: ComboBoxProps) {
+function ComboBox({ list, currentState, setCurrentState, setIsLoading }: ComboBoxProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleSelect = (newValue: string) => {
@@ -294,6 +300,10 @@ function ComboBox({ list, currentState, setCurrentState }: ComboBoxProps) {
       setOpen(false);
     }
   };
+
+  useEffect(() => {
+    setIsLoading(false);
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

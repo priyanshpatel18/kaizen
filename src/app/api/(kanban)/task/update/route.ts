@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   const { id, updateValue } = await request.json();
+
   if (!id || !updateValue) {
     return NextResponse.json({ message: "Invalid Request" });
   }

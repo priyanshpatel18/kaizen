@@ -7,4 +7,5 @@ export const taskSchema = z.object({
   categoryId: z.string().optional(),
   position: z.number().optional(),
   dueDate: z.date().optional(),
+  isCompleted: z.boolean().optional(),
 });

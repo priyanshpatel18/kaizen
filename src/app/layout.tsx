@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { siteConfig } from "@/config/siteConfig";
 import { cookies } from "next/headers";
@@ -19,7 +20,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`bg-background`}>
-        {/* <GoogleAnalytics /> */}
+        <GoogleAnalytics />
         <SidebarProvider defaultOpen={defaultOpen}>
           <Providers>
             {children}

@@ -1,41 +1,41 @@
 "use client";
 
-import { format } from "date-fns";
+import { UpdateProps } from "@/components/dnd/Board";
+import CalendarIcon from "@/components/svg/CalendarIcon";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import UpdateStoreData from "@/lib/UpdateStoreData";
 import { cn } from "@/lib/utils";
-import { Option, Project, Workspace } from "@/store";
-import { Task } from "@/store/task";
+import { Option, Workspace } from "@/store";
 import { useCategoryStore } from "@/store/category";
-import { useProjectStore } from "@/store/project";
+import { Project, useProjectStore } from "@/store/project";
+import { Task } from "@/store/task";
+import { format } from "date-fns";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import CalendarIcon from "@/components/svg/CalendarIcon";
-import { usePathname } from "next/navigation";
-import { UpdateProps } from "@/components/dnd/Board";
 
 interface IProps {
   workspaces?: Workspace[] | null;
   setShowDialog: Dispatch<SetStateAction<boolean>>;
   taskOption?: Option | null;
-  project?: Project | null;
 
   action: "create" | "update" | undefined;
   taskInput?: Task | undefined;
 
+  project: Project | null;
   props?: UpdateProps | undefined;
   setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
 }
 
-export default function TaskForm({ setShowDialog, taskInput, action, props, setProps }: IProps) {
+export default function TaskForm({ setShowDialog, taskInput, action, props, setProps, project }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<string>("");
   const [taskDate, setTaskDate] = useState<Date | undefined>(undefined);
@@ -198,6 +198,7 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
             type: "task",
             action: "update",
           });
+        setShowDialog(false);
 
         const response = await fetch("/api/task/update", {
           method: "PUT",
@@ -267,6 +268,7 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
             currentState={currentState}
             setCurrentState={setCurrentState}
             setIsLoading={setIsLoading}
+            project={project}
           />
           <DateSelection date={taskDate} setDate={setTaskDate} />
         </div>
@@ -290,9 +292,10 @@ interface ComboBoxProps {
   currentState: Option | null;
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
+  project?: Project | null;
 }
 
-function ComboBox({ list, currentState, setCurrentState, setIsLoading }: ComboBoxProps) {
+function ComboBox({ list, currentState, setCurrentState, setIsLoading, project }: ComboBoxProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleSelect = (newValue: string) => {
@@ -305,7 +308,12 @@ function ComboBox({ list, currentState, setCurrentState, setIsLoading }: ComboBo
 
   useEffect(() => {
     setIsLoading(false);
-  });
+
+    if (project) {
+      const selected = list.find((item) => item.value.split("#")[0].trim() === project?.id);
+      if (selected) setCurrentState(selected);
+    }
+  }, []);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

@@ -29,6 +29,13 @@ export default function CompleteTaskButton({ task }: Props) {
     const newTask = { ...task, isCompleted: true };
     setNewTask(newTask);
 
+    // Play Audio
+    const audio = new Audio("/assets/completion.mp3");
+    audio.play();
+
+    // Launch Confetti
+    launchConfetti();
+
     try {
       const response = await fetch("/api/task/update", {
         method: "PUT",
@@ -59,13 +66,6 @@ export default function CompleteTaskButton({ task }: Props) {
       console.log(error);
       toast.error("Something went wrong");
     }
-
-    // Play Audio
-    const audio = new Audio("/assets/completion.mp3");
-    audio.play();
-
-    // Launch Confetti
-    launchConfetti();
 
     // Button animation
     setTimeout(() => {

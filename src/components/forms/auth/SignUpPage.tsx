@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
 
+import { useEffect, useState } from "react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
@@ -71,6 +71,8 @@ export default function SignUpPage() {
     }
   }
 
+  useEffect(() => form.reset(), []);
+
   return (
     <div className="relative mx-auto flex w-full max-w-md flex-col justify-center space-y-6 rounded-lg bg-white p-6 shadow-lg sm:p-8">
       <div className="flex flex-col space-y-2 text-center">
@@ -120,7 +122,7 @@ export default function SignUpPage() {
         onClick={async () => {
           setIsGoogleLoading(true);
           const res = await signIn("google", {
-            callbackUrl: "/onboard/profile",
+            callbackUrl: "/app/onboard/use-case",
           });
 
           if (!res?.error) {

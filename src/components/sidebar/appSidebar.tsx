@@ -32,8 +32,11 @@ export interface UpdateProps {
 export default function AppSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { projects } = useProjectStore();
-  const { workspaces } = useWorkspaceStore();
+
+  const { setTasks } = useTaskStore();
+  const { setCategories } = useCategoryStore();
+  const { projects, setProjects } = useProjectStore();
+  const { workspaces, setWorkspaces, fetchAllData } = useWorkspaceStore();
   const [showProjectForm, setShowProjectForm] = useState<boolean>(false);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | undefined>(undefined);
   const [props, setProps] = useState<UpdateProps | undefined>(undefined);
@@ -62,7 +65,7 @@ export default function AppSidebar() {
     const storedName = localStorage.getItem("name")?.replace(/"/g, "");
 
     if (!storedName) {
-      router.push("/onboard/profile");
+      router.push("/app/onboard/profile");
     }
 
     setProfilePicture(storedProfilePicture || undefined);
@@ -85,25 +88,18 @@ export default function AppSidebar() {
     };
   }, []);
 
-  // All Stores
-  const taskStore = useTaskStore();
-  const categoryStore = useCategoryStore();
-  const projectStore = useProjectStore();
-  const workspaceStore = useWorkspaceStore();
-  // const commonStore = useStore();
-
   useEffect(() => {
-    if (workspaceStore.workspaces.length > 0) {
+    if (workspaces.length > 0) {
       return;
     }
 
-    workspaceStore.fetchAllData({
-      setTasks: taskStore.setTasks,
-      setCategories: categoryStore.setCategories,
-      setProjects: projectStore.setProjects,
-      setWorkspaces: workspaceStore.setWorkspaces,
+    fetchAllData({
+      setTasks,
+      setCategories,
+      setProjects,
+      setWorkspaces,
     });
-  }, [workspaceStore.workspaces]);
+  }, [workspaces]);
 
   return (
     <Dialog open={showProjectForm} onOpenChange={setShowProjectForm}>

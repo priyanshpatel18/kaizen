@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -27,6 +27,8 @@ export default function SignInPage() {
       password: "",
     },
   });
+
+  useEffect(() => form.reset(), []);
 
   async function handleSignIn(values: z.infer<typeof signUpSchema>) {
     setIsLoading(true);

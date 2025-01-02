@@ -16,6 +16,10 @@ export default function UseCasePage() {
   async function handleContinue() {
     setIsLoading(true);
 
+    if (selected.length === 0) {
+      return toast.error("Please select at least one project");
+    }
+
     try {
       const formData = new FormData();
       formData.append("projects", JSON.stringify(selected));

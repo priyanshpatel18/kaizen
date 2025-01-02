@@ -54,7 +54,7 @@ export default function Board({ heading, projectId }: BoardProps) {
 
       if (project) setProject(project);
     }
-  }, [project, projects]);
+  }, [projects, projectId, pathname]);
 
   return (
     <Dialog

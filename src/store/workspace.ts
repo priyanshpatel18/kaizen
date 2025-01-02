@@ -129,11 +129,16 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         });
       });
 
+      const updatedWorkspaces = workspaces.map((workspace: Workspace) => ({
+        ...workspace,
+        projectIds: workspace.projects?.map((project: Project) => project.id) || [],
+      }));
+
       // Update the state with the fetched data
       setProjects(allProjects);
       setCategories(allCategories);
       setTasks(allTasks.sort((a, b) => a.position - b.position));
-      setWorkspaces(workspaces);
+      setWorkspaces(updatedWorkspaces);
     } catch (error) {
       console.log(error);
       toast.error("An error occurred while fetching the data.");

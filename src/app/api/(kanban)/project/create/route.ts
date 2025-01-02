@@ -75,6 +75,12 @@ export async function POST(request: NextRequest) {
           name,
           workspaceId,
           userId: user.id,
+          categories: {
+            create: {
+              name: "default",
+              isDefault: true,
+            },
+          },
         },
         include: {
           categories: {
@@ -89,9 +95,21 @@ export async function POST(request: NextRequest) {
               position: "asc",
             },
           },
+          workspace: true,
         },
       });
-      return NextResponse.json({ project, message: "Project created successfully" });
+
+      const responseProject = {
+        id: project.id,
+        name: project.name,
+        isDefault: project.isDefault,
+        categoryIds: project.categories.map((category) => category.id),
+        workspaceId: project.workspaceId,
+        categories: project.categories,
+        workspace: project.workspace,
+      };
+
+      return NextResponse.json({ project: responseProject, message: "Project created successfully" });
     }
   } catch (error) {
     console.log(error);

@@ -50,7 +50,14 @@ export default function UpdateStoreData({ data, type, action }: UseUpdateDataPro
 
       case "project":
         if (isProject(data)) {
-          handleProjectAction(data, action, { projects, workspaces, setProjects, setWorkspaces });
+          handleProjectAction(data, action, {
+            projects,
+            workspaces,
+            setProjects,
+            setWorkspaces,
+            categories,
+            setCategories,
+          });
         } else {
           console.error("Data is not a valid Project");
         }
@@ -120,7 +127,7 @@ function handleTaskAction(
           (category) => category.id === taskWithProjectId.categoryId,
           (category) => ({
             ...category,
-            taskIds: [...category.taskIds, taskWithProjectId.id],
+            taskIds: [...(category.taskIds || []), taskWithProjectId.id],
           })
         );
 
@@ -257,19 +264,29 @@ function handleProjectAction(
   data: Project,
   action: "create" | "update" | "delete",
   stores: {
+    categories: Category[];
+    setCategories: (categories: Category[]) => void;
     projects: Project[];
     workspaces: Workspace[];
     setProjects: (projects: Project[]) => void;
     setWorkspaces: (workspaces: Workspace[]) => void;
   }
 ) {
-  const { projects, workspaces, setProjects, setWorkspaces } = stores;
+  const { projects, workspaces, setProjects, setWorkspaces, categories, setCategories } = stores;
 
   switch (action) {
     case "create":
       try {
         const newProjects = [...projects, data];
         setProjects(newProjects);
+
+        if (data.categories) {
+          const updatedCategories = [
+            ...categories,
+            ...(data.categories.map((c) => ({ ...c, projectId: data.id })) || []),
+          ];
+          setCategories(updatedCategories);
+        }
 
         updateWorkspaceAfterProjectUpdate(data.workspaceId, newProjects, workspaces, setWorkspaces);
         break;
@@ -372,6 +389,7 @@ function updateWorkspaceAfterProjectUpdate(
       projects: updatedProjects,
     })
   );
+
   setWorkspaces(updatedWorkspaces);
 }
 

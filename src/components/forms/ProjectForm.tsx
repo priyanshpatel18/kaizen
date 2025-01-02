@@ -1,31 +1,40 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { Option, Project, useStore, Workspace } from "@/store";
-import { DialogTitle } from "@radix-ui/react-dialog";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Option } from "@/store";
+import { Project } from "@/store/project";
+import { useWorkspaceStore } from "@/store/workspace";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { UpdateProps } from "../sidebar/appSidebar";
+import { useRouter } from "next/navigation";
+import { Icons } from "../icons";
 
 interface IProps {
-  workspaces: Workspace[] | null;
   selectedWorkspaceId: string | undefined;
   setShowProjectForm: Dispatch<SetStateAction<boolean>>;
+  setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
 }
 
-export default function CreateProjectForm({ workspaces, selectedWorkspaceId, setShowProjectForm }: IProps) {
+export default function ProjectForm({ selectedWorkspaceId, setShowProjectForm, setProps }: IProps) {
   const [projectName, setProjectName] = useState<string>("");
-  const store = useStore();
   const [currentState, setCurrentState] = useState<Option | null>(null);
   const [list, setList] = useState<Option[]>([]);
+  const { workspaces } = useWorkspaceStore();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   useEffect(() => {
     setProjectName("");
+    setIsLoading(false);
 
     if (workspaces && workspaces.length > 0) {
       const options: Option[] = workspaces.map((ws) => {
@@ -47,6 +56,7 @@ export default function CreateProjectForm({ workspaces, selectedWorkspaceId, set
 
   async function createProject(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     if (!projectName) {
       return toast.error("Project title is required");
     }
@@ -58,36 +68,38 @@ export default function CreateProjectForm({ workspaces, selectedWorkspaceId, set
     }
     formData.append("workspaceId", currentState.value);
 
-    const res = await fetch("/api/project/create", {
-      method: "POST",
-      body: formData,
-    });
+    setIsLoading(true);
 
-    const data = await res.json();
-    if (!res.ok) {
-      return toast.error(data.message);
-    } else {
-      toast.success(data.message);
+    try {
+      const res = await fetch("/api/project/create", {
+        method: "POST",
+        body: formData,
+      });
 
-      const newProject = data.project as Project;
+      const data = await res.json();
+      if (!res.ok) {
+        return toast.error(data.message);
+      } else {
+        toast.success(data.message);
 
-      if (newProject) {
-        const updatedWorkspace = workspaces?.map((ws) => {
-          if (ws.id === newProject?.workspaceId) {
-            return {
-              ...ws,
-              projects: [...ws.projects, newProject],
-            };
-          }
-          return ws;
-        });
+        const newProject = data.project as Project;
 
-        store.setWorkspaces(updatedWorkspace as Workspace[]);
+        if (setProps)
+          setProps({
+            data: newProject,
+            action: "create",
+            type: "project",
+          });
+
+        router.push(`/app/projects/${data.project.id}`);
       }
-      // router.push(`/projects/${data.project.id}`);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setProjectName("");
+      setShowProjectForm(false);
+      setIsLoading(false);
     }
-    setProjectName("");
-    setShowProjectForm(false);
   }
 
   return (
@@ -108,10 +120,17 @@ export default function CreateProjectForm({ workspaces, selectedWorkspaceId, set
           />
         </Label>
 
-        <WorkspaceComboBox currentState={currentState} setCurrentState={setCurrentState} list={list} />
+        <WorkspaceComboBox
+          setProjectName={setProjectName}
+          setIsLoading={setIsLoading}
+          currentState={currentState}
+          setCurrentState={setCurrentState}
+          list={list}
+        />
 
-        <Button type="submit">
+        <Button type="submit" className="w-full" disabled={isLoading}>
           <span>Create Project</span>
+          {isLoading && <Icons.spinner className={`ml-2 h-4 w-4 animate-spin`} />}
         </Button>
       </form>
     </DialogContent>
@@ -122,9 +141,11 @@ interface CBProps {
   list: Option[];
   currentState: Option | null;
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
+  setProjectName: Dispatch<SetStateAction<string>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
 }
 
-function WorkspaceComboBox({ currentState, list, setCurrentState }: CBProps) {
+function WorkspaceComboBox({ currentState, list, setCurrentState, setProjectName, setIsLoading }: CBProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleSelect = (newValue: string) => {
@@ -134,6 +155,11 @@ function WorkspaceComboBox({ currentState, list, setCurrentState }: CBProps) {
       setOpen(false);
     }
   };
+
+  useEffect(() => {
+    setProjectName("");
+    setIsLoading(false);
+  }, []);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

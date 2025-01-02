@@ -14,6 +14,7 @@ import DragAndDropFunctions from "./DragAndDropFunctions";
 
 interface BoardProps {
   heading: string;
+  projectId?: string;
 }
 
 export interface UpdateProps {
@@ -22,7 +23,7 @@ export interface UpdateProps {
   type: "task" | "category";
 }
 
-export default function Board({ heading }: BoardProps) {
+export default function Board({ heading, projectId }: BoardProps) {
   const pathname = usePathname();
   const { viewOptions } = useStore();
   const [currentView, setCurrentView] = useState<"list" | "board">("list");
@@ -42,6 +43,12 @@ export default function Board({ heading }: BoardProps) {
   const { categories } = useCategoryStore();
 
   useEffect(() => {
+    if (projectId) {
+      const project = projects.find((p) => p.id === projectId);
+
+      if (project) setProject(project);
+      return;
+    }
     if (pathname === "/app/inbox") {
       const project = projects.find((p) => p.isDefault === true && p.name === "Inbox");
 
@@ -108,6 +115,7 @@ export default function Board({ heading }: BoardProps) {
         setShowDialog={setShowTaskForm}
         action={action}
         taskInput={taskInput}
+        project={project}
       />
     </Dialog>
   );

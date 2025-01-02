@@ -92,6 +92,7 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
             action: "update",
             type: "task",
           });
+
           if (pathname !== "/app/today") {
             updatePosition("task", taskId, {
               position: updatedPosition,

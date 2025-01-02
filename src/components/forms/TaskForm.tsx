@@ -20,7 +20,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CalendarIcon from "@/components/svg/CalendarIcon";
 import { usePathname } from "next/navigation";
-import { UpdateProps } from "@/components/dnd-new/Board";
+import { UpdateProps } from "@/components/dnd/Board";
 
 interface IProps {
   workspaces?: Workspace[] | null;
@@ -134,7 +134,6 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
               type: "task",
             });
         }
-
         setIsLoading(false);
         setTaskTitle("");
         setTaskDescription("");
@@ -191,6 +190,15 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
           return;
         }
 
+        const newTask = { ...taskInput, ...updateValue };
+
+        if (setProps)
+          setProps({
+            data: newTask,
+            type: "task",
+            action: "update",
+          });
+
         const response = await fetch("/api/task/update", {
           method: "PUT",
           body: JSON.stringify({
@@ -210,12 +218,6 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
               },
               duration: 3500,
             });
-            if (setProps)
-              setProps({
-                data: task,
-                type: "task",
-                action: "update",
-              });
           }
         } else {
           toast.error(message);

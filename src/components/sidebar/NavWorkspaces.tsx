@@ -50,7 +50,7 @@ export default function NavWorkspaces({ workspaces }: { workspaces: Workspace[] 
           <SidebarMenuItem>
             <SidebarMenuButton>
               <Folder />
-              <span className="flex-1" onClick={() => router.push("/projects")}>
+              <span className="flex-1" onClick={() => router.push("/app/projects")}>
                 {defaultWorkspace.name}
               </span>
               <div className="ml-auto flex items-center gap-2">
@@ -75,7 +75,7 @@ export default function NavWorkspaces({ workspaces }: { workspaces: Workspace[] 
                 return (
                   <SidebarMenuItem key={project.id}>
                     <SidebarMenuButton
-                      onClick={() => router.push(`/projects/${project.id}`)}
+                      onClick={() => router.push(`/app/projects/${project.id}`)}
                       className="flex items-center"
                     >
                       <Hash className="text-primary/50" />
@@ -90,7 +90,7 @@ export default function NavWorkspaces({ workspaces }: { workspaces: Workspace[] 
 
         <SidebarMenuItem>
           <SidebarMenuButton>
-            <span className="flex-1" onClick={() => router.push("/projects")}>
+            <span className="flex-1" onClick={() => router.push("/app/projects")}>
               Workspaces
             </span>
             <div className="ml-auto flex items-center gap-2">

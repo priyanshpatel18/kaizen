@@ -130,7 +130,7 @@ export default function AppSidebar() {
       <Separator />
 
       <div className="flex flex-col gap-1">
-        <Link href={"/projects"} className="select-none truncate text-lg font-semibold">
+        <Link href={"/app/projects"} className="select-none truncate text-lg font-semibold">
           <SidebarItem className="rounded-md">My Projects</SidebarItem>
         </Link>
         <div className="flex w-full flex-col">

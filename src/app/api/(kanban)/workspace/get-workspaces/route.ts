@@ -1,23 +1,20 @@
-import { getUserData } from "@/actions/getUserData";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
   try {
-    const user = await getUserData(session);
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     const workspaces = await prisma.workspace.findMany({
       where: {
         userWorkspace: {
           some: {
-            userId: user.id,
+            userId: session.user.id,
           },
         },
       },

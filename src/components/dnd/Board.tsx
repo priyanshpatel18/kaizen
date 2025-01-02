@@ -56,7 +56,7 @@ export default function Board({ heading }: BoardProps) {
         setShowTaskForm(!showTaskForm);
       }}
     >
-      <DragAndDropFunctions />
+      {project && <DragAndDropFunctions />}
 
       <div
         className={`flex w-full flex-1 flex-col ${currentView === "list" && "items-center"} ${currentView === "list" ? "py-16" : "px-8 py-12"}`}

@@ -43,7 +43,7 @@ export async function GET() {
       },
     });
 
-    if (!workspaces || workspaces.length === 0) {
+    if (!workspaces) {
       return NextResponse.json({ message: "Workspaces not found" }, { status: 404 });
     }
 

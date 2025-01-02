@@ -9,8 +9,8 @@ import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 
 const authRoutes = [
-  "/onboard/profile",
-  "/onboard/use-case",
+  "/app/onboard/profile",
+  "/app/onboard/use-case",
   "/sign-in",
   "/sign-up",
   "/forgot-password",

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 const publicPages = ["/sign-up", "/sign-in", "/forgot-password"];
-const restrictedPages = ["/reset-password"];
+const restrictedPages = ["/reset-password", "/app/onboard/profile", "/app/onboard/use-case"];
 
 export default withAuth(
   async (req) => {
@@ -21,9 +21,16 @@ export default withAuth(
       return NextResponse.redirect(new URL("/app/today", req.url));
     }
 
-    // Restrict access to public pages if authenticated
-    if (isAuth && isPublic) {
-      return NextResponse.redirect(new URL("/app/today", req.url));
+    // Handle onboarded users trying to access /onboard/* routes
+    const onboardedCookie = (await cookies()).get("onboarded");
+
+    if (req.nextUrl.pathname.startsWith("/app/onboard/")) {
+      // Redirect if onboarded
+      if (onboardedCookie?.value === "true") {
+        return NextResponse.redirect(new URL("/app/today", req.url));
+      } else {
+        return NextResponse.next();
+      }
     }
 
     // Restrict access to restricted pages
@@ -31,16 +38,9 @@ export default withAuth(
       return NextResponse.redirect(new URL("/app/today", req.url));
     }
 
-    // Handle onboarded users trying to access /onboard/* routes
-    const onboardedCookie = (await cookies()).get("onboarded");
-
-    if (req.nextUrl.pathname.startsWith("/onboard/")) {
-      // Redirect if onboarded
-      if (onboardedCookie?.value === "true") {
-        return NextResponse.redirect(new URL("/app/today", req.url));
-      } else {
-        return NextResponse.next();
-      }
+    // Restrict access to public pages if authenticated
+    if (isAuth && isPublic) {
+      return NextResponse.redirect(new URL("/app/today", req.url));
     }
 
     // Allow public pages if not authenticated
@@ -74,7 +74,8 @@ export const config = {
     "/labels",
     "/app/onboard/profile",
     "/app/onboard/use-case",
-    "/app/projects",
+    "/app/projects/:projectId",
+    "/app/workspaces/:workspaceId",
     "/sign-in",
     "/sign-up",
     "/forgot-password",

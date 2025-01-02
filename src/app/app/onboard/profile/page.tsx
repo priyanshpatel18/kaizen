@@ -16,8 +16,8 @@ export default function ProfilePage() {
   useEffect(() => {
     const name = localStorage.getItem("name")?.trim();
 
-    if (name?.length !== 0) {
-      router.back();
+    if (name !== undefined) {
+      router.push("/app/onboard/use-case");
     }
   }, []);
 
@@ -54,7 +54,7 @@ export default function ProfilePage() {
         localStorage.setItem("profilePicture", data.profilePicture);
         localStorage.setItem("name", data.name);
 
-        router.push("/onboard/use-case");
+        router.push("/app/onboard/use-case");
       }
     } catch (error) {
       console.error(error);

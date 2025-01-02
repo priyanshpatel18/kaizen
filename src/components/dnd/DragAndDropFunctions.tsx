@@ -72,7 +72,6 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
         const task = tasks.find((task) => task.id === taskId);
 
         const [preTaskPosition, postTaskPosition] = [preTask?.position, postTask?.position];
-        console.log(preTaskPosition, postTaskPosition);
 
         let updatedPosition = 0;
         if (!preTaskPosition && !postTaskPosition) {
@@ -93,7 +92,7 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
             action: "update",
             type: "task",
           });
-          if (pathname === "/app/today") {
+          if (pathname !== "/app/today") {
             updatePosition("task", taskId, {
               position: updatedPosition,
               categoryId: updatedSourceCategory.id,

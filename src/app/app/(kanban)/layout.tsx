@@ -19,7 +19,7 @@ function updateLocalStorageViewOptions(viewOptions: ViewOption[]) {
   localStorage.setItem("view_options", JSON.stringify(viewOptions));
 }
 
-export default function PagesWithTasksLayout({ children }: { children: React.ReactNode }) {
+export default function KanbanLayout({ children }: { children: React.ReactNode }) {
   const { viewOptions, setViewOptions } = useStore();
   const pathname = usePathname();
 

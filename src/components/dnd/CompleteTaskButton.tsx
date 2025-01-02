@@ -26,6 +26,9 @@ export default function CompleteTaskButton({ task }: Props) {
     setIsExpanded(true);
     setNewTask(undefined);
 
+    const newTask = { ...task, isCompleted: true };
+    setNewTask(newTask);
+
     try {
       const response = await fetch("/api/task/update", {
         method: "PUT",
@@ -48,7 +51,6 @@ export default function CompleteTaskButton({ task }: Props) {
             },
             duration: 3500,
           });
-          setNewTask(data.task);
         }
       } else {
         toast.error(data.message);

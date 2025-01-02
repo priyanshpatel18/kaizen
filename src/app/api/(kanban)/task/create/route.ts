@@ -1,4 +1,3 @@
-import { getUserData } from "@/actions/getUserData";
 import taskConfilctResolver from "@/actions/taskConfilctResolver";
 import prisma from "@/db";
 import { authOptions } from "@/lib/auth";
@@ -17,12 +16,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Invalid request" }, { status: 400 });
   }
 
-  const session = await getServerSession(authOptions);
   try {
-    const user = await getUserData(session);
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ message: "Please sign in first to continue" }, { status: 401 });
     }
 
     const category = await prisma.category.findUnique({

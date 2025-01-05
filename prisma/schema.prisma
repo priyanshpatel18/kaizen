@@ -79,6 +79,7 @@ model Project {
   userId      String
   workspaceId String
   isDefault   Boolean       @default(false)
+  isFavorite  Boolean       @default(false)
   workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   activityLog ActivityLog[]

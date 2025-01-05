@@ -32,17 +32,13 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         projectId,
-        position: projectCategories ? (projectCategories + 1) * 10 : 10,
+        position: projectCategories ? (projectCategories + 1) * 1000 : 10,
       },
       include: {
         tasks: true,
+        project: true,
       },
     });
-
-    const categoryResponse = {
-      ...category,
-      tasks: category.tasks || [],
-    };
 
     if (!category) {
       return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
@@ -50,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: "Category created successfully",
-      category: categoryResponse,
+      category,
     });
   } catch (error) {
     console.log(error);

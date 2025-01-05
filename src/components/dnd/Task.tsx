@@ -238,7 +238,7 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
 
       <div
         ref={taskRef}
-        className={`transiton-all group relative flex cursor-pointer select-none items-center justify-between rounded px-2 py-5 duration-150 hover:bg-accent ${isDragging && "bg-accent"}`}
+        className={`transiton-all group relative flex cursor-pointer select-none items-center justify-between rounded p-5 duration-150 hover:bg-accent ${isDragging && "bg-accent"}`}
       >
         {closestEdge && <DropIndicator edge={closestEdge} gap="1px" />}
         <div className="flex items-center gap-2">

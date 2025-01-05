@@ -11,6 +11,8 @@ import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indi
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { usePathname } from "next/navigation";
+import { Icons } from "../icons";
+import { Input } from "../ui/input";
 import { UpdateProps } from "./Board";
 import Task from "./Task";
 
@@ -22,6 +24,7 @@ interface ColumnProps {
   project?: Project | null;
   category?: CategoryType;
   setProps: React.Dispatch<SetStateAction<UpdateProps | undefined>>;
+  isLoading: boolean;
 }
 
 export default function Category({
@@ -32,12 +35,15 @@ export default function Category({
   category,
   view,
   setProps,
+  isLoading,
 }: ColumnProps) {
   const categoryRef = useRef<HTMLDivElement>(null);
   const [isReordering, setIsReordering] = useState<boolean>(false);
   const [closestEdge, setClosestEdge] = useState(null);
   const todayEnd = new Date();
   const todayStart = new Date();
+  const [showCreateCategory, setShowCreateCategory] = useState<boolean>(false);
+  const [categoryName, setCategoryName] = useState<string>("");
 
   const pathname = usePathname();
   const { tasks: storeTasks } = useTaskStore();
@@ -133,7 +139,7 @@ export default function Category({
 
   if (view === "board") {
     return (
-      <div className="flex h-full w-full max-w-64 flex-col gap-2 rounded-md p-2">
+      <div className="flex h-full w-64 flex-col gap-2 rounded-md p-2">
         {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
         <span className={`h-3} text-sm font-semibold`}>
           {pathname === "/app/today"
@@ -181,6 +187,7 @@ export default function Category({
               setAction("create");
               setShowTaskForm(true);
             }}
+            disabled={isLoading}
             variant="outline"
           >
             Add Task
@@ -195,7 +202,12 @@ export default function Category({
       {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
       {project && category ? (
         <div key={category.id} className="flex flex-col gap-4">
-          {!category.isDefault && <h2 className="text-xl font-semibold">{category.name}</h2>}
+          {!category.isDefault && (
+            <h2 className="text-xl font-semibold">
+              {category.name}
+              <Separator />
+            </h2>
+          )}
           <div className="flex flex-col" ref={categoryRef}>
             {tasks.map((task) => {
               if (task.categoryId === category.id) {
@@ -222,16 +234,49 @@ export default function Category({
               setAction("create");
               setShowTaskForm(true);
             }}
-            className="self-start"
+            disabled={isLoading}
+            className="mx-5 self-start"
             variant="outline"
           >
             Add Task
           </Button>
-          <div className="duration-00 relative cursor-pointer opacity-0 transition-opacity hover:opacity-100">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-gray-600">
-              Add Category
-            </span>
+          <div>
+            {showCreateCategory ? (
+              <div className="flex flex-col gap-2">
+                <Input
+                  value={categoryName}
+                  onChange={(e) => {
+                    setCategoryName(e.target.value);
+                  }}
+                  className="w-full"
+                  placeholder="Category name"
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      setProps(undefined);
+                    }}
+                    disabled={categoryName === "" || isLoading}
+                  >
+                    {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
+                    Create Category
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setCategoryName("");
+                      setShowCreateCategory(false);
+                    }}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <></>
+            )}
           </div>
         </div>
       ) : (

@@ -12,20 +12,31 @@ import { Project } from "@/store/project";
 import { useWorkspaceStore } from "@/store/workspace";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { UpdateProps } from "../sidebar/appSidebar";
-import { useRouter } from "next/navigation";
 import { Icons } from "../icons";
+import { UpdateProps } from "../sidebar/appSidebar";
 
 interface IProps {
   selectedWorkspaceId: string | undefined;
   setShowProjectForm: Dispatch<SetStateAction<boolean>>;
-  setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
+  setProps: Dispatch<SetStateAction<UpdateProps | undefined>>;
+  projectInput: Project | undefined;
+  setProjectInput: Dispatch<SetStateAction<Project | undefined>>;
+  updateProject: (project: Project, updateValue: object) => void;
+  action: "create" | "update" | undefined;
 }
 
-export default function ProjectForm({ selectedWorkspaceId, setShowProjectForm, setProps }: IProps) {
-  const [projectName, setProjectName] = useState<string>("");
+export default function ProjectForm({
+  selectedWorkspaceId,
+  setShowProjectForm,
+  setProps,
+  projectInput,
+  setProjectInput,
+  action,
+}: IProps) {
+  const [projectName, setProjectName] = useState<string>(projectInput?.name || "");
   const [currentState, setCurrentState] = useState<Option | null>(null);
   const [list, setList] = useState<Option[]>([]);
   const { workspaces } = useWorkspaceStore();
@@ -33,65 +44,96 @@ export default function ProjectForm({ selectedWorkspaceId, setShowProjectForm, s
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    setProjectName("");
     setIsLoading(false);
 
     if (workspaces && workspaces.length > 0) {
-      const options: Option[] = workspaces.map((ws) => {
-        if (ws.id === selectedWorkspaceId) {
-          setCurrentState({
-            label: ws.name,
-            value: ws.id,
-          });
-        }
-        return {
-          label: ws.name,
-          value: ws.id,
-        };
-      });
+      const options: Option[] = workspaces.map((ws) => ({
+        label: ws.name,
+        value: ws.id,
+      }));
 
       setList(options);
-    }
-  }, [workspaces, selectedWorkspaceId]);
 
-  async function createProject(e: FormEvent<HTMLFormElement>) {
+      if (selectedWorkspaceId) {
+        const selectedWorkspace = options.find((ws) => ws.value === selectedWorkspaceId);
+        if (selectedWorkspace) {
+          setCurrentState(selectedWorkspace);
+        }
+      }
+    }
+  }, [workspaces, selectedWorkspaceId, projectInput]);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!projectName) {
       return toast.error("Project title is required");
     }
 
-    const formData = new FormData();
-    formData.append("name", projectName);
-    if (!currentState?.value) {
-      return toast.error("Something went wrong, please refresh the page and try again");
-    }
-    formData.append("workspaceId", currentState.value);
-
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/project/create", {
-        method: "POST",
-        body: formData,
-      });
+      if (action === "create") {
+        const formData = new FormData();
+        formData.append("name", projectName);
+        if (!currentState?.value) {
+          return toast.error("Something went wrong, please refresh the page and try again");
+        }
+        formData.append("workspaceId", currentState.value);
 
-      const data = await res.json();
-      if (!res.ok) {
-        return toast.error(data.message);
-      } else {
-        toast.success(data.message);
+        const res = await fetch("/api/project/create", {
+          method: "POST",
+          body: formData,
+        });
 
-        const newProject = data.project as Project;
+        const data = await res.json();
+        if (!res.ok) {
+          return toast.error(data.message);
+        } else {
+          toast.success(data.message);
 
-        if (setProps)
-          setProps({
-            data: newProject,
-            action: "create",
-            type: "project",
-          });
+          const newProject = data.project as Project;
 
-        router.push(`/app/projects/${data.project.id}`);
+          if (setProps)
+            setProps({
+              data: newProject,
+              action: "create",
+              type: "project",
+            });
+
+          router.push(`/app/projects/${data.project.id}`);
+        }
+      }
+      if (action === "update" && projectInput) {
+        const newProject = {
+          ...projectInput,
+          name: projectName,
+          workspaceId: currentState?.value || "",
+        };
+
+        setProps({
+          data: newProject,
+          action: "update",
+          type: "project",
+        });
+
+        const response = await fetch(`/api/project/update`, {
+          method: "PUT",
+          body: JSON.stringify({
+            id: projectInput.id,
+            updateValue: {
+              name: projectName,
+              workspaceId: currentState?.value || "",
+            },
+          }),
+        });
+
+        const { message, project: resProject } = await response.json();
+        if (response.ok && resProject) {
+          toast.success(message);
+        } else {
+          toast.error(message);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -108,7 +150,7 @@ export default function ProjectForm({ selectedWorkspaceId, setShowProjectForm, s
         <DialogTitle>Create Project</DialogTitle>
       </DialogHeader>
 
-      <form onSubmit={createProject} className="flex flex-col space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
         <Label>
           <span className="sr-only">Enter Project Name</span>
           <Input
@@ -126,10 +168,13 @@ export default function ProjectForm({ selectedWorkspaceId, setShowProjectForm, s
           currentState={currentState}
           setCurrentState={setCurrentState}
           list={list}
+          projectInput={projectInput}
+          setProjectInput={setProjectInput}
+          action={action}
         />
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          <span>Create Project</span>
+          <span className="capitalize">{action} Project</span>
           {isLoading && <Icons.spinner className={`ml-2 h-4 w-4 animate-spin`} />}
         </Button>
       </form>
@@ -143,9 +188,21 @@ interface CBProps {
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
   setProjectName: Dispatch<SetStateAction<string>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
+  projectInput: Project | undefined;
+  setProjectInput: Dispatch<SetStateAction<Project | undefined>>;
+  action: "create" | "update" | undefined;
 }
 
-function WorkspaceComboBox({ currentState, list, setCurrentState, setProjectName, setIsLoading }: CBProps) {
+function WorkspaceComboBox({
+  currentState,
+  list,
+  setCurrentState,
+  setProjectName,
+  setIsLoading,
+  projectInput,
+  setProjectInput,
+  action,
+}: CBProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleSelect = (newValue: string) => {
@@ -157,9 +214,24 @@ function WorkspaceComboBox({ currentState, list, setCurrentState, setProjectName
   };
 
   useEffect(() => {
-    setProjectName("");
+    if (projectInput) {
+      setProjectName(projectInput.name);
+      const workspace = list.find((ws) => ws.value === projectInput.workspaceId);
+      if (workspace) {
+        setCurrentState({
+          label: workspace.label,
+          value: workspace.value,
+        });
+      }
+    } else {
+      setProjectName("");
+    }
+
+    if (action === "create") {
+      setProjectInput(undefined);
+    }
     setIsLoading(false);
-  }, []);
+  }, [projectInput]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

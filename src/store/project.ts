@@ -6,6 +6,7 @@ export interface Project {
   id: string;
   name: string;
   isDefault: boolean;
+  isFavorite: boolean;
   categoryIds: string[];
   workspaceId: string;
   categories?: Category[];

@@ -1,8 +1,6 @@
 "use client";
 
 import AppSidebar from "@/components/sidebar/appSidebar";
-import SidebarTriggerComponent from "@/components/sidebar/SidebarTrigger";
-import { SidebarInset, useSidebar } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
@@ -21,21 +19,16 @@ const authRoutes = [
 
 export default function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const sidebar = useSidebar();
 
   return (
     <SessionProvider>
       <TooltipProvider>
         {!authRoutes.includes(pathname) ? (
-          <>
+          <div className="flex h-screen">
             <AppSidebar />
-            <SidebarInset>
-              <main>
-                {sidebar.isMobile && <SidebarTriggerComponent state={sidebar.state} />}
-                {children}
-              </main>
-            </SidebarInset>
-          </>
+
+            <main className="fixed ml-[15%] h-full w-[85%]">{children}</main>
+          </div>
         ) : (
           <main className="relative w-full">{children}</main>
         )}

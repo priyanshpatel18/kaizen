@@ -95,6 +95,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
             name: project.name,
             workspaceId: ws.id,
             isDefault: project.isDefault,
+            isFavorite: project.isFavorite,
             categoryIds: project.categories?.map((category) => category.id) || [],
           };
           allProjects.push(projectData);

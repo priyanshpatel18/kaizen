@@ -6,15 +6,21 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function uploadToCloudinary(fileUri: string, fileName: string) {
+export async function uploadToCloudinary(fileUri: string, fileName?: string) {
   try {
-    const response = await cloudinary.uploader.upload(fileUri, {
+    const options: Record<string, any> = {
       invalidate: true,
       resource_type: "auto",
-      filename_override: fileName,
-      use_filename: true,
       folder: "kaizen",
-    });
+    };
+
+    if (fileName) {
+      options.filename_override = fileName;
+      options.use_filename = true;
+    }
+
+    const response = await cloudinary.uploader.upload(fileUri, options);
+
     return response;
   } catch (error) {
     console.log(error);

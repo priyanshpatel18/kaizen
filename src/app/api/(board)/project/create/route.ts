@@ -36,7 +36,6 @@ export async function POST(request: NextRequest) {
           isDefault: true,
         },
       });
-      console.log(workspace);
 
       if (!workspace) {
         return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
@@ -47,26 +46,56 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
       }
 
+      let resProjects = [];
+
       for (const project of parsedProjects) {
         const newProject = await prisma.project.create({
           data: {
             name: project,
             workspaceId: workspace.id,
             userId: user.id,
+            categories: {
+              create: {
+                name: "default",
+                isDefault: true,
+              },
+            },
+          },
+          include: {
+            categories: {
+              include: {
+                tasks: {
+                  orderBy: {
+                    position: "asc",
+                  },
+                },
+              },
+              orderBy: {
+                position: "asc",
+              },
+            },
+            workspace: true,
           },
         });
 
-        await prisma.category.create({
-          data: {
-            name: "default",
-            isDefault: true,
-            projectId: newProject.id,
-          },
-        });
+        resProjects.push(newProject);
       }
 
       (await cookies()).set("onboarded", "true");
-      return NextResponse.json({ message: "Welcome to Kaizen" });
+
+      resProjects = resProjects.map((project) => {
+        return {
+          id: project.id,
+          name: project.name,
+          isDefault: project.isDefault,
+          categoryIds: project.categories.map((category) => category.id),
+          workspaceId: project.workspaceId,
+          categories: project.categories,
+          workspace: project.workspace,
+        };
+      });
+
+      return NextResponse.json({ message: "Welcome to Kaizen", projects: resProjects });
     }
     if (!workspaceId) {
       return NextResponse.json({ message: "Invalid request" }, { status: 400 });

@@ -33,7 +33,6 @@ export default function Category({
   setShowTaskForm,
   setAction,
   category,
-  view,
   setProps,
   isLoading,
 }: ColumnProps) {
@@ -138,66 +137,6 @@ export default function Category({
       );
     }
   }, []);
-
-  if (view === "board") {
-    return (
-      <div className="flex h-full w-64 flex-col gap-2 rounded-md p-2">
-        {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
-        <span className={`h-3} text-sm font-semibold`}>
-          {pathname === "/app/today"
-            ? todayStart.getDate() + " " + todayStart.toLocaleString("default", { month: "long" })
-            : category?.isDefault
-              ? "(No Category)"
-              : category?.name}
-        </span>
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2" ref={categoryRef}>
-            {category
-              ? tasks.map((task) => {
-                  if (task.categoryId === category?.id) {
-                    return (
-                      <Task
-                        key={task.id}
-                        task={task}
-                        setTaskInput={setTaskInput}
-                        setShowDialog={setShowTaskForm}
-                        view="board"
-                        setAction={setAction}
-                        category={category}
-                      />
-                    );
-                  }
-                  return null;
-                })
-              : tasks.map((task) => {
-                  return (
-                    <Task
-                      key={task.id}
-                      task={task}
-                      setTaskInput={setTaskInput}
-                      setShowDialog={setShowTaskForm}
-                      view="board"
-                      setAction={setAction}
-                    />
-                  );
-                })}
-          </div>
-          <Button
-            onClick={() => {
-              setProps(undefined);
-              setTaskInput(undefined);
-              setAction("create");
-              setShowTaskForm(true);
-            }}
-            disabled={isLoading}
-            variant="outline"
-          >
-            Add Task
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-4">

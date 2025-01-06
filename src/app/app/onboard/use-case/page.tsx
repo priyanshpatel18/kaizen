@@ -1,7 +1,10 @@
 "use client";
 
+import { UpdateProps } from "@/components/sidebar/appSidebar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import UpdateStoreData from "@/lib/UpdateStoreData";
+import { Project } from "@/store/project";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +15,7 @@ export default function UseCasePage() {
   const [selected, setSelected] = useState<string[]>([]);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
 
   async function handleContinue() {
     setIsLoading(true);
@@ -35,6 +39,16 @@ export default function UseCasePage() {
       }
 
       toast.success(data.message);
+      if (data.projects) {
+        data.projects.forEach((project: Project) => {
+          setProps({
+            data: project,
+            action: "create",
+            type: "project",
+          });
+        });
+      }
+
       setTimeout(() => {
         router.push("/app/today");
       }, 500);
@@ -48,6 +62,8 @@ export default function UseCasePage() {
 
   return (
     <div className="relative flex w-full max-w-lg flex-col justify-center space-y-8 rounded-lg bg-white p-8 shadow-lg">
+      {props && <UpdateStoreData data={props.data} type={props.type} action={props.action} />}
+
       <div className="flex flex-col space-y-3 text-center">
         <h1 className="text-3xl font-semibold text-gray-900">How do you want to use Kaizen?</h1>
         <p className="text-base text-gray-600">Choose all that apply</p>

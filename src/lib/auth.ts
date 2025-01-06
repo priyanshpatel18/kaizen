@@ -59,7 +59,7 @@ export const authOptions: AuthOptions = {
       async profile(profile) {
         const { email, name, picture } = profile;
 
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
           where: { email },
           include: {
             accounts: true,
@@ -82,20 +82,26 @@ export const authOptions: AuthOptions = {
           }
 
           if (!user.profilePicture) {
-            const response = await uploadToCloudinary(picture as string, user.id);
+            const response = await uploadToCloudinary(picture as string);
             const secure_url = response?.secure_url;
             const public_id = response?.public_id;
+            console.log(secure_url, public_id);
 
             if (secure_url && public_id) {
-              await prisma.user.update({
+              user = await prisma.user.update({
                 where: { id: user.id },
                 data: { profilePicture: secure_url, publicId: public_id },
+                include: { accounts: true },
               });
             }
           }
 
           return user;
         }
+
+        const response = await uploadToCloudinary(picture as string);
+        const secure_url = response?.secure_url;
+        const public_id = response?.public_id;
 
         const newAccount = await prisma.account.create({
           data: {
@@ -107,20 +113,35 @@ export const authOptions: AuthOptions = {
               create: {
                 email,
                 name,
-                profilePicture: picture,
+                profilePicture: secure_url,
+                publicId: public_id,
                 isVerified: true,
               },
             },
           },
           include: { user: true },
         });
-        await prisma.workspace.create({
+        const workspace = await prisma.workspace.create({
           data: {
             name: "My Projects",
             isDefault: true,
             userWorkspace: {
               create: {
                 userId: newAccount.user.id,
+              },
+            },
+          },
+        });
+        await prisma.project.create({
+          data: {
+            name: "Inbox",
+            workspaceId: workspace.id,
+            userId: newAccount.user.id,
+            isDefault: true,
+            categories: {
+              create: {
+                name: "default",
+                isDefault: true,
               },
             },
           },

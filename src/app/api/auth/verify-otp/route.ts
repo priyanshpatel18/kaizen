@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
                   provider: "EMAIL",
                 },
               },
+              password: await hash(decryptedToken.password),
             },
             include: { accounts: true },
           });

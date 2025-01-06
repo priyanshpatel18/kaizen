@@ -26,7 +26,6 @@ export default function Providers({ children }: { children: ReactNode }) {
         {!authRoutes.includes(pathname) ? (
           <div className="flex h-screen">
             <AppSidebar />
-
             <main className="fixed ml-[15%] h-full w-[85%]">{children}</main>
           </div>
         ) : (

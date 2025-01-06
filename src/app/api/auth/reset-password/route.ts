@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: "Password Reset Successfully" });
       }
 
-      return NextResponse.json({ message: "Try again with Google sign in" }, { status: 400 });
+      return NextResponse.json({ message: "You don't have an email account" }, { status: 400 });
     }
 
     return NextResponse.json({ message: "Account doesn't exist" }, { status: 400 });

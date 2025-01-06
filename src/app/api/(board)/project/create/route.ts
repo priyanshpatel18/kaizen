@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const name = formData.get("name") as string;
     const workspaceId = formData.get("workspaceId") as string;
 
-    if (!projects && !flag && !name) {
+    if (!projects && !name) {
       return NextResponse.json({ message: "Invalid request" }, { status: 400 });
     }
 
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
           isDefault: true,
         },
       });
+      console.log(workspace);
+
       if (!workspace) {
         return NextResponse.json({ message: "Something went wrong" }, { status: 400 });
       }

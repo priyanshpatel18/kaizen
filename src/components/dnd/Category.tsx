@@ -54,10 +54,12 @@ export default function Category({
       todayEnd.setHours(23, 59, 59, 999);
       todayStart.setHours(0, 0, 0, 0);
 
-      const filteredTasks = storeTasks.filter((t) => {
-        const dueDateObj = typeof t.dueDate === "string" ? new Date(t.dueDate) : t.dueDate;
-        return todayStart <= dueDateObj && dueDateObj <= todayEnd;
-      });
+      const filteredTasks = storeTasks
+        .filter((t) => {
+          const dueDateObj = typeof t.dueDate === "string" ? new Date(t.dueDate) : t.dueDate;
+          return todayStart <= dueDateObj && dueDateObj <= todayEnd;
+        })
+        .sort((a, b) => a.priority - b.priority);
       setTasks(filteredTasks);
       return;
     }

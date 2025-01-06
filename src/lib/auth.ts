@@ -7,6 +7,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { generateToken } from "./encrypt";
 import { sendMail } from "./resend";
+import { uploadToCloudinary } from "./cloudinary";
 
 declare module "next-auth" {
   interface Session {
@@ -81,10 +82,16 @@ export const authOptions: AuthOptions = {
           }
 
           if (!user.profilePicture) {
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { profilePicture: picture },
-            });
+            const response = await uploadToCloudinary(picture as string, user.id);
+            const secure_url = response?.secure_url;
+            const public_id = response?.public_id;
+
+            if (secure_url && public_id) {
+              await prisma.user.update({
+                where: { id: user.id },
+                data: { profilePicture: secure_url, publicId: public_id },
+              });
+            }
           }
 
           return user;
@@ -106,6 +113,17 @@ export const authOptions: AuthOptions = {
             },
           },
           include: { user: true },
+        });
+        await prisma.workspace.create({
+          data: {
+            name: "My Projects",
+            isDefault: true,
+            userWorkspace: {
+              create: {
+                userId: newAccount.user.id,
+              },
+            },
+          },
         });
 
         await sendMail(email, "Welcome to Kaizen", OnboardingTemplate());
@@ -134,6 +152,7 @@ export const authOptions: AuthOptions = {
 
           if (hasEmailAccount && user.password) {
             const isMatch = await verify(user.password, password);
+            console.log(isMatch);
 
             if (isMatch && user.isVerified) {
               return user;

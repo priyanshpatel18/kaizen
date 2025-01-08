@@ -169,7 +169,7 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
         if (taskTitle && taskTitle !== taskInput.title) {
           updateValue.title = taskTitle;
         }
-        if (taskDescription && taskDescription !== taskInput.description) {
+        if (taskDescription !== taskInput.description) {
           updateValue.description = taskDescription;
         }
         if (

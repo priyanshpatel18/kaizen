@@ -1,19 +1,20 @@
-import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useStore, Workspace } from "@/store";
-import { Dispatch, SetStateAction, useState } from "react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Workspace } from "@/store/workspace";
+import { Dispatch, SetStateAction, useState } from "react";
+import { toast } from "sonner";
+import { UpdateProps } from "../sidebar/appSidebar";
 
 interface IProps {
-  workspaces: Workspace[] | null;
-  setShowWorkspaceForm: Dispatch<SetStateAction<boolean>>;
+  setActiveDialog: Dispatch<SetStateAction<"project" | "workspace" | null>>;
+  setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
+  action: "create" | "update" | undefined;
 }
 
-export default function CreateWorkspaceForm({ workspaces, setShowWorkspaceForm }: IProps) {
+export default function WorkspaceForm({ setActiveDialog, setProps }: IProps) {
   const [workspaceName, setWorkspaceName] = useState<string>("");
-  const store = useStore();
 
   async function createWorkspace(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,14 +39,18 @@ export default function CreateWorkspaceForm({ workspaces, setShowWorkspaceForm }
         return toast.error(data.message);
       }
 
-      toast.success(data.message);
+      console.log(data);
 
-      if (workspaces && workspaces.length > 0 && (data.workspace as Workspace)) {
-        const updatedWorkspaces = [...workspaces];
-        updatedWorkspaces.push(data.workspace);
-        store.setWorkspaces(updatedWorkspaces);
+      if (setProps && (data.workspace as Workspace)) {
+        setProps({
+          data: data.workspace,
+          action: "create",
+          type: "workspace",
+        });
       }
-      setShowWorkspaceForm(false);
+
+      toast.success(data.message);
+      setActiveDialog(null);
     } catch (error) {
       toast.error("Something went wrong, please try again");
       console.log(error);

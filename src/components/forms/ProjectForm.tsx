@@ -15,12 +15,12 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Icons } from "../icons";
+import { Icons } from "../others/icons";
 import { UpdateProps } from "../sidebar/appSidebar";
 
 interface IProps {
   selectedWorkspaceId: string | undefined;
-  setShowProjectForm: Dispatch<SetStateAction<boolean>>;
+  setActiveDialog: Dispatch<SetStateAction<"project" | "workspace" | null>>;
   setProps: Dispatch<SetStateAction<UpdateProps | undefined>>;
   projectInput: Project | undefined;
   setProjectInput: Dispatch<SetStateAction<Project | undefined>>;
@@ -30,7 +30,7 @@ interface IProps {
 
 export default function ProjectForm({
   selectedWorkspaceId,
-  setShowProjectForm,
+  setActiveDialog,
   setProps,
   projectInput,
   setProjectInput,
@@ -139,7 +139,7 @@ export default function ProjectForm({
       console.log(error);
     } finally {
       setProjectName("");
-      setShowProjectForm(false);
+      setActiveDialog(null);
       setIsLoading(false);
     }
   }

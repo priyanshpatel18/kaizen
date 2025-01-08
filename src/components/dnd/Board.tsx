@@ -14,7 +14,7 @@ import DragAndDropFunctions from "./DragAndDropFunctions";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
-import { Icons } from "../icons";
+import { Icons } from "../others/icons";
 import UpdateStoreData from "@/lib/UpdateStoreData";
 
 interface BoardProps {

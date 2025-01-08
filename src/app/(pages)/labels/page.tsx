@@ -1,6 +1,6 @@
 "use client";
 
-import ConnectionStatus from "@/components/ConnectionStatus";
+import ConnectionStatus from "@/components/others/ConnectionStatus";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

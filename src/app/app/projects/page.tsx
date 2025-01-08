@@ -1,6 +1,6 @@
 "use client";
 
-import { Icons } from "@/components/icons";
+import { Icons } from "@/components/others/icons";
 import HashIcon from "@/components/svg/HashIcon";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,7 @@ export default function Projects() {
     <div className="flex w-full flex-1 flex-col items-center py-16">
       <div className="flex w-full max-w-3xl flex-col gap-6 px-4">
         <header className="flex flex-col">
-          <h1 className="select-none truncate text-3xl font-black text-gray-900">My Projects</h1>
+          <h1 className="select-none truncate text-3xl font-black text-gray-900"></h1>
         </header>
 
         <div className="flex w-full max-w-5xl flex-col gap-3 self-center">

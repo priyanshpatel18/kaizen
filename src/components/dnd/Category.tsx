@@ -11,7 +11,7 @@ import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indi
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { usePathname } from "next/navigation";
-import { Icons } from "../icons";
+import { Icons } from "../others/icons";
 import { Input } from "../ui/input";
 import { UpdateProps } from "./Board";
 import Task from "./Task";
@@ -200,7 +200,7 @@ export default function Category({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
       {project && category ? (
         <div key={category.id} className="flex flex-col gap-4">

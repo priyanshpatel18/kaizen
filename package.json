@@ -35,6 +35,7 @@
     "@radix-ui/react-separator": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
+    "@vercel/analytics": "^1.4.1",
     "argon2": "^0.41.1",
     "box": "link:@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box",
     "canvas-confetti": "^1.9.3",

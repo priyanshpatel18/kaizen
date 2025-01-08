@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import "./globals.css";
 import Providers from "./Providers";
+import { Analytics } from "@vercel/analytics/react";
 
 // Metadata
 export const metadata = siteConfig;
@@ -21,6 +22,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={`bg-background`}>
         <GoogleAnalytics />
+        <Analytics />
         <SidebarProvider defaultOpen={defaultOpen}>
           <Providers>
             {children}

@@ -85,7 +85,6 @@ export const authOptions: AuthOptions = {
             const response = await uploadToCloudinary(picture as string);
             const secure_url = response?.secure_url;
             const public_id = response?.public_id;
-            console.log(secure_url, public_id);
 
             if (secure_url && public_id) {
               user = await prisma.user.update({
@@ -173,7 +172,6 @@ export const authOptions: AuthOptions = {
 
           if (hasEmailAccount && user.password) {
             const isMatch = await verify(user.password, password);
-            console.log(isMatch);
 
             if (isMatch && user.isVerified) {
               return user;

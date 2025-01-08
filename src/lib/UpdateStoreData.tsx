@@ -337,7 +337,7 @@ function handleWorkspaceAction(
   switch (action) {
     case "create":
       try {
-        setWorkspaces([...workspaces, data]);
+        setWorkspaces([...workspaces, { ...data, projectIds: [] }]);
         break;
       } catch (error) {
         console.error("Error handling workspace create action:", error);
@@ -415,5 +415,5 @@ function isProject(data: any): data is Project {
 }
 
 function isWorkspace(data: any): data is Workspace {
-  return data && typeof data.id === "string" && typeof data.user === "object";
+  return data && typeof data.id === "string" && typeof data.name === "string";
 }

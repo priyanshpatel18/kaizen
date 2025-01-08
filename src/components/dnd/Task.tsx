@@ -186,27 +186,16 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
           className={`transiton-all group relative flex w-full min-w-60 cursor-pointer select-none items-center justify-between gap-2 rounded-md border-[1px] p-3 py-5 duration-150 hover:bg-accent ${isDragging ? "border-black bg-accent" : "border-border"}`}
         >
           <CompleteTaskButton task={task} />
-          <div className="flex w-full flex-col">
-            <span className="truncate font-medium">{task.title}</span>
-            <span className="overflow-hidden truncate text-ellipsis text-xs text-muted-foreground">
+          <div className="flex w-full flex-col overflow-hidden">
+            <span className="text-sm font-medium">{task.title}</span>
+            <span
+              className="max-w-[300px] overflow-hidden truncate text-ellipsis whitespace-nowrap text-xs text-muted-foreground"
+              title={task.description}
+            >
               {task.description}
             </span>
           </div>
           <div className="flex gap-1">
-            <Tooltip>
-              <TooltipTrigger
-                onClick={() => {
-                  if (setTaskInput && setShowDialog) {
-                    setTaskInput(task);
-                    setAction("update");
-                    setShowDialog(true);
-                  }
-                }}
-              >
-                <EditIcon className="transiton-all h-5 rounded-sm opacity-0 duration-150 hover:bg-border group-hover:opacity-100" />
-              </TooltipTrigger>
-              <TooltipContent>Edit task</TooltipContent>
-            </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild className="outline-none">
                 <DropdownMenuTrigger>
@@ -221,7 +210,15 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
           {closestEdge && <DropIndicator edge={closestEdge} gap="10px" />}
         </div>
 
-        <DropDownContent flags={flags} handlePriority={handlePriority} deleteTask={deleteTask} />
+        <DropDownContent
+          flags={flags}
+          handlePriority={handlePriority}
+          deleteTask={deleteTask}
+          setTaskInput={setTaskInput}
+          setShowDialog={setShowDialog}
+          setAction={setAction}
+          task={task}
+        />
       </DropdownMenu>
     );
   }
@@ -238,12 +235,20 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
 
       <div
         ref={taskRef}
-        className={`transiton-all group relative flex cursor-pointer select-none items-center justify-between rounded p-5 duration-150 hover:bg-accent ${isDragging && "bg-accent"}`}
+        className={`transiton-all group relative flex w-full cursor-pointer select-none items-center justify-between rounded p-5 duration-150 hover:bg-accent ${isDragging && "bg-accent"}`}
       >
         {closestEdge && <DropIndicator edge={closestEdge} gap="1px" />}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-hidden">
           <CompleteTaskButton task={task} />
-          <span>{task.title}</span>
+          <div className="flex w-full flex-col">
+            <span className="text-sm font-medium">{task.title}</span>
+            <span
+              className="max-w-[90%] overflow-hidden truncate text-ellipsis whitespace-nowrap text-xs text-muted-foreground"
+              title={task.description}
+            >
+              {task.description}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Tooltip>
@@ -273,7 +278,15 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
         </div>
       </div>
 
-      <DropDownContent flags={flags} handlePriority={handlePriority} deleteTask={deleteTask} />
+      <DropDownContent
+        flags={flags}
+        handlePriority={handlePriority}
+        deleteTask={deleteTask}
+        setTaskInput={setTaskInput}
+        setShowDialog={setShowDialog}
+        setAction={setAction}
+        task={task}
+      />
     </DropdownMenu>
   );
 }
@@ -282,12 +295,33 @@ interface DropDownContentProps {
   flags: string[];
   handlePriority: (priority: number) => void;
   deleteTask: () => void;
+  setTaskInput?: Dispatch<SetStateAction<TaskType | undefined>>;
+  setShowDialog?: Dispatch<SetStateAction<boolean>>;
+  setAction: Dispatch<SetStateAction<"create" | "update" | undefined>>;
+  task: TaskType;
 }
 
-function DropDownContent({ flags, handlePriority, deleteTask }: DropDownContentProps) {
+function DropDownContent({
+  flags,
+  handlePriority,
+  deleteTask,
+  setTaskInput,
+  setShowDialog,
+  setAction,
+  task,
+}: DropDownContentProps) {
   return (
     <DropdownMenuContent>
-      <DropdownMenuItem className="cursor-pointer">
+      <DropdownMenuItem
+        className="cursor-pointer"
+        onClick={() => {
+          if (setTaskInput && setShowDialog) {
+            setTaskInput(task);
+            setAction("update");
+            setShowDialog(true);
+          }
+        }}
+      >
         <EditIcon className="h-6" />
         <span>Edit</span>
       </DropdownMenuItem>

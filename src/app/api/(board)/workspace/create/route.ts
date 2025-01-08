@@ -31,7 +31,27 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        projects: true,
+        projects: {
+          include: {
+            workspace: true,
+            categories: {
+              include: {
+                tasks: {
+                  orderBy: {
+                    position: "asc",
+                  },
+                  where: {
+                    isCompleted: false,
+                  },
+                },
+                project: true,
+              },
+              orderBy: {
+                position: "asc",
+              },
+            },
+          },
+        },
       },
     });
 

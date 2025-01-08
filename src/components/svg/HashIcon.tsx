@@ -1,12 +1,23 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 interface HashIconProps {
-  color?: string;
   className?: string;
   onClick?: React.MouseEventHandler<SVGSVGElement>;
 }
 
-export default function HashIcon({ color = "#292D32", className = "", onClick }: HashIconProps) {
+export default function HashIcon({ className = "", onClick }: HashIconProps) {
+  const { theme } = useTheme();
+  const [themeColor, setThemeColor] = useState("#09090B");
+
+  useEffect(() => {
+    if (theme === "dark") {
+      setThemeColor("#FAFAFA");
+    } else {
+      setThemeColor("#09090B");
+    }
+  }, [theme]);
+
   return (
     <svg
       width="24"
@@ -17,10 +28,10 @@ export default function HashIcon({ color = "#292D32", className = "", onClick }:
       className={className}
       onClick={onClick}
     >
-      <path d="M10 3L8 21" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M16 3L14 21" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M3.5 9H21.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M2.5 15H20.5" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 3L8 21" stroke={themeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 3L14 21" stroke={themeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.5 9H21.5" stroke={themeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M2.5 15H20.5" stroke={themeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

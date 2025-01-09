@@ -15,6 +15,7 @@ import { Icons } from "../others/icons";
 import { Input } from "../ui/input";
 import { UpdateProps } from "./Board";
 import Task from "./Task";
+import { Option } from "@/store";
 
 interface ColumnProps {
   setTaskInput: React.Dispatch<React.SetStateAction<TaskType | undefined>>;
@@ -25,6 +26,7 @@ interface ColumnProps {
   category?: CategoryType;
   setProps: React.Dispatch<SetStateAction<UpdateProps | undefined>>;
   isLoading: boolean;
+  setOption: React.Dispatch<React.SetStateAction<Option | null>>;
 }
 
 export default function Category({
@@ -36,6 +38,7 @@ export default function Category({
   view,
   setProps,
   isLoading,
+  setOption,
 }: ColumnProps) {
   const categoryRef = useRef<HTMLDivElement>(null);
   const [isReordering, setIsReordering] = useState<boolean>(false);
@@ -184,6 +187,10 @@ export default function Category({
           </div>
           <Button
             onClick={() => {
+              setOption({
+                value: `${category?.projectId} # ${category?.id}`,
+                label: `${project?.name}${category?.isDefault ? "" : ` # ${category?.name}`}`,
+              });
               setProps(undefined);
               setTaskInput(undefined);
               setAction("create");

@@ -28,7 +28,7 @@ export default function SidebarUser({ name, profilePicture, session, setActiveDi
     <DropdownMenu>
       <DropdownMenuTrigger className="outline-none">
         <SidebarItem className="p-1">
-          <Avatar className="relative flex h-9 w-9 items-center justify-center rounded-full border-2 border-black p-[0.5px]">
+          <Avatar className="relative flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary p-[0.5px]">
             <div className="h-7 w-7 overflow-hidden rounded-full">
               <AvatarImage
                 src={profilePicture || undefined}

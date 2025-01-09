@@ -25,7 +25,7 @@ import { toast } from "sonner";
 interface IProps {
   workspaces?: Workspace[] | null;
   setShowDialog: Dispatch<SetStateAction<boolean>>;
-  taskOption?: Option | null;
+  taskOption: Option | null;
 
   action: "create" | "update" | undefined;
   taskInput?: Task | undefined;
@@ -35,7 +35,7 @@ interface IProps {
   setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
 }
 
-export default function TaskForm({ setShowDialog, taskInput, action, props, setProps, project }: IProps) {
+export default function TaskForm({ setShowDialog, taskInput, action, props, setProps, project, taskOption }: IProps) {
   const [taskTitle, setTaskTitle] = useState<string>("");
   const [taskDescription, setTaskDescription] = useState<string>("");
   const [taskDate, setTaskDate] = useState<Date | undefined>(undefined);
@@ -95,8 +95,8 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
     e.preventDefault();
     if (setProps) setProps(undefined);
 
-    if (!taskTitle) {
-      return toast.error("Task title is required");
+    if (!taskTitle.trim()) {
+      return toast.error("Task title cannot be empty");
     }
     if (!currentState) {
       return toast.error("Select a Category to create a task");
@@ -153,7 +153,7 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
   async function updateTask(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if (!taskTitle) {
+    if (!taskTitle.trim()) {
       return toast.error("Task title is required");
     }
     if (!currentState) {
@@ -243,13 +243,7 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
       <form onSubmit={action === "create" ? createTask : updateTask} className="flex flex-col space-y-4">
         <Label>
           <span className="sr-only">Enter Task Title</span>
-          <Input
-            value={taskTitle}
-            onChange={(e) => setTaskTitle(e.target.value)}
-            placeholder="Title"
-            type="text"
-            className="text-gray-900"
-          />
+          <Input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} placeholder="Title" type="text" />
         </Label>
         <Label>
           <span className="sr-only">Enter Task Title</span>
@@ -258,7 +252,6 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
             onChange={(e) => setTaskDescription(e.target.value)}
             placeholder="Description (Optional)"
             type="text"
-            className="text-gray-900"
           />
         </Label>
 
@@ -269,6 +262,7 @@ export default function TaskForm({ setShowDialog, taskInput, action, props, setP
             setCurrentState={setCurrentState}
             setIsLoading={setIsLoading}
             project={project}
+            taskOption={taskOption}
           />
           <DateSelection date={taskDate} setDate={setTaskDate} />
         </div>
@@ -293,9 +287,10 @@ interface ComboBoxProps {
   setCurrentState: Dispatch<SetStateAction<Option | null>>;
   setIsLoading: Dispatch<SetStateAction<boolean>>;
   project?: Project | null;
+  taskOption: Option | null;
 }
 
-function ComboBox({ list, currentState, setCurrentState, setIsLoading, project }: ComboBoxProps) {
+function ComboBox({ list, currentState, setCurrentState, setIsLoading, project, taskOption }: ComboBoxProps) {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleSelect = (newValue: string) => {
@@ -311,6 +306,11 @@ function ComboBox({ list, currentState, setCurrentState, setIsLoading, project }
 
     if (project) {
       const selected = list.find((item) => item.value.split("#")[0].trim() === project?.id);
+      if (selected) setCurrentState(selected);
+    }
+
+    if (taskOption) {
+      const selected = list.find((item) => item.value === taskOption?.value);
       if (selected) setCurrentState(selected);
     }
   }, []);

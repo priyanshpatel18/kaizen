@@ -235,15 +235,15 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
 
       <div
         ref={taskRef}
-        className={`transiton-all group relative flex w-full cursor-pointer select-none items-center justify-between rounded p-5 duration-150 hover:bg-accent ${isDragging && "bg-accent"}`}
+        className={`transiton-all group relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded p-5 duration-150 hover:bg-accent ${isDragging && "bg-accent"}`}
       >
         {closestEdge && <DropIndicator edge={closestEdge} gap="1px" />}
-        <div className="flex items-center gap-2 overflow-hidden">
+        <div className="flex w-full flex-1 items-center gap-2">
           <CompleteTaskButton task={task} />
-          <div className="flex w-full flex-col">
-            <span className="text-sm font-medium">{task.title}</span>
+          <div className="flex w-full flex-col overflow-hidden">
+            <span className="whitespace-normal text-sm font-medium">{task.title}</span>
             <span
-              className="max-w-[90%] overflow-hidden truncate text-ellipsis whitespace-nowrap text-xs text-muted-foreground"
+              className="max-w-[300px] overflow-hidden truncate text-ellipsis whitespace-nowrap text-xs text-muted-foreground"
               title={task.description}
             >
               {task.description}

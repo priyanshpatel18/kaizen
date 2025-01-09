@@ -158,7 +158,6 @@ export default function ProjectForm({
             onChange={(e) => setProjectName(e.target.value)}
             placeholder="Project Name"
             type="text"
-            className="text-gray-900"
           />
         </Label>
 

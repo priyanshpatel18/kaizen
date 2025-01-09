@@ -3,19 +3,19 @@
 import TaskForm from "@/components/forms/TaskForm";
 import { Dialog } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { useStore } from "@/store";
+import UpdateStoreData from "@/lib/UpdateStoreData";
+import { Option, useStore } from "@/store";
 import { Category as CategoryType, useCategoryStore } from "@/store/category";
 import { Project, useProjectStore } from "@/store/project";
 import { Task } from "@/store/task";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import Category from "./Category";
-import DragAndDropFunctions from "./DragAndDropFunctions";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { Icons } from "../others/icons";
-import UpdateStoreData from "@/lib/UpdateStoreData";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import Category from "./Category";
+import DragAndDropFunctions from "./DragAndDropFunctions";
 
 interface BoardProps {
   heading: string;
@@ -38,6 +38,7 @@ export default function Board({ heading, projectId }: BoardProps) {
   }, [viewOptions]);
 
   const [showTaskForm, setShowTaskForm] = useState<boolean>(false);
+  const [taskOption, setTaskOption] = useState<Option | null>(null);
   const [taskInput, setTaskInput] = useState<Task | undefined>(undefined);
   const [action, setAction] = useState<"create" | "update" | undefined>(undefined);
   const [props, setProps] = useState<UpdateProps | undefined>(undefined);
@@ -73,15 +74,17 @@ export default function Board({ heading, projectId }: BoardProps) {
       return toast.error("Category name cannot be empty");
     }
 
+    const pId = projectId || project?.id;
+
     try {
-      if (!projectId) {
+      if (!pId) {
         return toast.error("Project not found");
       }
       setIsLoading(true);
 
       const formData = new FormData();
       formData.append("name", categoryName);
-      formData.append("projectId", projectId);
+      formData.append("projectId", pId);
 
       const res = await fetch("/api/category/create", {
         method: "POST",
@@ -143,6 +146,7 @@ export default function Board({ heading, projectId }: BoardProps) {
                         view={currentView}
                         setProps={setProps}
                         isLoading={isLoading}
+                        setOption={setTaskOption}
                       />
                     );
                   }
@@ -157,6 +161,7 @@ export default function Board({ heading, projectId }: BoardProps) {
                     view={currentView}
                     setProps={setProps}
                     isLoading={isLoading}
+                    setOption={setTaskOption}
                   />
                 </div>
               )}
@@ -223,6 +228,7 @@ export default function Board({ heading, projectId }: BoardProps) {
         action={action}
         taskInput={taskInput}
         project={project}
+        taskOption={taskOption}
       />
     </Dialog>
   );

@@ -36,7 +36,7 @@ export default function Projects() {
     <div className="flex w-full flex-1 flex-col items-center py-16">
       <div className="flex w-full max-w-3xl flex-col gap-6 px-4">
         <header className="flex flex-col">
-          <h1 className="select-none truncate text-3xl font-black text-gray-900">{workspace?.name}</h1>
+          <h1 className="select-none truncate text-3xl font-black text-primary">{workspace?.name}</h1>
         </header>
 
         <div className="flex w-full max-w-5xl flex-col gap-3 self-center">
@@ -56,7 +56,7 @@ export default function Projects() {
             )}
           </Label>
 
-          <div className="text-md select-none truncate font-medium text-gray-900">
+          <div className="text-md select-none truncate font-medium text-primary">
             {filteredProjects.length} project{filteredProjects.length !== 1 && "s"}
           </div>
 

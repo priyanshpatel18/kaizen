@@ -45,10 +45,12 @@ export default function Providers({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <SessionProvider>
-        <TooltipProvider>
-          {!authRoutes.includes(pathname) ? (
+    <SessionProvider>
+      <TooltipProvider>
+        {authRoutes.includes(pathname) ? (
+          <main className="relative w-full">{children}</main>
+        ) : (
+          <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
             <div className="flex h-screen">
               <AppSidebar
                 className={`transform transition-all duration-300 ease-in-out ${
@@ -65,11 +67,9 @@ export default function Providers({ children }: { children: ReactNode }) {
                 {children}
               </main>
             </div>
-          ) : (
-            <main className="relative w-full">{children}</main>
-          )}
-        </TooltipProvider>
-      </SessionProvider>
-    </ThemeProvider>
+          </ThemeProvider>
+        )}
+      </TooltipProvider>
+    </SessionProvider>
   );
 }

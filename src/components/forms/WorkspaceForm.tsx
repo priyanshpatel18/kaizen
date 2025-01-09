@@ -72,7 +72,6 @@ export default function WorkspaceForm({ setActiveDialog, setProps }: IProps) {
             onChange={(e) => setWorkspaceName(e.target.value)}
             placeholder="Workspace Name"
             type="text"
-            className="text-gray-900"
           />
         </Label>
         <Button>

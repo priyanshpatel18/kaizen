@@ -24,17 +24,14 @@ export async function POST(request: NextRequest) {
 
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
+      include: {
+        tasks: true,
+      },
     });
 
     if (!category) {
       return NextResponse.json({ message: "No Category! Create a category and try again" }, { status: 404 });
     }
-
-    const tasks = await prisma.task.count({
-      where: {
-        categoryId: category.id,
-      },
-    });
 
     const dueDate = dueDateInput ? new Date(dueDateInput.toString()) : new Date().setHours(23, 59, 59, 999);
 
@@ -44,7 +41,7 @@ export async function POST(request: NextRequest) {
         description,
         dueDate: new Date(dueDate),
         categoryId: category.id,
-        position: tasks ? (tasks + 1) * 1000 : 1000,
+        position: category.tasks.length > 0 ? (category.tasks.length + 1) * 1000 : 1000,
         priority: 4,
       },
     });

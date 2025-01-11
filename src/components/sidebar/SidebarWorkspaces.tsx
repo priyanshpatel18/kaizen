@@ -20,14 +20,14 @@ import { ChevronDown, Folder } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { UpdateProps } from "./appSidebar";
+import { UpdateDataProps } from "@/lib/UpdateStoreData";
 import SidebarItem from "./SidebarItem";
 
 interface SidebarWorkspacesProps {
   setActiveDialog: Dispatch<SetStateAction<"project" | "workspace" | null>>;
   setProjectInput: Dispatch<SetStateAction<Project | undefined>>;
   setAction: Dispatch<SetStateAction<"create" | "update" | undefined>>;
-  setProps: Dispatch<SetStateAction<UpdateProps | undefined>>;
+  setProps: Dispatch<SetStateAction<UpdateDataProps | undefined>>;
   setSelectedWorkspaceId: Dispatch<SetStateAction<string | undefined>>;
   deleteProject: (project: Project) => void;
   updateProject: (project: Project, updateValue: object) => void;

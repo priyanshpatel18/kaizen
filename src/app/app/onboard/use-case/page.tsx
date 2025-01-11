@@ -1,6 +1,6 @@
 "use client";
 
-import { UpdateProps } from "@/components/sidebar/appSidebar";
+import { UpdateDataProps } from "@/lib/UpdateStoreData";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import UpdateStoreData from "@/lib/UpdateStoreData";
@@ -15,7 +15,7 @@ export default function UseCasePage() {
   const [selected, setSelected] = useState<string[]>([]);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+  const [props, setProps] = useState<UpdateDataProps | undefined>(undefined);
 
   async function handleContinue() {
     setIsLoading(true);

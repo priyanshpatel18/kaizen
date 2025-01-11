@@ -1,4 +1,4 @@
-import UpdateStoreData from "@/lib/UpdateStoreData";
+import UpdateStoreData, { MultiStoreUpdate, UpdateDataProps } from "@/lib/UpdateStoreData";
 import { Category, useCategoryStore } from "@/store/category";
 import { useTaskStore } from "@/store/task";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -7,13 +7,19 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { reorder } from "@atlaskit/pragmatic-drag-and-drop/reorder";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { UpdateProps } from "./Board";
 
-interface ReorderCardProps {
+interface ReorderTaskProps {
   categoryId: string;
   startIndex: number;
   finishIndex: number;
   taskId: string;
+}
+
+interface MoveTaskProps {
+  sourceIndex: number;
+  sourceCategoryId: string;
+  targetIndex: number;
+  targetCategoryId: string;
 }
 
 interface HandleDropProps {
@@ -34,55 +40,62 @@ interface IProps {
 
 export default function DragAndDropFunctions({ pathname }: IProps) {
   const { categories } = useCategoryStore();
-  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+  const [props, setProps] = useState<UpdateDataProps | undefined>(undefined);
   const { tasks } = useTaskStore();
 
-  const reorderCard = useCallback(
-    async ({ categoryId, startIndex, finishIndex, taskId }: ReorderCardProps) => {
+  function getUpdatedTaskPosition(taskId: string, category: Category) {
+    const taskIndex = category.taskIds.findIndex((task: string) => task === taskId);
+    const preTaskId = category.taskIds[taskIndex - 1] || null;
+    const postTaskId = category.taskIds[taskIndex + 1] || null;
+
+    const preTask = tasks.find((task) => task.id === preTaskId);
+    const postTask = tasks.find((task) => task.id === postTaskId);
+
+    const [preTaskPosition, postTaskPosition] = [preTask?.position, postTask?.position];
+
+    if (!preTaskPosition && !postTaskPosition) {
+      return (category.taskIds.length + 1) * 1000;
+    } else if (!preTaskPosition && postTaskPosition) {
+      return postTaskPosition / 2;
+    } else if (preTaskPosition && !postTaskPosition) {
+      return (preTaskPosition * 2 + 1000) / 2;
+    } else if (preTaskPosition && postTaskPosition) {
+      return (preTaskPosition + postTaskPosition) / 2;
+    }
+    return 0;
+  }
+
+  const reorderTask = useCallback(
+    async ({ categoryId, startIndex, finishIndex, taskId }: ReorderTaskProps) => {
       // Ensure the startIndex and finishIndex are different; no need to reorder if they’re the same
       if (startIndex === finishIndex) return;
 
-      // Find the source column by ID
+      // Find the source category by ID
       const sourceCategoryData = categories.find((category) => category.id === categoryId);
 
       if (sourceCategoryData) {
+        // Reorder the items
         const updatedItems = reorder({
           list: sourceCategoryData.taskIds,
           startIndex,
           finishIndex,
         });
 
+        // Update the source category
         const updatedSourceCategory: Category = {
           ...sourceCategoryData,
           taskIds: updatedItems,
         };
 
+        // Update the store
         setProps({
           data: updatedSourceCategory,
           action: "update",
           type: "category",
         });
 
-        const taskIndex = updatedSourceCategory.taskIds.findIndex((task: string) => task === taskId);
-        const preTaskId = updatedSourceCategory.taskIds[taskIndex - 1] || null;
-        const postTaskId = updatedSourceCategory.taskIds[taskIndex + 1] || null;
-
-        const preTask = tasks.find((task) => task.id === preTaskId);
-        const postTask = tasks.find((task) => task.id === postTaskId);
         const task = tasks.find((task) => task.id === taskId);
-
-        const [preTaskPosition, postTaskPosition] = [preTask?.position, postTask?.position];
-
-        let updatedPosition = 0;
-        if (!preTaskPosition && !postTaskPosition) {
-          updatedPosition = (updatedSourceCategory.taskIds.length + 1) * 1000;
-        } else if (!preTaskPosition && postTaskPosition) {
-          updatedPosition = postTaskPosition / 2;
-        } else if (preTaskPosition && !postTaskPosition) {
-          updatedPosition = (preTaskPosition * 2 + 1000) / 2;
-        } else if (preTaskPosition && postTaskPosition) {
-          updatedPosition = (preTaskPosition + postTaskPosition) / 2;
-        }
+        const updatedPosition = getUpdatedTaskPosition(taskId, updatedSourceCategory);
 
         if (task && updatedPosition !== 0 && updatedPosition !== task?.position) {
           const newTask = { ...task, position: updatedPosition, categoryId: updatedSourceCategory.id };
@@ -105,6 +118,72 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
     [categories]
   );
 
+  const moveTask = useCallback(
+    ({ sourceIndex, sourceCategoryId, targetIndex, targetCategoryId }: MoveTaskProps) => {
+      setProps(undefined);
+
+      const sourceCategoryData = categories.find((category) => category.id === sourceCategoryId);
+      const destinationCategoryData = categories.find((category) => category.id === targetCategoryId);
+
+      if (!sourceCategoryData || !destinationCategoryData) {
+        console.error("Invalid source or destination column ID");
+        return;
+      }
+
+      // Ensure the task index in source category is valid
+      if (sourceIndex < 0 || sourceIndex >= sourceCategoryData.taskIds.length) {
+        console.error("Invalid card index in source column");
+        return;
+      }
+
+      // Extract the task ID from the source category
+      const movedTaskId = sourceCategoryData.taskIds[sourceIndex];
+
+      // Remove the task from the source category
+      const updatedSourceCategory: Category = {
+        ...sourceCategoryData,
+        taskIds: sourceCategoryData.taskIds.filter((taskId) => taskId !== movedTaskId),
+      };
+
+      // Add the task to the destination category
+      const updatedDestinationCategory = {
+        ...destinationCategoryData,
+        taskIds: [
+          ...destinationCategoryData.taskIds.slice(0, targetIndex),
+          movedTaskId,
+          ...destinationCategoryData.taskIds.slice(targetIndex),
+        ],
+      };
+
+      const task = tasks.find((task) => task.id === movedTaskId);
+      const updatedPosition = getUpdatedTaskPosition(movedTaskId, updatedDestinationCategory);
+
+      if (task && updatedPosition !== 0 && updatedPosition !== task?.position) {
+        const newTask = { ...task, position: updatedPosition, categoryId: updatedDestinationCategory.id };
+
+        const updates: MultiStoreUpdate[] = [
+          { type: "category", data: updatedSourceCategory, action: "update" },
+          { type: "category", data: updatedDestinationCategory, action: "update" },
+          { type: "task", data: newTask, action: "update" },
+        ];
+
+        setProps({
+          data: updates,
+          action: undefined,
+          type: "multi",
+        });
+
+        if (pathname !== "/app/today") {
+          updatePosition("task", movedTaskId, {
+            position: updatedPosition,
+            categoryId: newTask.categoryId,
+          });
+        }
+      }
+    },
+    [categories, pathname, tasks]
+  );
+
   const handleDrop = useCallback(
     ({ source, location }: HandleDropProps) => {
       // Early return if there are no drop targets in the current location
@@ -115,7 +194,7 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
         // Retrieve the ID of the task being dragged
         const draggedTaskId = source.data.taskId;
 
-        // Get the source column category the initial drop targets
+        // Get the source category the initial drop targets
         const [, sourceCategoryRecord] = location.initial.dropTargets;
 
         // Retrieve the ID of the source category
@@ -129,6 +208,28 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
 
         // Tasks are dropped in different category
         if (location.current.dropTargets.length === 1) {
+          // Tasks are dropped in the different column
+          const [destinationCategoryRecord] = location.current.dropTargets;
+
+          // Retrieve the ID of the destination category
+          const destinationCategoryId = destinationCategoryRecord.data.categoryId;
+
+          // Retrieve the destination category data using the destination category ID
+          const destinationCategory = categories.find((col) => col.id === destinationCategoryId);
+
+          const destinationIndex = getReorderDestinationIndex({
+            startIndex: indexOfSource!,
+            indexOfTarget: Number(destinationCategory?.taskIds.length) || -1,
+            closestEdgeOfTarget: null,
+            axis: "vertical",
+          });
+
+          moveTask({
+            sourceIndex: indexOfSource!,
+            sourceCategoryId,
+            targetIndex: destinationIndex,
+            targetCategoryId: destinationCategoryId,
+          });
         }
 
         // Tasks are dropped in same category
@@ -142,7 +243,7 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
           const destinationCategory = categories.find((col) => col.id === destinationCategoryId);
 
           if (destinationCategory) {
-            // Find the index of the target task within the destination category's cards
+            // Find the index of the target task within the destination category's tasks
             const indexOfTarget = destinationCategory.taskIds.findIndex(
               (task) => task === destinationTaskRecord.data.taskId
             );
@@ -158,7 +259,7 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
                 axis: "vertical",
               });
 
-              reorderCard({
+              reorderTask({
                 categoryId: sourceCategoryId,
                 startIndex: indexOfSource!,
                 finishIndex: destinationIndex,
@@ -166,11 +267,20 @@ export default function DragAndDropFunctions({ pathname }: IProps) {
               });
               return;
             }
+
+            const destinationIndex = closestEdgeOfTarget === "bottom" ? indexOfTarget + 1 : indexOfTarget;
+
+            moveTask({
+              sourceIndex: indexOfSource!,
+              sourceCategoryId,
+              targetIndex: destinationIndex,
+              targetCategoryId: destinationCategoryId,
+            });
           }
         }
       }
     },
-    [reorderCard, categories]
+    [reorderTask, categories]
   );
 
   useEffect(() => {

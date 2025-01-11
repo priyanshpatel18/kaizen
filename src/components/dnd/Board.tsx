@@ -1,31 +1,25 @@
 "use client";
 
 import TaskForm from "@/components/forms/TaskForm";
+import { Icons } from "@/components/others/icons";
+import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import UpdateStoreData from "@/lib/UpdateStoreData";
+import UpdateStoreData, { UpdateDataProps } from "@/lib/UpdateStoreData";
 import { Option, useStore } from "@/store";
-import { Category as CategoryType, useCategoryStore } from "@/store/category";
+import { useCategoryStore } from "@/store/category";
 import { Project, useProjectStore } from "@/store/project";
 import { Task } from "@/store/task";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Icons } from "../others/icons";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import Category from "./Category";
 import DragAndDropFunctions from "./DragAndDropFunctions";
 
 interface BoardProps {
   heading: string;
   projectId?: string;
-}
-
-export interface UpdateProps {
-  data: CategoryType | Task;
-  action: "create" | "update" | "delete";
-  type: "task" | "category";
 }
 
 export default function Board({ heading, projectId }: BoardProps) {
@@ -41,7 +35,7 @@ export default function Board({ heading, projectId }: BoardProps) {
   const [taskOption, setTaskOption] = useState<Option | null>(null);
   const [taskInput, setTaskInput] = useState<Task | undefined>(undefined);
   const [action, setAction] = useState<"create" | "update" | undefined>(undefined);
-  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+  const [props, setProps] = useState<UpdateDataProps | undefined>(undefined);
 
   const [showCreateCategory, setShowCreateCategory] = useState<boolean>(false);
   const [categoryName, setCategoryName] = useState<string>("");

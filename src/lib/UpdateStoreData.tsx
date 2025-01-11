@@ -4,13 +4,19 @@ import { Task, useTaskStore } from "@/store/task";
 import { Workspace, useWorkspaceStore } from "@/store/workspace";
 import { useEffect } from "react";
 
-interface UseUpdateDataProps {
-  data: Task | Category | Project | Workspace | undefined;
+export type MultiStoreUpdate = {
   type: "task" | "category" | "project" | "workspace";
   action: "create" | "update" | "delete";
+  data: Task | Category | Project | Workspace;
+};
+
+export interface UpdateDataProps {
+  data: Task | Category | Project | Workspace | MultiStoreUpdate[] | undefined;
+  type: "task" | "category" | "project" | "workspace" | "multi";
+  action: "create" | "update" | "delete" | undefined;
 }
 
-export default function UpdateStoreData({ data, type, action }: UseUpdateDataProps) {
+export default function UpdateStoreData({ data, type, action }: UpdateDataProps) {
   const { tasks, setTasks } = useTaskStore();
   const { categories, setCategories } = useCategoryStore();
   const { projects, setProjects } = useProjectStore();
@@ -19,7 +25,7 @@ export default function UpdateStoreData({ data, type, action }: UseUpdateDataPro
   function updateData() {
     switch (type) {
       case "task":
-        if (isTask(data)) {
+        if (isTask(data) && action) {
           handleTaskAction(data, action, {
             tasks,
             categories,
@@ -36,7 +42,7 @@ export default function UpdateStoreData({ data, type, action }: UseUpdateDataPro
         break;
 
       case "category":
-        if (isCategory(data)) {
+        if (isCategory(data) && action) {
           handleCategoryAction(data, action, {
             categories,
             projects,
@@ -49,7 +55,7 @@ export default function UpdateStoreData({ data, type, action }: UseUpdateDataPro
         break;
 
       case "project":
-        if (isProject(data)) {
+        if (isProject(data) && action) {
           handleProjectAction(data, action, {
             projects,
             workspaces,
@@ -64,10 +70,27 @@ export default function UpdateStoreData({ data, type, action }: UseUpdateDataPro
         break;
 
       case "workspace":
-        if (isWorkspace(data)) {
+        if (isWorkspace(data) && action) {
           handleWorkspaceAction(data, action, { workspaces, setWorkspaces });
         } else {
           console.error("Data is not a valid Workspace");
+        }
+        break;
+
+      case "multi":
+        if (Array.isArray(data)) {
+          handleMultipleUpdates(data, {
+            tasks,
+            categories,
+            projects,
+            workspaces,
+            setTasks,
+            setCategories,
+            setProjects,
+            setWorkspaces,
+          });
+        } else {
+          console.error("Data is not multi update data");
         }
         break;
 
@@ -217,7 +240,7 @@ function handleCategoryAction(
     case "update":
       try {
         // Update only the specific category
-        const updatedCategories = updateNestedEntity(
+        const updatedCategories: Category[] = updateNestedEntity(
           categories,
           (category) => category.id === data.id,
           () => data
@@ -367,6 +390,54 @@ function handleWorkspaceAction(
         console.error("Error handling workspace delete action:", error);
         break;
       }
+  }
+}
+
+function handleMultipleUpdates(
+  updates: MultiStoreUpdate[],
+  stores: {
+    tasks: Task[];
+    categories: Category[];
+    projects: Project[];
+    workspaces: Workspace[];
+    setTasks: (tasks: Task[]) => void;
+    setCategories: (categories: Category[]) => void;
+    setProjects: (projects: Project[]) => void;
+    setWorkspaces: (workspaces: Workspace[]) => void;
+  }
+) {
+  const taskUpdates: Task[] = [];
+  const categoryUpdates: Category[] = [];
+
+  updates.forEach((update) => {
+    switch (update.type) {
+      case "task":
+        if (isTask(update.data)) {
+          taskUpdates.push(update.data);
+        }
+        break;
+      case "category":
+        if (isCategory(update.data)) {
+          categoryUpdates.push(update.data);
+        }
+        break;
+    }
+  });
+
+  if (taskUpdates.length > 0) {
+    const updatedTasks = stores.tasks.map((task) => {
+      const update = taskUpdates.find((u) => u.id === task.id);
+      return update ? { ...task, ...update } : task;
+    });
+    stores.setTasks(updatedTasks);
+  }
+
+  if (categoryUpdates.length > 0) {
+    const updatedCategories = stores.categories.map((category) => {
+      const update = categoryUpdates.find((u) => u.id === category.id);
+      return update ? { ...category, ...update } : category;
+    });
+    stores.setCategories(updatedCategories);
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { UpdateProps } from "@/components/dnd/Board";
+import { UpdateDataProps } from "@/lib/UpdateStoreData";
 import CalendarIcon from "@/components/svg/CalendarIcon";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -31,8 +31,8 @@ interface IProps {
   taskInput?: Task | undefined;
 
   project: Project | null;
-  props?: UpdateProps | undefined;
-  setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
+  props?: UpdateDataProps | undefined;
+  setProps?: Dispatch<SetStateAction<UpdateDataProps | undefined>>;
 }
 
 export default function TaskForm({ setShowDialog, taskInput, action, props, setProps, project, taskOption }: IProps) {

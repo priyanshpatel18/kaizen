@@ -1,21 +1,21 @@
 "use client";
 
+import ProjectForm from "@/components/forms/ProjectForm";
+import WorkspaceForm from "@/components/forms/WorkspaceForm";
 import CalendarIcon from "@/components/svg/CalendarIcon";
 import InboxIcon from "@/components/svg/InboxIcon";
+import { Dialog } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import UpdateStoreData from "@/lib/UpdateStoreData";
-import { Category, useCategoryStore } from "@/store/category";
+import UpdateStoreData, { UpdateDataProps } from "@/lib/UpdateStoreData";
+import { useCategoryStore } from "@/store/category";
 import { Project, useProjectStore } from "@/store/project";
-import { Task, useTaskStore } from "@/store/task";
-import { useWorkspaceStore, Workspace } from "@/store/workspace";
+import { useTaskStore } from "@/store/task";
+import { useWorkspaceStore } from "@/store/workspace";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import ProjectForm from "../forms/ProjectForm";
-import WorkspaceForm from "../forms/WorkspaceForm";
-import { Dialog } from "../ui/dialog";
 import SidebarItem from "./SidebarItem";
 import SidebarUser from "./SidebarUser";
 import SidebarWorkspaces from "./SidebarWorkspaces";
@@ -24,12 +24,6 @@ export interface SessionUser {
   id: string;
   email: string;
   token: string;
-}
-
-export interface UpdateProps {
-  data: Category | Task | Project | Workspace;
-  action: "create" | "update" | "delete";
-  type: "task" | "category" | "project" | "workspace";
 }
 
 interface IProps {
@@ -46,7 +40,7 @@ export default function AppSidebar({ className, isVisible }: IProps) {
   const { setProjects } = useProjectStore();
   const { workspaces, setWorkspaces, fetchAllData } = useWorkspaceStore();
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | undefined>(undefined);
-  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+  const [props, setProps] = useState<UpdateDataProps | undefined>(undefined);
 
   const [profilePicture, setProfilePicture] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
@@ -64,7 +58,7 @@ export default function AppSidebar({ className, isVisible }: IProps) {
 
     if (session?.user) {
       if (!localStorage.getItem("profilePicture") && session.user.image) {
-        localStorage.setItem("profilePicture", session.user.image);
+        localStorage.setItem("profilePicture", session.user.image as string);
       }
 
       if (!localStorage.getItem("name") && session.user.name) {

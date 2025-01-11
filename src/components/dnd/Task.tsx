@@ -19,12 +19,15 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import CompleteTaskButton from "./CompleteTaskButton";
 
+import { UpdateDataProps } from "@/lib/UpdateStoreData";
+import { Option } from "@/store";
 import { Category } from "@/store/category";
 import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import invariant from "tiny-invariant";
+import { Project } from "@/store/project";
 
 interface TaskProps {
   task: TaskType;
@@ -34,16 +37,22 @@ interface TaskProps {
   setAction: Dispatch<SetStateAction<"create" | "update" | undefined>>;
   view: "list" | "board";
   category?: Category;
+  setOption: Dispatch<SetStateAction<Option | null>>;
+  project?: Project | null;
 }
 
-interface UpdateProps {
-  task: TaskType;
-  action: "create" | "update" | "delete";
-}
-
-export default function Task({ task, setTaskInput, setShowDialog, setAction, view, category }: TaskProps) {
+export default function Task({
+  task,
+  setTaskInput,
+  setShowDialog,
+  setAction,
+  view,
+  category,
+  setOption,
+  project,
+}: TaskProps) {
   const [showMoreActions, setShowMoreActions] = useState<boolean>(false);
-  const [props, setProps] = useState<UpdateProps | undefined>(undefined);
+  const [props, setProps] = useState<UpdateDataProps | undefined>(undefined);
   // DND States
   const taskRef = useRef<HTMLDivElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -119,8 +128,9 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
       };
 
       setProps({
-        task: newTask,
+        data: newTask,
         action: "update",
+        type: "task",
       });
       setShowMoreActions(false);
 
@@ -143,7 +153,8 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
   async function deleteTask() {
     setProps(undefined);
     setProps({
-      task,
+      data: task,
+      type: "task",
       action: "delete",
     });
 
@@ -178,7 +189,7 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
         }}
         modal={true}
       >
-        {props && <UpdateStoreData data={props.task} action={props.action} type="task" />}
+        {props && <UpdateStoreData data={props.data} action={props.action} type="task" />}
 
         <div
           ref={taskRef}
@@ -218,6 +229,9 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
           setShowDialog={setShowDialog}
           setAction={setAction}
           task={task}
+          project={project}
+          category={category}
+          setOption={setOption}
         />
       </DropdownMenu>
     );
@@ -231,7 +245,7 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
       }}
       modal={true}
     >
-      {props && <UpdateStoreData data={props.task} action={props.action} type="task" />}
+      {props && <UpdateStoreData data={props.data} action={props.action} type="task" />}
 
       <div
         ref={taskRef}
@@ -286,6 +300,9 @@ export default function Task({ task, setTaskInput, setShowDialog, setAction, vie
         setShowDialog={setShowDialog}
         setAction={setAction}
         task={task}
+        project={project}
+        category={category}
+        setOption={setOption}
       />
     </DropdownMenu>
   );
@@ -299,6 +316,9 @@ interface DropDownContentProps {
   setShowDialog?: Dispatch<SetStateAction<boolean>>;
   setAction: Dispatch<SetStateAction<"create" | "update" | undefined>>;
   task: TaskType;
+  project?: Project | null;
+  category?: Category | null;
+  setOption: Dispatch<SetStateAction<Option | null>>;
 }
 
 function DropDownContent({
@@ -309,12 +329,21 @@ function DropDownContent({
   setShowDialog,
   setAction,
   task,
+  project,
+  category,
+  setOption,
 }: DropDownContentProps) {
   return (
     <DropdownMenuContent>
       <DropdownMenuItem
         className="cursor-pointer"
         onClick={() => {
+          if (project && category) {
+            setOption({
+              value: `${category?.projectId} # ${category?.id}`,
+              label: `${project?.name}${category?.isDefault ? "" : ` # ${category?.name}`}`,
+            });
+          }
           if (setTaskInput && setShowDialog) {
             setTaskInput(task);
             setAction("update");

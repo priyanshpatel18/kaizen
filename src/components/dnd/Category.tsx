@@ -3,30 +3,30 @@ import { Separator } from "@/components/ui/separator";
 import { Category as CategoryType } from "@/store/category";
 import { Project } from "@/store/project";
 import { Task as TaskType, useTaskStore } from "@/store/task";
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 
+import { Icons } from "@/components/others/icons";
+import { Input } from "@/components/ui/input";
+import { UpdateDataProps } from "@/lib/UpdateStoreData";
+import { Option } from "@/store";
 import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { DropIndicator } from "@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { usePathname } from "next/navigation";
-import { Icons } from "../others/icons";
-import { Input } from "../ui/input";
-import { UpdateProps } from "./Board";
 import Task from "./Task";
-import { Option } from "@/store";
 
 interface ColumnProps {
-  setTaskInput: React.Dispatch<React.SetStateAction<TaskType | undefined>>;
-  setShowTaskForm: React.Dispatch<React.SetStateAction<boolean>>;
-  setAction: React.Dispatch<React.SetStateAction<"create" | "update" | undefined>>;
+  setTaskInput: Dispatch<SetStateAction<TaskType | undefined>>;
+  setShowTaskForm: Dispatch<React.SetStateAction<boolean>>;
+  setAction: Dispatch<SetStateAction<"create" | "update" | undefined>>;
   view: "list" | "board";
   project?: Project | null;
   category?: CategoryType;
-  setProps: React.Dispatch<SetStateAction<UpdateProps | undefined>>;
+  setProps: Dispatch<SetStateAction<UpdateDataProps | undefined>>;
   isLoading: boolean;
-  setOption: React.Dispatch<React.SetStateAction<Option | null>>;
+  setOption: Dispatch<SetStateAction<Option | null>>;
 }
 
 export default function Category({
@@ -167,6 +167,8 @@ export default function Category({
                         view="board"
                         setAction={setAction}
                         category={category}
+                        project={project}
+                        setOption={setOption}
                       />
                     );
                   }
@@ -181,6 +183,7 @@ export default function Category({
                       setShowDialog={setShowTaskForm}
                       view="board"
                       setAction={setAction}
+                      setOption={setOption}
                     />
                   );
                 })}
@@ -229,6 +232,9 @@ export default function Category({
                       setShowDialog={setShowTaskForm}
                       setAction={setAction}
                       view="list"
+                      setOption={setOption}
+                      category={category}
+                      project={project}
                     />
                     <Separator />
                   </div>
@@ -238,6 +244,10 @@ export default function Category({
           </div>
           <Button
             onClick={() => {
+              setOption({
+                value: `${category?.projectId} # ${category?.id}`,
+                label: `${project?.name}${category?.isDefault ? "" : ` # ${category?.name}`}`,
+              });
               setProps(undefined);
               setTaskInput(undefined);
               setAction("create");
@@ -301,6 +311,7 @@ export default function Category({
                     setShowDialog={setShowTaskForm}
                     setAction={setAction}
                     view="list"
+                    setOption={setOption}
                   />
                   <Separator />
                 </div>
@@ -309,6 +320,10 @@ export default function Category({
           </div>
           <Button
             onClick={() => {
+              setOption({
+                value: `${category?.projectId} # ${category?.id}`,
+                label: `${project?.name}${category?.isDefault ? "" : ` # ${category?.name}`}`,
+              });
               setProps(undefined);
               setTaskInput(undefined);
               setAction("create");

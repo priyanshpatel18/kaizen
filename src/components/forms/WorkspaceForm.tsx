@@ -5,11 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Workspace } from "@/store/workspace";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "sonner";
-import { UpdateProps } from "../sidebar/appSidebar";
+import { UpdateDataProps } from "@/lib/UpdateStoreData";
 
 interface IProps {
   setActiveDialog: Dispatch<SetStateAction<"project" | "workspace" | null>>;
-  setProps?: Dispatch<SetStateAction<UpdateProps | undefined>>;
+  setProps?: Dispatch<SetStateAction<UpdateDataProps | undefined>>;
   action: "create" | "update" | undefined;
 }
 

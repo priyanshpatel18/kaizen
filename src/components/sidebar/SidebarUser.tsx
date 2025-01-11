@@ -13,7 +13,7 @@ import { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { Dispatch, SetStateAction } from "react";
-import { Icons } from "../others/icons";
+import { Icons } from "@/components/others/icons";
 import SidebarItem from "./SidebarItem";
 
 interface IProps {

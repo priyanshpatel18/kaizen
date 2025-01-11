@@ -1,11 +1,13 @@
 "use client";
 
+import { Icons } from "@/components/others/icons";
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { UpdateDataProps } from "@/lib/UpdateStoreData";
 import { cn } from "@/lib/utils";
 import { Option } from "@/store";
 import { Project } from "@/store/project";
@@ -15,13 +17,11 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Icons } from "../others/icons";
-import { UpdateProps } from "../sidebar/appSidebar";
 
 interface IProps {
   selectedWorkspaceId: string | undefined;
   setActiveDialog: Dispatch<SetStateAction<"project" | "workspace" | null>>;
-  setProps: Dispatch<SetStateAction<UpdateProps | undefined>>;
+  setProps: Dispatch<SetStateAction<UpdateDataProps | undefined>>;
   projectInput: Project | undefined;
   setProjectInput: Dispatch<SetStateAction<Project | undefined>>;
   updateProject: (project: Project, updateValue: object) => void;
